@@ -1,0 +1,7 @@
+process WRITE_SINGLE_METADATA {
+
+}
+
+process GENERATE_METADATA_ARTIFACT {
+
+}
