@@ -40,7 +40,7 @@ include { GENERATE_METADATA_ARTIFACT } from '../modules/generate_metadata_artifa
 */
 
 workflow 16S_PIPE {
-
+    GENERATE_METADATA_ARTIFACT()
 }
 
 /*
