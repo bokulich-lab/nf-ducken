@@ -24,6 +24,11 @@
 */
 
 // Input
+if (params.inp_id_file) {
+    ch_inp_ids = file("${params.inp_id_file}", checkIfExists: true)
+} else {
+    exit 1, 'Input file with sample accession numbers does not exist or is not specified!'
+}
 
 /*
 ========================================================================================
@@ -40,7 +45,8 @@ include { GENERATE_METADATA_ARTIFACT } from '../modules/generate_metadata_artifa
 */
 
 workflow 16S_PIPE {
-    GENERATE_METADATA_ARTIFACT()
+    GENERATE_METADATA_ARTIFACT ( ch_inp_ids )
+    GENERATE_METADATA_ARTIFACT.out.view()
 }
 
 /*
