@@ -3,11 +3,13 @@ process GENERATE_ID_ARTIFACT {
     path inp_id_file
 
     output:
-    file "*.qza"
+    file "accession_id.qza"
 
     script:
     """
-    echo ${inp_id_file}
+    cat "${inp_id_file} has been detected."
+    cat "Generating QIIME artifact of accession IDs..."
+
     qiime tools import \
         --input-path ${inp_id_file} \
         --output-path accession_id.qza \

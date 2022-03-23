@@ -30,6 +30,8 @@ if (params.inp_id_file) {
     exit 1, 'Input file with sample accession numbers does not exist or is not specified!'
 }
 
+val_email = params.email_address
+
 /*
 ========================================================================================
     IMPORT LOCAL MODULES/SUBWORKFLOWS
@@ -37,6 +39,7 @@ if (params.inp_id_file) {
 */
 
 include { GENERATE_ID_ARTIFACT } from '../modules/generate_id_artifact'
+include { GET_SRA_DATA         } from '../modules/get_sra_data'
 
 /*
 ========================================================================================
@@ -46,6 +49,9 @@ include { GENERATE_ID_ARTIFACT } from '../modules/generate_id_artifact'
 
 workflow PIPE_16S {
     GENERATE_ID_ARTIFACT ( ch_inp_ids )
+    GET_SRA_DATA (
+        val_email,
+        GENERATE_ID_ARTIFACT.out )
 }
 
 /*
