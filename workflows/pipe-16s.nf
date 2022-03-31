@@ -51,7 +51,8 @@ workflow PIPE_16S {
     GENERATE_ID_ARTIFACT ( ch_inp_ids )
     GET_SRA_DATA (
         val_email,
-        GENERATE_ID_ARTIFACT.out )
+        GENERATE_ID_ARTIFACT.out
+        )
 }
 
 /*

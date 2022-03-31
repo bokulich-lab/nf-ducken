@@ -7,8 +7,8 @@ process GENERATE_ID_ARTIFACT {
 
     script:
     """
-    cat "${inp_id_file} has been detected."
-    cat "Generating QIIME artifact of accession IDs..."
+    echo \"${inp_id_file} has been detected.\"
+    echo \"Generating QIIME artifact of accession IDs...\"
 
     qiime tools import \
         --input-path ${inp_id_file} \
