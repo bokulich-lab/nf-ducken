@@ -38,8 +38,7 @@ val_email = params.email_address
 ========================================================================================
 */
 
-include { GENERATE_ID_ARTIFACT } from '../modules/generate_id_artifact'
-include { GET_SRA_DATA         } from '../modules/get_sra_data'
+include { GENERATE_ID_ARTIFACT, GET_SRA_DATA } from '../modules/get_sra_data'
 
 /*
 ========================================================================================
