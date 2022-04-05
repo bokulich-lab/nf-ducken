@@ -7,8 +7,8 @@ process GENERATE_ID_ARTIFACT {
 
     script:
     """
-    echo \"${inp_id_file} has been detected.\"
-    echo \"Generating QIIME artifact of accession IDs...\"
+    echo '${inp_id_file} has been detected.'
+    echo 'Generating QIIME artifact of accession IDs...'
 
     qiime tools import \
         --input-path ${inp_id_file} \
@@ -30,7 +30,7 @@ process GET_SRA_DATA {
 
     script:
     """
-    echo \"Retrieving data from SRA using q2-fondue...\"
+    echo 'Retrieving data from SRA using q2-fondue...'
 
     qiime fondue get-all \
         --i-accession-ids ${id_qza} \
@@ -38,5 +38,27 @@ process GET_SRA_DATA {
         --p-n-jobs 4 \
         --output-dir sra_download \
         --verbose
+    """
+}
+
+process CHECK_FASTQ_TYPE {
+    input:
+    val read_type
+    file fq_qza
+
+    script:
+    """
+    echo 'Checking whether downloaded FASTQs consist of read type ${read_type}...'
+
+    qiime tools export \
+        --input-path ${fq_qza} \
+        --output-path .
+
+    bash ${workflow.projectDir}/bin/check_fastq_type.sh ${read_type} ${pwd}
+    exit_code=$?
+
+    [ ${exit_code} -eq 0 ] |
+    && echo 'Downloaded FASTQs correspond to input read type.' ||
+    echo 'ERROR: Mismatch between downloaded FASTQs and input read type.'; false
     """
 }
