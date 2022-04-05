@@ -23,10 +23,10 @@ process GET_SRA_DATA {
     file id_qza
 
     output:
-    file "sra_download/failed_runs.qza" into fondue_failed_runs
-    file "sra_download/metadata.qza" into fondue_metadata
-    file "sra_download/paired_reads.qza" into fondue_pe_reads
-    file "sra_download/single_reads.qza" into fondue_se_reads
+    file "sra_download/failed_runs.qza" into failed
+    file "sra_download/metadata.qza" into metadata
+    file "sra_download/paired_reads.qza" into paired
+    file "sra_download/single_reads.qza" into single
 
     script:
     """

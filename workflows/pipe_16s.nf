@@ -31,6 +31,7 @@ if (params.inp_id_file) {
 }
 
 val_email = params.email_address
+val_read_type = params.read_type
 
 /*
 ========================================================================================
@@ -38,7 +39,8 @@ val_email = params.email_address
 ========================================================================================
 */
 
-include { GENERATE_ID_ARTIFACT, GET_SRA_DATA } from '../modules/get_sra_data'
+include { GENERATE_ID_ARTIFACT, GET_SRA_DATA,
+          CHECK_FASTQ_TYPE                    } from '../modules/get_sra_data'
 
 /*
 ========================================================================================
@@ -51,6 +53,22 @@ workflow PIPE_16S {
     GET_SRA_DATA (
         val_email,
         GENERATE_ID_ARTIFACT.out
+        )
+
+    switch(val_read_type) {
+        case "single":
+            sra_artifact = GET_SRA_DATA.out.single;
+            break;
+        case "paired":
+            sra_artifact = GET_SRA_DATA.out.paired;
+            break;
+        case default:   // Validation steps exist upstream to prevent this
+            false
+    }
+
+    CHECK_FASTQ_TYPE (
+        val_read_type,
+        sra_artifact
         )
 }
 
