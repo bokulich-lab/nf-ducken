@@ -3,7 +3,7 @@ process GENERATE_ID_ARTIFACT {
     path inp_id_file
 
     output:
-    file "accession_id.qza"
+    path "accession_id.qza"
 
     script:
     """
@@ -23,10 +23,10 @@ process GET_SRA_DATA {
     file id_qza
 
     output:
-    file "sra_download/failed_runs.qza" into failed
-    file "sra_download/metadata.qza" into metadata
-    file "sra_download/paired_reads.qza" into paired
-    file "sra_download/single_reads.qza" into single
+    path "sra_download/failed_runs.qza",  emit: failed
+    path "sra_download/metadata.qza",     emit: metadata
+    path "sra_download/paired_reads.qza", emit: paired
+    path "sra_download/single_reads.qza", emit: single
 
     script:
     """
@@ -44,7 +44,7 @@ process GET_SRA_DATA {
 process CHECK_FASTQ_TYPE {
     input:
     val read_type
-    file fq_qza
+    path fq_qza
 
     script:
     """
@@ -55,10 +55,5 @@ process CHECK_FASTQ_TYPE {
         --output-path .
 
     bash ${workflow.projectDir}/bin/check_fastq_type.sh ${read_type} ${pwd}
-    exit_code=$?
-
-    [ ${exit_code} -eq 0 ] |
-    && echo 'Downloaded FASTQs correspond to input read type.' ||
-    echo 'ERROR: Mismatch between downloaded FASTQs and input read type.'; false
     """
 }
