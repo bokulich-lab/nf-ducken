@@ -53,28 +53,17 @@ workflow PIPE_16S {
         val_email,
         GENERATE_ID_ARTIFACT.out
         )
-//
-//     if (val_read_type == "single") {
-//         sra_artifact = GET_SRA_DATA.out.single
-//     } elif (val_read_type == "paired") {
-//         sra_artifact = GET_SRA_DATA.out.paired
-//     }
 
-//     switch(val_read_type) {
-//         case "single":
-//             sra_artifact = GET_SRA_DATA.out.single;
-//             break;
-//         case "paired":
-//             sra_artifact = GET_SRA_DATA.out.paired;
-//             break;
-//         case default:   // Validation steps exist upstream to prevent this
-//             false
-//     }
+    if (val_read_type == "single") {
+        ch_sra_artifact = GET_SRA_DATA.out.single
+    } else if (val_read_type == "paired") {
+        ch_sra_artifact = GET_SRA_DATA.out.paired
+    }
 
-//     CHECK_FASTQ_TYPE (
-//         val_read_type,
-//         sra_artifact
-//         )
+    CHECK_FASTQ_TYPE (
+        val_read_type,
+        ch_sra_artifact
+        )
 }
 
 /*

@@ -54,6 +54,6 @@ process CHECK_FASTQ_TYPE {
         --input-path ${fq_qza} \
         --output-path .
 
-    bash ${workflow.projectDir}/bin/check_fastq_type.sh ${read_type} ${pwd}
+    bash ${workflow.projectDir}/bin/check_fastq_type.sh ${read_type} ${PWD}
     """
 }
