@@ -32,6 +32,8 @@ if (params.inp_id_file) {
 
 val_email = params.email_address
 val_read_type = params.read_type
+val_trunc_len = params.trunc_len
+val_trunc_q = params.trunc_q
 
 /*
 ========================================================================================
@@ -40,6 +42,7 @@ val_read_type = params.read_type
 */
 
 include { GENERATE_ID_ARTIFACT; GET_SRA_DATA; CHECK_FASTQ_TYPE } from '../modules/get_sra_data'
+include { DENOISE_DADA2                                        } from '../modules/denoise_dada2'
 
 /*
 ========================================================================================
@@ -63,6 +66,13 @@ workflow PIPE_16S {
     CHECK_FASTQ_TYPE (
         val_read_type,
         ch_sra_artifact
+        )
+
+    DENOISE_DADA2 (
+        CHECK_FASTQ_TYPE.out,
+        val_read_type,
+        val_trunc_len,
+        val_trunc_q
         )
 }
 

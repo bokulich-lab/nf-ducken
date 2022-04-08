@@ -46,6 +46,9 @@ process CHECK_FASTQ_TYPE {
     val read_type
     path fq_qza
 
+    output:
+    path ${fq_qza}
+
     script:
     """
     echo 'Checking whether downloaded FASTQs consist of read type ${read_type}...'
