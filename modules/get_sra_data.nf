@@ -47,7 +47,7 @@ process CHECK_FASTQ_TYPE {
     path fq_qza
 
     output:
-    path ${fq_qza}
+    path "${fq_qza}"
 
     script:
     """

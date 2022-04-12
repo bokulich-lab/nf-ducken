@@ -6,9 +6,9 @@ process DENOISE_DADA2 {
     val trunc_q
 
     output:
-    file denoise_dada2/table.qza,                    emit: table
-    file denoise_dada2/representative_sequences.qza, emit: rep_seqs
-    file denoise_dada2/denoising_stats.qza,          emit: stats
+    path "denoise_dada2/table.qza",                    emit: table
+    path "denoise_dada2/representative_sequences.qza", emit: rep_seqs
+    path "denoise_dada2/denoising_stats.qza",          emit: stats
 
     script:
     """
