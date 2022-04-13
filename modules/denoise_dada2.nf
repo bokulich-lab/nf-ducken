@@ -11,14 +11,18 @@ process DENOISE_DADA2 {
     path "denoise_dada2/denoising_stats.qza",          emit: stats
 
     script:
+
+    if (read_type == "single") {
+        trunc_cmd = "--p-trunc-len ${trunc_len}"
+    } else if (read_type == "paired") {
+        trunc_cmd = "--p-trunc-len-f ${trunc_len} --p-trunc-len-r ${trunc_len}"
+    } else {
+        exit 1, "${read_type} must be single or paired!"
+    }
+
     """
     echo 'Denoising with DADA2...'
-
-    if [ "${read_type}" = "single" ]; then
-        trunc_cmd="--p-trunc-len ${trunc_len}"
-    elif [ "${read_type}" = "paired" ]; then
-        trunc_cmd="--p-trunc-len-f ${trunc_len} --p-trunc-len-r ${trunc_len}"
-    fi
+    echo ${trunc_cmd}
 
     qiime dada2 denoise-${read_type} \
         --i-demultiplexed-seqs ${fastq_qza} \
