@@ -1,10 +1,10 @@
-process DEREPLICATE {
+process DEREPLICATE_SEQS {
     input:
     path seq_qza
 
     output:
-    path output-table.qza,    emit: table
-    path output-req-seqs.qza, emit: rep_seqs
+    path "output_table.qza",    emit: table
+    path "output_req_seqs.qza", emit: rep_seqs
 
     script:
     """
@@ -12,11 +12,11 @@ process DEREPLICATE {
 
     qiime vsearch dereplicate-sequences \
         --i-sequences ${seq_qza} \
-        --o-dereplicated-table output-table.qza \
-        --o-dereplicated-sequences output-rep-seqs.qza
+        --o-dereplicated-table output_table.qza \
+        --o-dereplicated-sequences output_rep_seqs.qza
     """
 }
 
-process CLUSTER_CLOSED_OTU {
-
-}
+// process CLUSTER_CLOSED_OTU {
+//
+// }

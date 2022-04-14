@@ -43,6 +43,7 @@ val_trunc_q = params.trunc_q
 
 include { GENERATE_ID_ARTIFACT; GET_SRA_DATA; CHECK_FASTQ_TYPE } from '../modules/get_sra_data'
 include { DENOISE_DADA2                                        } from '../modules/denoise_dada2'
+include { DEREPLICATE_SEQS                                     } from '../modules/cluster_vsearch'
 
 /*
 ========================================================================================
@@ -74,6 +75,8 @@ workflow PIPE_16S {
         val_trunc_len,
         val_trunc_q
         )
+
+    DEREPLICATE_SEQS ( DENOISE_DADA2.out.rep_seqs )
 }
 
 /*
