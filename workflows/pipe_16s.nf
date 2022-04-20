@@ -24,16 +24,36 @@
 */
 
 // Input
+if (params.denoised_table && params.denoised_seqs) {
+    ch_dada2_table = Channel.fromPath( "${params.denoised_table}", checkIfExists: true )
+    ch_dada2_seqs  = Channel.fromPath( "${params.denoised_seqs}",  checkIfExists: true )
+    skip_dada2     = true
+}
+
 if (params.inp_id_file) {
     ch_inp_ids = Channel.fromPath( "${params.inp_id_file}", checkIfExists: true )
+} else if (skip_dada2) {
+    ch_inp_ids = Channel.empty()
+    println "Skipping DADA2..."
 } else {
     exit 1, 'Input file with sample accession numbers does not exist or is not specified!'
+}
+
+if (params.otu_ref_file) {
+    if (params.otu_ref_file.endsWith(".qza")) {
+        ch_otu_ref_qza = Channel.fromPath( "${params.otu_ref_file}", checkIfExists: true )
+    } else {  // TODO modify to add RESCRIPt workflow later
+        exit 1, 'OTU reference file does not exist or is not specified!'
+    }
+} else {   // TODO modify to include eventual download + RESCRIPt workflow later
+    exit 1, 'OTU reference file does not exist or is not specified!'
 }
 
 val_email = params.email_address
 val_read_type = params.read_type
 val_trunc_len = params.trunc_len
 val_trunc_q = params.trunc_q
+
 
 /*
 ========================================================================================
@@ -43,7 +63,7 @@ val_trunc_q = params.trunc_q
 
 include { GENERATE_ID_ARTIFACT; GET_SRA_DATA; CHECK_FASTQ_TYPE } from '../modules/get_sra_data'
 include { DENOISE_DADA2                                        } from '../modules/denoise_dada2'
-include { DEREPLICATE_SEQS                                     } from '../modules/cluster_vsearch'
+include { CLUSTER_CLOSED_OTU                                   } from '../modules/cluster_vsearch'
 
 /*
 ========================================================================================
@@ -76,7 +96,16 @@ workflow PIPE_16S {
         val_trunc_q
         )
 
-    DEREPLICATE_SEQS ( DENOISE_DADA2.out.rep_seqs )
+    if (!(ch_dada2_table) && !(ch_dada2_seqs)) {
+        ch_dada2_table = DENOISE_DADA2.out.table
+        ch_dada2_seqs  = DENOISE_DADA2.out.rep_seqs
+    }
+
+    CLUSTER_CLOSED_OTU (
+        ch_dada2_table,
+        ch_dada2_seqs,
+        ch_otu_ref_qza
+        )
 }
 
 /*

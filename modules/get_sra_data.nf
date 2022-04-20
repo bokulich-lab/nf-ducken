@@ -5,6 +5,9 @@ process GENERATE_ID_ARTIFACT {
     output:
     path "accession_id.qza"
 
+    when:
+    !(skip_dada2)
+
     script:
     """
     echo '${inp_id_file} has been detected.'
