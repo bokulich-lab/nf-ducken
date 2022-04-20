@@ -37,6 +37,7 @@ process CLUSTER_CLOSED_OTU {
         --i-sequences ${rep_seqs} \
         --i-reference-sequences ${ref_otus} \
         --p-perc-identity 1.00 \
-        --output-dir vsearch_otus
+        --output-dir vsearch_otus \
+        --verbose
     """
 }

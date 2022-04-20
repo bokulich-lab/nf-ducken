@@ -49,6 +49,16 @@ if (params.otu_ref_file) {
     exit 1, 'OTU reference file does not exist or is not specified!'
 }
 
+if (params.trained_classifier) {
+    if (params.trained_classifier.endsWith(".qza")) {
+        ch_trained_classifier = Channel.fromPath( "${params.trained_classifier}", checkIfExists: true )
+    } else {
+        exit 1, 'Feature classifier file does not exist or is not specified!'
+    }
+} else {   // TODO modify to include eventual download + custom feature classifier training
+    exit 1, 'Feature classifier file does not exist or is not specified!'
+}
+
 val_email = params.email_address
 val_read_type = params.read_type
 val_trunc_len = params.trunc_len
@@ -64,6 +74,7 @@ val_trunc_q = params.trunc_q
 include { GENERATE_ID_ARTIFACT; GET_SRA_DATA; CHECK_FASTQ_TYPE } from '../modules/get_sra_data'
 include { DENOISE_DADA2                                        } from '../modules/denoise_dada2'
 include { CLUSTER_CLOSED_OTU                                   } from '../modules/cluster_vsearch'
+include { CLASSIFY_TAXONOMY                                    } from '../modules/classify_taxonomy'
 
 /*
 ========================================================================================
@@ -105,6 +116,11 @@ workflow PIPE_16S {
         ch_dada2_table,
         ch_dada2_seqs,
         ch_otu_ref_qza
+        )
+
+    CLASSIFY_TAXONOMY (
+        ch_trained_classifier,
+        CLUSTER_CLOSED_OTU.out.seqs
         )
 }
 
