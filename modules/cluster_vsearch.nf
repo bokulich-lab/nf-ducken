@@ -24,6 +24,9 @@ process CLUSTER_CLOSED_OTU {
     path ref_otus
 
     output:
+    path "vsearch_otus/clustered_table.qza",     emit: table
+    path "vsearch_otus/clustered_sequences.qza", emit: seqs
+    path "vsearch_otus/unmatched_sequences.qza", emit: unmatched_seqs
 
     script:
     """
