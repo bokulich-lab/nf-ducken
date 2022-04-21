@@ -59,10 +59,11 @@ if (params.trained_classifier) {
     exit 1, 'Feature classifier file does not exist or is not specified!'
 }
 
-val_email = params.email_address
-val_read_type = params.read_type
-val_trunc_len = params.trunc_len
-val_trunc_q = params.trunc_q
+val_email      = params.email_address
+val_read_type  = params.read_type
+val_trunc_len  = params.trunc_len
+val_trunc_q    = params.trunc_q
+val_taxa_level = params.taxa_level
 
 
 /*
@@ -74,7 +75,7 @@ val_trunc_q = params.trunc_q
 include { GENERATE_ID_ARTIFACT; GET_SRA_DATA; CHECK_FASTQ_TYPE } from '../modules/get_sra_data'
 include { DENOISE_DADA2                                        } from '../modules/denoise_dada2'
 include { CLUSTER_CLOSED_OTU                                   } from '../modules/cluster_vsearch'
-include { CLASSIFY_TAXONOMY                                    } from '../modules/classify_taxonomy'
+include { CLASSIFY_TAXONOMY, COLLAPSE_TAXA                     } from '../modules/classify_taxonomy'
 
 /*
 ========================================================================================
@@ -122,6 +123,12 @@ workflow PIPE_16S {
         ch_trained_classifier,
         CLUSTER_CLOSED_OTU.out.seqs
         )
+
+    COLLAPSE_TAXA (
+        CLUSTER_CLOSED_OTU.out.table,
+        CLASSIFY_TAXONOMY.out.taxonomy_qza,
+        val_taxa_level
+    )
 }
 
 /*

@@ -23,3 +23,24 @@ process CLASSIFY_TAXONOMY {
         --o-visualization taxonomy.qzv
     """
 }
+
+process COLLAPSE_TAXA {
+    input:
+    path table
+    path taxonomy
+    val level
+
+    output:
+    path "collapsed_table.qza"
+
+    script:
+    """
+    echo 'Collapsing frequencies for features to taxonomic level:' ${level}
+
+    qiime taxa collapse \
+        --i-table ${table} \
+        --i-taxonomy ${taxonomy} \
+        --p-level ${level} \
+        --o-collapsed-table collapsed_table.qza
+    """
+}
