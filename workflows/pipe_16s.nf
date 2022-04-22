@@ -23,13 +23,21 @@
 ========================================================================================
 */
 
-// Input
+// Intermediate process skipping
 if (params.denoised_table && params.denoised_seqs) {
     ch_dada2_table = Channel.fromPath( "${params.denoised_table}", checkIfExists: true )
     ch_dada2_seqs  = Channel.fromPath( "${params.denoised_seqs}",  checkIfExists: true )
     skip_dada2     = true
 }
 
+if (params.fastq_dir) {
+    ch_fastq_dir  = Channel.fromPath( "${params.fastq_dir}",
+                                      type: "dir",
+                                      checkIfExists: true )
+    skip_download = true
+}
+
+// Required user inputs
 if (params.inp_id_file) {
     ch_inp_ids = Channel.fromPath( "${params.inp_id_file}", checkIfExists: true )
 } else if (skip_dada2) {

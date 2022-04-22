@@ -63,3 +63,18 @@ process CHECK_FASTQ_TYPE {
     bash ${workflow.projectDir}/bin/check_fastq_type.sh ${read_type} .
     """
 }
+
+process IMPORT_FASTQ {
+    input:
+    path fq_dir
+    val read_type
+
+    output:
+    path "sequences.qza"
+
+    script:
+    """
+    echo 'Local FASTQs detected. Converting to QIIME artifact...'
+    """
+
+}
