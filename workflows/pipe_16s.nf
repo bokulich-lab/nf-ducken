@@ -27,20 +27,20 @@
 if (params.denoised_table && params.denoised_seqs) {
     ch_dada2_table = Channel.fromPath( "${params.denoised_table}", checkIfExists: true )
     ch_dada2_seqs  = Channel.fromPath( "${params.denoised_seqs}",  checkIfExists: true )
-    skip_dada2     = true
+    start_process = "clustering"
 }
 
 if (params.fastq_dir) {
     ch_fastq_dir  = Channel.fromPath( "${params.fastq_dir}",
                                       type: "dir",
                                       checkIfExists: true )
-    skip_download = true
+    start_process = "fastq_download"
 }
 
 // Required user inputs
 if (params.inp_id_file) {
     ch_inp_ids = Channel.fromPath( "${params.inp_id_file}", checkIfExists: true )
-} else if (skip_dada2) {
+} else if (skip_download) {
     ch_inp_ids = Channel.empty()
     println "Skipping DADA2..."
 } else {
@@ -80,10 +80,11 @@ val_taxa_level = params.taxa_level
 ========================================================================================
 */
 
-include { GENERATE_ID_ARTIFACT; GET_SRA_DATA; CHECK_FASTQ_TYPE } from '../modules/get_sra_data'
-include { DENOISE_DADA2                                        } from '../modules/denoise_dada2'
-include { CLUSTER_CLOSED_OTU                                   } from '../modules/cluster_vsearch'
-include { CLASSIFY_TAXONOMY, COLLAPSE_TAXA                     } from '../modules/classify_taxonomy'
+include { GENERATE_ID_ARTIFACT; GET_SRA_DATA;
+          CHECK_FASTQ_TYPE; IMPORT_FASTQ      } from '../modules/get_sra_data'
+include { DENOISE_DADA2                       } from '../modules/denoise_dada2'
+include { CLUSTER_CLOSED_OTU                  } from '../modules/cluster_vsearch'
+include { CLASSIFY_TAXONOMY, COLLAPSE_TAXA    } from '../modules/classify_taxonomy'
 
 /*
 ========================================================================================
@@ -92,6 +93,8 @@ include { CLASSIFY_TAXONOMY, COLLAPSE_TAXA                     } from '../module
 */
 
 workflow PIPE_16S {
+
+    // Download
     GENERATE_ID_ARTIFACT ( ch_inp_ids )
     GET_SRA_DATA (
         val_email,
@@ -104,11 +107,18 @@ workflow PIPE_16S {
         ch_sra_artifact = GET_SRA_DATA.out.paired
     }
 
+    // FASTQ check
+    if (start_process == "fastq_download") {
+        IMPORT_FASTQ ( ch_fastq_dir )
+        ch_sra_artifact = IMPORT_FASTQ.out
+    }
+
     CHECK_FASTQ_TYPE (
         val_read_type,
         ch_sra_artifact
         )
 
+    // Feature generation: Denoising and clustering
     DENOISE_DADA2 (
         CHECK_FASTQ_TYPE.out,
         val_read_type,
@@ -127,6 +137,7 @@ workflow PIPE_16S {
         ch_otu_ref_qza
         )
 
+    // Classification
     CLASSIFY_TAXONOMY (
         ch_trained_classifier,
         CLUSTER_CLOSED_OTU.out.seqs
