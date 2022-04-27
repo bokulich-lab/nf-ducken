@@ -30,17 +30,29 @@ if (params.denoised_table && params.denoised_seqs) {
     start_process = "clustering"
 }
 
-if (params.fastq_dir) {
-    ch_fastq_dir  = Channel.fromPath( "${params.fastq_dir}",
-                                      type: "dir",
-                                      checkIfExists: true )
+if (params.fastq_manifest) {
+    ch_fastq_manifest = Channel.fromPath( "${params.fastq_manifest}",
+                                          checkIfExists: true )
     start_process = "fastq_download"
+
+    if (params.phred_offset) {
+        if (params.phred_offset == 64 || params.phred_offset == 33) {
+            val_phred_offset = params.phred_offset
+        } else {
+            exit 1, 'The only valid PHRED offset values are 33 or 64!'
+        }
+    } else {
+        val_phred_offset = 33
+    }
 }
 
 // Required user inputs
 if (params.inp_id_file) {
     ch_inp_ids = Channel.fromPath( "${params.inp_id_file}", checkIfExists: true )
-} else if (skip_download) {
+} else if (start_process == "fastq_download") {
+    ch_inp_ids = Channel.empty()
+    println "Skipping FASTQ download..."
+} else if (start_process == "clustering") {
     ch_inp_ids = Channel.empty()
     println "Skipping DADA2..."
 } else {
@@ -84,7 +96,7 @@ include { GENERATE_ID_ARTIFACT; GET_SRA_DATA;
           CHECK_FASTQ_TYPE; IMPORT_FASTQ      } from '../modules/get_sra_data'
 include { DENOISE_DADA2                       } from '../modules/denoise_dada2'
 include { CLUSTER_CLOSED_OTU                  } from '../modules/cluster_vsearch'
-include { CLASSIFY_TAXONOMY, COLLAPSE_TAXA    } from '../modules/classify_taxonomy'
+include { CLASSIFY_TAXONOMY; COLLAPSE_TAXA    } from '../modules/classify_taxonomy'
 
 /*
 ========================================================================================
@@ -109,7 +121,12 @@ workflow PIPE_16S {
 
     // FASTQ check
     if (start_process == "fastq_download") {
-        IMPORT_FASTQ ( ch_fastq_dir )
+        IMPORT_FASTQ (
+            ch_fastq_manifest,
+            val_read_type,
+            val_phred_offset
+            )
+
         ch_sra_artifact = IMPORT_FASTQ.out
     }
 

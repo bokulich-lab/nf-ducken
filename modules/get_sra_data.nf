@@ -6,7 +6,7 @@ process GENERATE_ID_ARTIFACT {
     path "accession_id.qza"
 
     when:
-    !(skip_download)
+    !(start_process)
 
     script:
     """
@@ -66,8 +66,9 @@ process CHECK_FASTQ_TYPE {
 
 process IMPORT_FASTQ {
     input:
-    path fq_dir
+    path fq_manifest
     val read_type
+    val phred_offset
 
     output:
     path "sequences.qza"
@@ -79,10 +80,9 @@ process IMPORT_FASTQ {
     echo 'Local FASTQs detected. Converting to QIIME artifact...'
 
     qiime tools import \
-        --type 'SampleData[${read_type_upper}EndSequencesWithQuality]' \
-        --input-path casava-18-${read_type}-end-demultiplexed \
-        --input-format CasavaOneEight${read_type_upper}SingleLanePerSampleDirFmt \
+        --type 'SampleData[SequencesWithQuality]' \
+        --input-path ${fq_manifest} \
+        --input-format ${read_type_upper}EndFastqManifestPhred${phred_offset}V2 \
         --output-path sequences.qza
     """
-
 }
