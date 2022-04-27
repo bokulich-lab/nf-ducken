@@ -79,8 +79,12 @@ if (params.trained_classifier) {
     exit 1, 'Feature classifier file does not exist or is not specified!'
 }
 
+// Parameters with no defaults
 val_email      = params.email_address
 val_read_type  = params.read_type
+
+// Parameters with given defaults
+// TODO establish defaults if not null
 val_trunc_len  = params.trunc_len
 val_trunc_q    = params.trunc_q
 val_taxa_level = params.taxa_level
