@@ -7,7 +7,6 @@
 // Validate input parameters
 
 // Check input path parameters to see if they exist
-// params.input may be: folder, samplesheet, fasta file, and therefore should not appear here (because tests only for "file")
 
 // Check mandatory parameters
 
@@ -24,16 +23,15 @@
 */
 
 // Intermediate process skipping
+// Executed in reverse chronology
 if (params.denoised_table && params.denoised_seqs) {
     ch_dada2_table = Channel.fromPath( "${params.denoised_table}", checkIfExists: true )
     ch_dada2_seqs  = Channel.fromPath( "${params.denoised_seqs}",  checkIfExists: true )
     start_process = "clustering"
-}
-
-if (params.fastq_manifest) {
+} else if (params.fastq_manifest) {
     ch_fastq_manifest = Channel.fromPath( "${params.fastq_manifest}",
                                           checkIfExists: true )
-    start_process = "fastq_download"
+    start_process = "fastq_import"
 
     if (params.phred_offset) {
         if (params.phred_offset == 64 || params.phred_offset == 33) {
@@ -44,19 +42,23 @@ if (params.fastq_manifest) {
     } else {
         val_phred_offset = 33
     }
+} else {
+    start_process = "id_import"
 }
 
 // Required user inputs
-if (params.inp_id_file) {
-    ch_inp_ids = Channel.fromPath( "${params.inp_id_file}", checkIfExists: true )
-} else if (start_process == "fastq_download") {
+if (start_process = "id_import") {
+    if (params.inp_id_file) {
+        ch_inp_ids = Channel.fromPath( "${params.inp_id_file}", checkIfExists: true )
+    } else {
+        exit 1, 'Input file with sample accession numbers does not exist or is not specified!'
+    }
+} else if (start_process == "fastq_import") {
     ch_inp_ids = Channel.empty()
     println "Skipping FASTQ download..."
 } else if (start_process == "clustering") {
     ch_inp_ids = Channel.empty()
     println "Skipping DADA2..."
-} else {
-    exit 1, 'Input file with sample accession numbers does not exist or is not specified!'
 }
 
 if (params.otu_ref_file) {
@@ -123,8 +125,7 @@ workflow PIPE_16S {
         ch_sra_artifact = GET_SRA_DATA.out.paired
     }
 
-    // FASTQ check
-    if (start_process == "fastq_download") {
+    if (start_process == "fastq_import") {
         IMPORT_FASTQ (
             ch_fastq_manifest,
             val_read_type,
@@ -134,12 +135,13 @@ workflow PIPE_16S {
         ch_sra_artifact = IMPORT_FASTQ.out
     }
 
+    // FASTQ check
     CHECK_FASTQ_TYPE (
         val_read_type,
         ch_sra_artifact
         )
 
-    // Feature generation: Denoising and clustering
+    // Feature generation: Denoising for cleanup
     DENOISE_DADA2 (
         CHECK_FASTQ_TYPE.out,
         val_read_type,
@@ -147,11 +149,12 @@ workflow PIPE_16S {
         val_trunc_q
         )
 
-    if (!(ch_dada2_table) && !(ch_dada2_seqs)) {
+    if (!(start_process == "clustering") {
         ch_dada2_table = DENOISE_DADA2.out.table
         ch_dada2_seqs  = DENOISE_DADA2.out.rep_seqs
     }
 
+    // Feature generation: Clustering
     CLUSTER_CLOSED_OTU (
         ch_dada2_table,
         ch_dada2_seqs,

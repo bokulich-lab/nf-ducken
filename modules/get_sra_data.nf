@@ -6,7 +6,7 @@ process GENERATE_ID_ARTIFACT {
     path "accession_id.qza"
 
     when:
-    !(start_process)
+    start_process == "id_import"
 
     script:
     """
@@ -72,6 +72,9 @@ process IMPORT_FASTQ {
 
     output:
     path "sequences.qza"
+
+    when:
+    start_process == "fastq_import"
 
     script:
     read_type_upper = read_type.capitalize()
