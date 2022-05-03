@@ -27,7 +27,7 @@
 if (params.denoised_table && params.denoised_seqs) {
     ch_dada2_table = Channel.fromPath( "${params.denoised_table}", checkIfExists: true )
     ch_dada2_seqs  = Channel.fromPath( "${params.denoised_seqs}",  checkIfExists: true )
-    start_process = "clustering"
+    start_process  = "clustering"
 } else if (params.fastq_manifest) {
     ch_fastq_manifest = Channel.fromPath( "${params.fastq_manifest}",
                                           checkIfExists: true )
@@ -47,9 +47,10 @@ if (params.denoised_table && params.denoised_seqs) {
 }
 
 // Required user inputs
-if (start_process = "id_import") {
-    if (params.inp_id_file) {
+if (start_process == "id_import") {
+    if (params.inp_id_file) {       // TODO shift to input validation module
         ch_inp_ids = Channel.fromPath( "${params.inp_id_file}", checkIfExists: true )
+        val_email  = params.email_address
     } else {
         exit 1, 'Input file with sample accession numbers does not exist or is not specified!'
     }
@@ -58,7 +59,31 @@ if (start_process = "id_import") {
     println "Skipping FASTQ download..."
 } else if (start_process == "clustering") {
     ch_inp_ids = Channel.empty()
+    val_email  = Channel.empty()
     println "Skipping DADA2..."
+}
+
+// Navigate user-input parameters necessary for pre-clustering steps
+if (start_process != "clustering") {
+    val_email = Channel.empty()
+
+    if (params.read_type) {
+        val_read_type = params.read_type
+    } else {
+        exit 1, 'Read type parameter is required!'
+    }
+
+    if (params.trunc_len) {
+        val_trunc_len = params.trunc_len
+    } else {
+        val_trunc_len = 0
+    }
+
+    if (params.trunc_q) {
+        val_trunc_q = params.trunc_q
+    } else {
+        val_trunc_q = 2
+    }
 }
 
 if (params.otu_ref_file) {
@@ -81,15 +106,12 @@ if (params.trained_classifier) {
     exit 1, 'Feature classifier file does not exist or is not specified!'
 }
 
-// Parameters with no defaults
-val_email      = params.email_address
-val_read_type  = params.read_type
-
-// Parameters with given defaults
-// TODO establish defaults if not null
-val_trunc_len  = params.trunc_len
-val_trunc_q    = params.trunc_q
-val_taxa_level = params.taxa_level
+// Required parameters with given defaults
+if (params.taxa_level) {    // TODO validate to ensure integer
+    val_taxa_level = params.taxa_level
+} else {
+    val_taxa_level = 5
+}
 
 
 /*
@@ -125,13 +147,13 @@ workflow PIPE_16S {
         ch_sra_artifact = GET_SRA_DATA.out.paired
     }
 
-    if (start_process == "fastq_import") {
-        IMPORT_FASTQ (
-            ch_fastq_manifest,
-            val_read_type,
-            val_phred_offset
-            )
+    IMPORT_FASTQ (
+        ch_fastq_manifest,
+        val_read_type,
+        val_phred_offset
+        )
 
+    if (start_process == "fastq_import") {
         ch_sra_artifact = IMPORT_FASTQ.out
     }
 
@@ -149,7 +171,7 @@ workflow PIPE_16S {
         val_trunc_q
         )
 
-    if (!(start_process == "clustering") {
+    if (!(start_process == "clustering")) {
         ch_dada2_table = DENOISE_DADA2.out.table
         ch_dada2_seqs  = DENOISE_DADA2.out.rep_seqs
     }
@@ -171,7 +193,7 @@ workflow PIPE_16S {
         CLUSTER_CLOSED_OTU.out.table,
         CLASSIFY_TAXONOMY.out.taxonomy_qza,
         val_taxa_level
-    )
+        )
 }
 
 /*
