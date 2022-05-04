@@ -31,6 +31,9 @@ process GET_SRA_DATA {
     path "sra_download/paired_reads.qza", emit: paired
     path "sra_download/single_reads.qza", emit: single
 
+    when:
+    start_process == "id_import"
+
     script:
     """
     echo 'Retrieving data from SRA using q2-fondue...'
@@ -73,9 +76,6 @@ process IMPORT_FASTQ {
     output:
     path "sequences.qza"
 
-    when:
-    start_process == "fastq_import"
-
     script:
     read_type_upper = read_type.capitalize()
 
@@ -83,7 +83,7 @@ process IMPORT_FASTQ {
     echo 'Local FASTQs detected. Converting to QIIME artifact...'
 
     qiime tools import \
-        --type 'SampleData[SequencesWithQuality]' \
+        --type 'SampleData[${read_type_upper}EndSequencesWithQuality]' \
         --input-path ${fq_manifest} \
         --input-format ${read_type_upper}EndFastqManifestPhred${phred_offset}V2 \
         --output-path sequences.qza

@@ -50,7 +50,8 @@ if (params.denoised_table && params.denoised_seqs) {
 if (start_process == "id_import") {
     if (params.inp_id_file) {       // TODO shift to input validation module
         ch_inp_ids = Channel.fromPath( "${params.inp_id_file}", checkIfExists: true )
-        val_email  = params.email_address
+        val_email         = params.email_address
+        ch_fastq_manifest = Channel.empty()
     } else {
         exit 1, 'Input file with sample accession numbers does not exist or is not specified!'
     }
@@ -133,7 +134,6 @@ include { CLASSIFY_TAXONOMY; COLLAPSE_TAXA    } from '../modules/classify_taxono
 */
 
 workflow PIPE_16S {
-
     // Download
     GENERATE_ID_ARTIFACT ( ch_inp_ids )
     GET_SRA_DATA (
