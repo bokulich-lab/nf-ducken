@@ -47,21 +47,27 @@ if (params.denoised_table && params.denoised_seqs) {
 }
 
 // Required user inputs
-if (start_process == "id_import") {
-    if (params.inp_id_file) {       // TODO shift to input validation module
-        ch_inp_ids = Channel.fromPath( "${params.inp_id_file}", checkIfExists: true )
-        val_email         = params.email_address
-        ch_fastq_manifest = Channel.empty()
-    } else {
-        exit 1, 'Input file with sample accession numbers does not exist or is not specified!'
-    }
-} else if (start_process == "fastq_import") {
-    ch_inp_ids = Channel.empty()
-    println "Skipping FASTQ download..."
-} else if (start_process == "clustering") {
-    ch_inp_ids = Channel.empty()
-    val_email  = Channel.empty()
-    println "Skipping DADA2..."
+switch (start_process) {
+    case "id_import":
+        if (params.inp_id_file) {       // TODO shift to input validation module
+            ch_inp_ids = Channel.fromPath( "${params.inp_id_file}", checkIfExists: true )
+            val_email         = params.email_address
+            ch_fastq_manifest = Channel.empty()
+        } else {
+            exit 1, 'Input file with sample accession numbers does not exist or is not specified!'
+        }
+        break
+
+    case "fastq_import":
+        ch_inp_ids = Channel.empty()
+        println "Skipping FASTQ download..."
+        break
+
+    case "clustering":
+        ch_inp_ids = Channel.empty()
+        val_email  = Channel.empty()
+        println "Skipping DADA2..."
+        break
 }
 
 // Navigate user-input parameters necessary for pre-clustering steps
