@@ -28,7 +28,7 @@ process DOWNLOAD_REF_SEQS {
     path "ref_seqs.qza"
 
     when:
-    flag_get_ref
+    flag_get_ref = true
 
     script:
     """

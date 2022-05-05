@@ -70,15 +70,15 @@ switch (start_process) {
         break
 }
 
+if (params.read_type) {
+    val_read_type = params.read_type
+} else {
+    exit 1, 'Read type parameter is required!'
+}
+
 // Navigate user-input parameters necessary for pre-clustering steps
 if (start_process != "clustering") {
     val_email = Channel.empty()
-
-    if (params.read_type) {
-        val_read_type = params.read_type
-    } else {
-        exit 1, 'Read type parameter is required!'
-    }
 
     if (params.trunc_len) {
         val_trunc_len = params.trunc_len
@@ -110,7 +110,7 @@ if (params.trained_classifier) {
     } else {
         exit 1, 'Feature classifier file does not exist or is not specified!'
     }
-} else {   // TODO modify to include eventual download + custom feature classifier training
+} else {
     exit 1, 'Feature classifier file does not exist or is not specified!'
 }
 
