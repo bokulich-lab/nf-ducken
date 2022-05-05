@@ -22,3 +22,18 @@ process CLUSTER_CLOSED_OTU {
         --verbose
     """
 }
+
+process DOWNLOAD_REF_SEQS {
+    output:
+    path "ref_seqs.qza"
+
+    when:
+    flag_get_ref
+
+    script:
+    """
+    echo 'Downloading default OTU reference artifact...'
+
+    wget -O ref_seqs.qza https://data.qiime2.org/2022.2/common/silva-138-99-seqs.qza
+    """
+}

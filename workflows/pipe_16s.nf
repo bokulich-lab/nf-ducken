@@ -94,13 +94,14 @@ if (start_process != "clustering") {
 }
 
 if (params.otu_ref_file) {
+    flag_get_ref = false
     if (params.otu_ref_file.endsWith(".qza")) {
         ch_otu_ref_qza = Channel.fromPath( "${params.otu_ref_file}", checkIfExists: true )
-    } else {  // TODO modify to add RESCRIPt workflow later
-        exit 1, 'OTU reference file does not exist or is not specified!'
+    } else {
+        exit 1, 'Input OTU reference artifact does not exist!'
     }
-} else {   // TODO modify to include eventual download + RESCRIPt workflow later
-    exit 1, 'OTU reference file does not exist or is not specified!'
+} else {
+    flag_get_ref = true
 }
 
 if (params.trained_classifier) {
@@ -130,7 +131,8 @@ if (params.taxa_level) {    // TODO validate to ensure integer
 include { GENERATE_ID_ARTIFACT; GET_SRA_DATA;
           CHECK_FASTQ_TYPE; IMPORT_FASTQ      } from '../modules/get_sra_data'
 include { DENOISE_DADA2                       } from '../modules/denoise_dada2'
-include { CLUSTER_CLOSED_OTU                  } from '../modules/cluster_vsearch'
+include { CLUSTER_CLOSED_OTU;
+          DOWNLOAD_REF_SEQS                   } from '../modules/cluster_vsearch'
 include { CLASSIFY_TAXONOMY; COLLAPSE_TAXA    } from '../modules/classify_taxonomy'
 
 /*
@@ -183,6 +185,11 @@ workflow PIPE_16S {
     }
 
     // Feature generation: Clustering
+    DOWNLOAD_REF_SEQS ()
+    if (flag_get_ref) {
+        ch_otu_ref_qza = DOWNLOAD_REF_SEQS.out
+    }
+
     CLUSTER_CLOSED_OTU (
         ch_dada2_table,
         ch_dada2_seqs,
