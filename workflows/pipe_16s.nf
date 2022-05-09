@@ -96,7 +96,8 @@ if (start_process != "clustering") {
 if (params.otu_ref_file) {
     flag_get_ref = false
     if (params.otu_ref_file.endsWith(".qza")) {
-        ch_otu_ref_qza = Channel.fromPath( "${params.otu_ref_file}", checkIfExists: true )
+        ch_otu_ref_qza = Channel.fromPath( "${params.otu_ref_file}",
+                                           checkIfExists: true )
     } else {
         exit 1, 'Input OTU reference artifact does not exist!'
     }
@@ -105,13 +106,15 @@ if (params.otu_ref_file) {
 }
 
 if (params.trained_classifier) {
+    flag_get_classifier = false
     if (params.trained_classifier.endsWith(".qza")) {
-        ch_trained_classifier = Channel.fromPath( "${params.trained_classifier}", checkIfExists: true )
+        ch_trained_classifier = Channel.fromPath( "${params.trained_classifier}",
+                                                  checkIfExists: true )
     } else {
-        exit 1, 'Feature classifier file does not exist or is not specified!'
+        exit 1, 'Feature classifier file does not exist!'
     }
 } else {
-    exit 1, 'Feature classifier file does not exist or is not specified!'
+    flag_get_classifier = true
 }
 
 // Required parameters with given defaults
@@ -133,7 +136,8 @@ include { GENERATE_ID_ARTIFACT; GET_SRA_DATA;
 include { DENOISE_DADA2                       } from '../modules/denoise_dada2'
 include { CLUSTER_CLOSED_OTU;
           DOWNLOAD_REF_SEQS                   } from '../modules/cluster_vsearch'
-include { CLASSIFY_TAXONOMY; COLLAPSE_TAXA    } from '../modules/classify_taxonomy'
+include { CLASSIFY_TAXONOMY; COLLAPSE_TAXA;
+          DOWNLOAD_CLASSIFIER                 } from '../modules/classify_taxonomy'
 
 /*
 ========================================================================================
@@ -197,6 +201,11 @@ workflow PIPE_16S {
         )
 
     // Classification
+    DOWNLOAD_CLASSIFIER ()
+    if (flag_get_classifier) {
+        ch_trained_classifier = DOWNLOAD_CLASSIFIER.out
+    }
+
     CLASSIFY_TAXONOMY (
         ch_trained_classifier,
         CLUSTER_CLOSED_OTU.out.seqs
