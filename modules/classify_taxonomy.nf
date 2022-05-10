@@ -46,6 +46,9 @@ process COLLAPSE_TAXA {
 }
 
 process DOWNLOAD_CLASSIFIER {
+    input:
+    val classifier_url
+
     output:
     path "classifier.qza"
 
@@ -56,6 +59,6 @@ process DOWNLOAD_CLASSIFIER {
     """
     echo 'Downloading default taxonomy feature classifier...'
 
-    wget -O classifier.qza https://data.qiime2.org/2022.2/common/silva-138-99-nb-classifier.qza
+    wget -O classifier.qza ${classifier_url}
     """
 }

@@ -24,6 +24,9 @@ process CLUSTER_CLOSED_OTU {
 }
 
 process DOWNLOAD_REF_SEQS {
+    input:
+    val otu_ref_url
+
     output:
     path "ref_seqs.qza"
 
@@ -34,6 +37,6 @@ process DOWNLOAD_REF_SEQS {
     """
     echo 'Downloading default OTU reference artifact...'
 
-    wget -O ref_seqs.qza https://data.qiime2.org/2022.2/common/silva-138-99-seqs.qza
+    wget -O ref_seqs.qza ${otu_ref_url}
     """
 }

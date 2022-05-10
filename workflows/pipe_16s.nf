@@ -103,6 +103,7 @@ if (params.otu_ref_file) {
     }
 } else {
     flag_get_ref = true
+    val_otu_ref_url = params.otu_ref_url
 }
 
 if (params.trained_classifier) {
@@ -115,6 +116,7 @@ if (params.trained_classifier) {
     }
 } else {
     flag_get_classifier = true
+    val_trained_classifier_url = params.trained_classifier_url
 }
 
 // Required parameters with given defaults
@@ -189,7 +191,7 @@ workflow PIPE_16S {
     }
 
     // Feature generation: Clustering
-    DOWNLOAD_REF_SEQS ()
+    DOWNLOAD_REF_SEQS ( val_otu_ref_url )
     if (flag_get_ref) {
         ch_otu_ref_qza = DOWNLOAD_REF_SEQS.out
     }
@@ -201,7 +203,7 @@ workflow PIPE_16S {
         )
 
     // Classification
-    DOWNLOAD_CLASSIFIER ()
+    DOWNLOAD_CLASSIFIER ( val_trained_classifier_url )
     if (flag_get_classifier) {
         ch_trained_classifier = DOWNLOAD_CLASSIFIER.out
     }
