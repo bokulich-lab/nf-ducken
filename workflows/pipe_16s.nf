@@ -60,6 +60,7 @@ switch (start_process) {
 
     case "fastq_import":
         ch_inp_ids = Channel.empty()
+        val_email  = Channel.empty()
         println "Skipping FASTQ download..."
         break
 
@@ -70,15 +71,13 @@ switch (start_process) {
         break
 }
 
-if (params.read_type) {
-    val_read_type = params.read_type
-} else {
-    exit 1, 'Read type parameter is required!'
-}
-
 // Navigate user-input parameters necessary for pre-clustering steps
 if (start_process != "clustering") {
-    val_email = Channel.empty()
+    if (params.read_type) {
+        val_read_type = params.read_type
+    } else {
+        exit 1, 'Read type parameter is required!'
+    }
 
     if (params.trunc_len) {
         val_trunc_len = params.trunc_len
