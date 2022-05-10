@@ -53,7 +53,7 @@ process DOWNLOAD_CLASSIFIER {
     path "classifier.qza"
 
     when:
-    flag_get_classifier = true
+    flag_get_classifier
 
     script:
     """

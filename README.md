@@ -16,6 +16,7 @@ Process parameters:
 * `trunc_q`: default `2`; used in DADA2, reads are truncated at the first instance of a quality score less than or equal to this value
 * `taxa_level`: default `5`, collapsing taxonomic classifications to genus; used in `qiime taxa collapse`
 * `phred_offset`: default `33`; used in FASTQ import if using local FASTQs
+* `cluster_identity`: default TBD; used as threshold in VSEARCH for closed reference clustering
 
 Reference files if available locally; otherwise, defaults will be downloaded from the [QIIME 2 data resources page](https://docs.qiime2.org/2022.2/data-resources/):
 * `otu_ref_file`: default `null`, downloading pre-formatted files from the [SILVA 138 SSURef NR99 full-length sequences](https://data.qiime2.org/2022.2/common/silva-138-99-seqs.qza); used in closed-reference OTU clustering with VSEARCH

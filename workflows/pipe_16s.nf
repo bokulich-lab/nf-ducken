@@ -50,9 +50,10 @@ if (params.denoised_table && params.denoised_seqs) {
 switch (start_process) {
     case "id_import":
         if (params.inp_id_file) {       // TODO shift to input validation module
-            ch_inp_ids = Channel.fromPath( "${params.inp_id_file}", checkIfExists: true )
+            ch_inp_ids        = Channel.fromPath( "${params.inp_id_file}", checkIfExists: true )
             val_email         = params.email_address
             ch_fastq_manifest = Channel.empty()
+            val_phred_offset  = Channel.empty()
         } else {
             exit 1, 'Input file with sample accession numbers does not exist or is not specified!'
         }
@@ -65,8 +66,10 @@ switch (start_process) {
         break
 
     case "clustering":
-        ch_inp_ids = Channel.empty()
-        val_email  = Channel.empty()
+        ch_inp_ids        = Channel.empty()
+        val_email         = Channel.empty()
+        ch_fastq_manifest = Channel.empty()
+        val_phred_offset  = Channel.empty()
         println "Skipping DADA2..."
         break
 }
@@ -78,52 +81,35 @@ if (start_process != "clustering") {
     } else {
         exit 1, 'Read type parameter is required!'
     }
-
-    if (params.trunc_len) {
-        val_trunc_len = params.trunc_len
-    } else {
-        val_trunc_len = 0
-    }
-
-    if (params.trunc_q) {
-        val_trunc_q = params.trunc_q
-    } else {
-        val_trunc_q = 2
-    }
+} else {
+    val_read_type = Channel.empty()
 }
 
 if (params.otu_ref_file) {
-    flag_get_ref = false
-    if (params.otu_ref_file.endsWith(".qza")) {
-        ch_otu_ref_qza = Channel.fromPath( "${params.otu_ref_file}",
-                                           checkIfExists: true )
-    } else {
-        exit 1, 'Input OTU reference artifact does not exist!'
-    }
+    flag_get_ref    = false
+    val_otu_ref_url = ""
+    ch_otu_ref_qza  = Channel.fromPath( "${params.otu_ref_file}",
+                                        checkIfExists: true )
 } else {
-    flag_get_ref = true
+    flag_get_ref    = true
     val_otu_ref_url = params.otu_ref_url
 }
 
 if (params.trained_classifier) {
-    flag_get_classifier = false
-    if (params.trained_classifier.endsWith(".qza")) {
-        ch_trained_classifier = Channel.fromPath( "${params.trained_classifier}",
-                                                  checkIfExists: true )
-    } else {
-        exit 1, 'Feature classifier file does not exist!'
-    }
+    flag_get_classifier        = false
+    val_trained_classifier_url = ""
+    ch_trained_classifier      = Channel.fromPath( "${params.trained_classifier}",
+                                                   checkIfExists: true )
 } else {
-    flag_get_classifier = true
+    flag_get_classifier        = true
     val_trained_classifier_url = params.trained_classifier_url
 }
 
 // Required parameters with given defaults
-if (params.taxa_level) {    // TODO validate to ensure integer
-    val_taxa_level = params.taxa_level
-} else {
-    val_taxa_level = 5
-}
+val_trunc_len        = params.trunc_len
+val_trunc_q          = params.trunc_q
+val_taxa_level       = params.taxa_level
+val_cluster_identity = params.cluster_identity
 
 
 /*
@@ -158,6 +144,8 @@ workflow PIPE_16S {
         ch_sra_artifact = GET_SRA_DATA.out.single
     } else if (val_read_type == "paired") {
         ch_sra_artifact = GET_SRA_DATA.out.paired
+    } else {
+        ch_sra_artifact = Channel.empty()
     }
 
     IMPORT_FASTQ (
@@ -190,20 +178,21 @@ workflow PIPE_16S {
     }
 
     // Feature generation: Clustering
-    DOWNLOAD_REF_SEQS ( val_otu_ref_url )
     if (flag_get_ref) {
+        DOWNLOAD_REF_SEQS ( val_otu_ref_url )
         ch_otu_ref_qza = DOWNLOAD_REF_SEQS.out
     }
 
     CLUSTER_CLOSED_OTU (
         ch_dada2_table,
         ch_dada2_seqs,
-        ch_otu_ref_qza
+        ch_otu_ref_qza,
+        val_cluster_identity
         )
 
     // Classification
-    DOWNLOAD_CLASSIFIER ( val_trained_classifier_url )
     if (flag_get_classifier) {
+        DOWNLOAD_CLASSIFIER ( val_trained_classifier_url )
         ch_trained_classifier = DOWNLOAD_CLASSIFIER.out
     }
 

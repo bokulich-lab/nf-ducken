@@ -3,6 +3,7 @@ process CLUSTER_CLOSED_OTU {
     path table
     path rep_seqs
     path ref_otus
+    val cluster_identity
 
     output:
     path "vsearch_otus/clustered_table.qza",     emit: table
@@ -17,7 +18,7 @@ process CLUSTER_CLOSED_OTU {
         --i-table ${table} \
         --i-sequences ${rep_seqs} \
         --i-reference-sequences ${ref_otus} \
-        --p-perc-identity 1.00 \
+        --p-perc-identity ${cluster_identity} \
         --output-dir vsearch_otus \
         --verbose
     """
@@ -31,7 +32,7 @@ process DOWNLOAD_REF_SEQS {
     path "ref_seqs.qza"
 
     when:
-    flag_get_ref = true
+    flag_get_ref
 
     script:
     """
