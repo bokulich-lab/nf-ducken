@@ -1,6 +1,31 @@
 # nf-16s-pipe
 Workflow to process amplicon meta-analysis data, from NCBI accession IDs to taxonomic diversity metrics.
 
+## Environment
+
+Singularity containers in progress.
+
+Create a new `conda` environment with dependencies for the latest QIIME 2 release:
+```
+conda create -y -n nf-16s-pipe \
+    -c qiime2 -c conda-forge -c bioconda -c defaults \
+    qiime2 q2cli q2-types "entrezpy>=2.1.2" "tqdm>=4.62.3" xmltodict pyzotero nextflow
+```
+
+Install `q2-fondue` and required dependencies:
+```
+curl -sLH 'Accept: application/vnd.github.v3.raw' https://api.github.com/repos/bokulich-lab/q2-fondue/contents/install-sra-tools.sh > install-sra-tools.sh
+
+chmod +x install-sra-tools.sh
+bash install-sra-tools.sh
+
+rm install-sra-tools.sh
+
+pip install git+https://github.com/bokulich-lab/q2-fondue.git
+
+qiime dev refresh-cache
+```
+
 ## Inputs
 
 ### End-to-end configuration 
