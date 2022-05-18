@@ -1,4 +1,6 @@
 process CLUSTER_CLOSED_OTU {
+    label: singularity_qiime2
+
     input:
     path table
     path rep_seqs

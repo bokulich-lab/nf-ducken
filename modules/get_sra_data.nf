@@ -48,6 +48,8 @@ process GET_SRA_DATA {
 }
 
 process CHECK_FASTQ_TYPE {
+    label: singularity_qiime2
+
     input:
     val read_type
     path fq_qza
@@ -68,6 +70,8 @@ process CHECK_FASTQ_TYPE {
 }
 
 process IMPORT_FASTQ {
+    label: singularity_qiime2
+
     input:
     path fq_manifest
     val read_type

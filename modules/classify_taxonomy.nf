@@ -1,4 +1,6 @@
 process CLASSIFY_TAXONOMY {
+    label: singularity_qiime2
+
     input:
     path classifier
     path rep_seqs
@@ -25,6 +27,8 @@ process CLASSIFY_TAXONOMY {
 }
 
 process COLLAPSE_TAXA {
+    label: singularity_qiime2
+
     input:
     path table
     path taxonomy
