@@ -1,5 +1,5 @@
 process CLASSIFY_TAXONOMY {
-    label: singularity_qiime2
+    label "singularity_qiime2"
 
     input:
     path classifier
@@ -27,7 +27,7 @@ process CLASSIFY_TAXONOMY {
 }
 
 process COLLAPSE_TAXA {
-    label: singularity_qiime2
+    label "singularity_qiime2"
 
     input:
     path table
