@@ -3,7 +3,7 @@ Workflow to process amplicon meta-analysis data, from NCBI accession IDs to taxo
 
 ## Environment
 
-Singularity containers in progress.
+### Conda environments
 
 Create a new `conda` environment with dependencies for the latest QIIME 2 release:
 ```
@@ -25,6 +25,12 @@ pip install git+https://github.com/bokulich-lab/q2-fondue.git
 
 qiime dev refresh-cache
 ```
+
+### Singularity
+
+Singularity container integration in progress.
+
+If running in closed systems, the QIIME 2 Docker container can be built and saved into an .sif file by running: `sudo singularity build qiime2-2022.2.sif docker://quay.io/qiime2/core:2022.2`.
 
 ## Inputs
 
