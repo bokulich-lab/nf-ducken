@@ -28,9 +28,13 @@ qiime dev refresh-cache
 
 ### Singularity
 
-Singularity container integration in progress.
+Singularity container integration in progress. To customize in run, modify the `params.qiime_container` in the input configuration file.
 
 If running in closed systems, the QIIME 2 Docker container can be built and saved into an .sif file by running: `sudo singularity build qiime2-2022.2.sif docker://quay.io/qiime2/core:2022.2`.
+
+Internally, the latest QIIME 2 container can be found at the following locations:
+* On the SPHN container registry (accessible from Leonhard Med): container-registry.dcc.sib.swiss
+* As an .sif file on Leonhard Med: `/cluster/work/saga/singularity/qiime2-2022.2.sif`
 
 ## Inputs
 
@@ -51,7 +55,10 @@ Process parameters:
 
 Reference files if available locally; otherwise, defaults will be downloaded from the [QIIME 2 data resources page](https://docs.qiime2.org/2022.2/data-resources/):
 * `otu_ref_file`: default `null`, downloading pre-formatted files from the [SILVA 138 SSURef NR99 full-length sequences](https://data.qiime2.org/2022.2/common/silva-138-99-seqs.qza); used in closed-reference OTU clustering with VSEARCH
-* `trained_classifier`: default `null`, downloading [naive Bayes taxonomic classifiers trained on SILVA 138 99% OTUs full-length sequences](https://data.qiime2.org/2022.2/common/silva-138-99-nb-classifier.qza); used in taxonomy classification 
+* `trained_classifier`: default `null`, downloading [naive Bayes taxonomic classifiers trained on SILVA 138 99% OTUs 
+full-length sequences](https://data.qiime2.org/2022.2/common/silva-138-99-nb-classifier.qza); used in taxonomy classification
+* `qiime_release`: default `"2022.2"`, used to specify param `qiime_container` to particular QIIME version
+* `qiime_container`: default `"quay.io/qiime2/core:${params.qiime_release}"`; location of QIIME container used for workflow; if running on platforms without Internet, point to a valid .sif file
 
 ### Parameters used for intermediate process skipping
 
