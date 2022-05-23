@@ -22,7 +22,6 @@ process GENERATE_ID_ARTIFACT {
 
 process GET_SRA_DATA {
     input:
-    val email
     file id_qza
 
     output:
@@ -40,7 +39,7 @@ process GET_SRA_DATA {
 
     qiime fondue get-all \
         --i-accession-ids ${id_qza} \
-        --p-email ${email} \
+        --p-email ${params.email} \
         --p-n-jobs 4 \
         --output-dir sra_download \
         --verbose
@@ -51,7 +50,6 @@ process CHECK_FASTQ_TYPE {
     label "singularity_qiime2"
 
     input:
-    val read_type
     path fq_qza
 
     output:
@@ -59,13 +57,13 @@ process CHECK_FASTQ_TYPE {
 
     script:
     """
-    echo 'Checking whether downloaded FASTQs consist of read type ${read_type}...'
+    echo 'Checking whether downloaded FASTQs consist of read type ${params.read_type}...'
 
     qiime tools export \
         --input-path ${fq_qza} \
         --output-path .
 
-    bash ${workflow.projectDir}/bin/check_fastq_type.sh ${read_type} .
+    bash ${workflow.projectDir}/bin/check_fastq_type.sh ${params.read_type} .
     """
 }
 
@@ -79,7 +77,7 @@ process IMPORT_FASTQ {
     path "sequences.qza"
 
     script:
-    read_type_upper = ${val_read_type}.capitalize()
+    read_type_upper = params.read_type.capitalize()
 
     """
     echo 'Local FASTQs detected. Converting to QIIME artifact...'
@@ -87,7 +85,7 @@ process IMPORT_FASTQ {
     qiime tools import \
         --type 'SampleData[${read_type_upper}EndSequencesWithQuality]' \
         --input-path ${fq_manifest} \
-        --input-format ${read_type_upper}EndFastqManifestPhred${val_phred_offset}V2 \
+        --input-format ${read_type_upper}EndFastqManifestPhred${params.phred_offset}V2 \
         --output-path sequences.qza
     """
 }

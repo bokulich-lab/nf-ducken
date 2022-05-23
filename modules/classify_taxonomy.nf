@@ -32,27 +32,23 @@ process COLLAPSE_TAXA {
     input:
     path table
     path taxonomy
-    val level
 
     output:
     path "collapsed_table.qza"
 
     script:
     """
-    echo 'Collapsing frequencies for features to taxonomic level:' ${level}
+    echo 'Collapsing frequencies for features to taxonomic level:' ${params.taxa_level}
 
     qiime taxa collapse \
         --i-table ${table} \
         --i-taxonomy ${taxonomy} \
-        --p-level ${level} \
+        --p-level ${params.taxa_level} \
         --o-collapsed-table collapsed_table.qza
     """
 }
 
 process DOWNLOAD_CLASSIFIER {
-    input:
-    val classifier_url
-
     output:
     path "classifier.qza"
 
@@ -63,6 +59,6 @@ process DOWNLOAD_CLASSIFIER {
     """
     echo 'Downloading default taxonomy feature classifier...'
 
-    wget -O classifier.qza ${classifier_url}
+    wget -O classifier.qza ${params.classifier_url}
     """
 }

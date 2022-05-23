@@ -80,13 +80,9 @@ switch (start_process) {
 
 // Navigate user-input parameters necessary for pre-clustering steps
 if (start_process != "clustering") {
-    if (params.read_type) {
-        val_read_type = params.read_type
-    } else {
+    if (!(params.read_type)) {
         exit 1, 'Read type parameter is required!'
     }
-} else {
-    val_read_type = Channel.empty()
 }
 
 if (params.otu_ref_file) {
@@ -139,40 +135,27 @@ include { CLASSIFY_TAXONOMY; COLLAPSE_TAXA;
 workflow PIPE_16S {
     // Download
     GENERATE_ID_ARTIFACT ( ch_inp_ids )
-    GET_SRA_DATA (
-        val_email,
-        GENERATE_ID_ARTIFACT.out
-        )
+    GET_SRA_DATA         ( GENERATE_ID_ARTIFACT.out )
 
-    if (val_read_type == "single") {
+    if (params.read_type == "single") {
         ch_sra_artifact = GET_SRA_DATA.out.single
-    } else if (val_read_type == "paired") {
+    } else if (params.read_type == "paired") {
         ch_sra_artifact = GET_SRA_DATA.out.paired
     } else {
         ch_sra_artifact = Channel.empty()
     }
 
-    IMPORT_FASTQ (
-        ch_fastq_manifest
-        )
+    IMPORT_FASTQ ( ch_fastq_manifest )
 
     if (start_process == "fastq_import") {
         ch_sra_artifact = IMPORT_FASTQ.out
     }
 
     // FASTQ check
-    CHECK_FASTQ_TYPE (
-        val_read_type,
-        ch_sra_artifact
-        )
+    CHECK_FASTQ_TYPE ( ch_sra_artifact )
 
     // Feature generation: Denoising for cleanup
-    DENOISE_DADA2 (
-        CHECK_FASTQ_TYPE.out,
-        val_read_type,
-        val_trunc_len,
-        val_trunc_q
-        )
+    DENOISE_DADA2 ( CHECK_FASTQ_TYPE.out )
 
     if (!(start_process == "clustering")) {
         ch_dada2_table = DENOISE_DADA2.out.table
@@ -181,20 +164,19 @@ workflow PIPE_16S {
 
     // Feature generation: Clustering
     if (flag_get_ref) {
-        DOWNLOAD_REF_SEQS ( val_otu_ref_url )
+        DOWNLOAD_REF_SEQS ()
         ch_otu_ref_qza = DOWNLOAD_REF_SEQS.out
     }
 
     CLUSTER_CLOSED_OTU (
         ch_dada2_table,
         ch_dada2_seqs,
-        ch_otu_ref_qza,
-        val_cluster_identity
+        ch_otu_ref_qza
         )
 
     // Classification
     if (flag_get_classifier) {
-        DOWNLOAD_CLASSIFIER ( val_trained_classifier_url )
+        DOWNLOAD_CLASSIFIER ()
         ch_trained_classifier = DOWNLOAD_CLASSIFIER.out
     }
 
@@ -205,8 +187,7 @@ workflow PIPE_16S {
 
     COLLAPSE_TAXA (
         CLUSTER_CLOSED_OTU.out.table,
-        CLASSIFY_TAXONOMY.out.taxonomy_qza,
-        val_taxa_level
+        CLASSIFY_TAXONOMY.out.taxonomy_qza
         )
 }
 
