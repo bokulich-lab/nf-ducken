@@ -60,6 +60,9 @@ full-length sequences](https://data.qiime2.org/2022.2/common/silva-138-99-nb-cla
 * `qiime_release`: default `"2022.2"`, used to specify param `qiime_container` to particular QIIME version
 * `qiime_container`: default `"quay.io/qiime2/core:${params.qiime_release}"`; location of QIIME container used for workflow; if running on platforms without Internet, point to a valid .sif file
 
+Reporting parameters:
+* `nxf_tower`: default `true`, allowing workflow metrics to be reported in the Nextflow Tower interface
+
 ### Parameters used for intermediate process skipping
 
 To skip SRA FASTQ retrieval, if using local FASTQs:
