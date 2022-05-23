@@ -3,9 +3,6 @@ process DENOISE_DADA2 {
 
     input:
     path fastq_qza
-    val read_type
-    val trunc_len
-    val trunc_q
 
     output:
     path "denoise_dada2/table.qza",                    emit: table
@@ -14,22 +11,22 @@ process DENOISE_DADA2 {
 
     script:
 
-    if (read_type == "single") {
-        trunc_cmd = "--p-trunc-len ${trunc_len}"
-    } else if (read_type == "paired") {
-        trunc_cmd = "--p-trunc-len-f ${trunc_len} --p-trunc-len-r ${trunc_len}"
+    if (${val_read_type} == "single") {
+        trunc_cmd = "--p-trunc-len ${val_trunc_len}"
+    } else if (${val_read_type} == "paired") {
+        trunc_cmd = "--p-trunc-len-f ${val_trunc_len} --p-trunc-len-r ${val_trunc_len}"
     } else {
-        exit 1, "${read_type} must be single or paired!"
+        exit 1, "${val_read_type} must be single or paired!"
     }
 
     """
     echo 'Denoising with DADA2...'
     echo ${trunc_cmd}
 
-    qiime dada2 denoise-${read_type} \
+    qiime dada2 denoise-${val_read_type} \
         --i-demultiplexed-seqs ${fastq_qza} \
         ${trunc_cmd} \
-        --p-trunc-q ${trunc_q} \
+        --p-trunc-q ${val_trunc_q} \
         --p-n-threads 0 \
         --output-dir denoise_dada2 \
         --verbose

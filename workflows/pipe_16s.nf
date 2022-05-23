@@ -153,9 +153,7 @@ workflow PIPE_16S {
     }
 
     IMPORT_FASTQ (
-        ch_fastq_manifest,
-        val_read_type,
-        val_phred_offset
+        ch_fastq_manifest
         )
 
     if (start_process == "fastq_import") {

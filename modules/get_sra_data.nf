@@ -74,14 +74,12 @@ process IMPORT_FASTQ {
 
     input:
     path fq_manifest
-    val read_type
-    val phred_offset
 
     output:
     path "sequences.qza"
 
     script:
-    read_type_upper = read_type.capitalize()
+    read_type_upper = ${val_read_type}.capitalize()
 
     """
     echo 'Local FASTQs detected. Converting to QIIME artifact...'
@@ -89,7 +87,7 @@ process IMPORT_FASTQ {
     qiime tools import \
         --type 'SampleData[${read_type_upper}EndSequencesWithQuality]' \
         --input-path ${fq_manifest} \
-        --input-format ${read_type_upper}EndFastqManifestPhred${phred_offset}V2 \
+        --input-format ${read_type_upper}EndFastqManifestPhred${val_phred_offset}V2 \
         --output-path sequences.qza
     """
 }
