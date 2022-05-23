@@ -58,7 +58,7 @@ Reference files if available locally; otherwise, defaults will be downloaded fro
 * `trained_classifier`: default `null`, downloading [naive Bayes taxonomic classifiers trained on SILVA 138 99% OTUs 
 full-length sequences](https://data.qiime2.org/2022.2/common/silva-138-99-nb-classifier.qza); used in taxonomy classification
 * `qiime_release`: default `"2022.2"`, used to specify param `qiime_container` to particular QIIME version
-* `qiime_container`: default `"quay.io/qiime2/core:${params.qiime_release}"`; location of QIIME container used for workflow; if running on platforms without Internet, point to a valid .sif file
+* `qiime_container`: default `"quay.io/qiime2/core:${params.qiime_release}"`; location of QIIME container used for workflow; if running on platforms without Internet, point to a valid .sif file. **Note that local files must be prefixed with `file://`;** triple `/` denotes absolute filepaths.
 
 Reporting parameters:
 * `nxf_tower`: default `true`, allowing workflow metrics to be reported in the Nextflow Tower interface
