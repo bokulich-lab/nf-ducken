@@ -12,9 +12,9 @@ process DENOISE_DADA2 {
     script:
 
     if (params.read_type == "single") {
-        trunc_cmd = "--p-trunc-len ${val_trunc_len}"
+        trunc_cmd = "--p-trunc-len ${params.trunc_len}"
     } else if (params.read_type == "paired") {
-        trunc_cmd = "--p-trunc-len-f ${val_trunc_len} --p-trunc-len-r ${val_trunc_len}"
+        trunc_cmd = "--p-trunc-len-f ${params.trunc_len} --p-trunc-len-r ${params.trunc_len}"
     } else {
         exit 1, "Read type must be single or paired!"
     }

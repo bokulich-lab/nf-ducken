@@ -40,8 +40,8 @@ Internally, the latest QIIME 2 container can be found at the following locations
 
 ### End-to-end configuration 
 
-* `inp_id_file`: Path to TSV file containing NCBI accession IDs for FASTQs to download. File must adhere to [QIIME 2 metadata formatting requirements](https://docs.qiime2.org/2022.2/tutorials/metadata/#metadata-formatting-requirements)
-* `email_address`: Email address of user, required for SRA requests via `q2-fondue`
+* `inp_id_file`: path to TSV file containing NCBI accession IDs for FASTQs to download. File must adhere to [QIIME 2 metadata formatting requirements](https://docs.qiime2.org/2022.2/tutorials/metadata/#metadata-formatting-requirements)
+* `email_address`: email address of user, required for SRA requests via `q2-fondue`
 * `read_type`: FASTQ type, either`"paired"` or `"single"`
 
 ### Optional user-input parameters
@@ -61,7 +61,8 @@ full-length sequences](https://data.qiime2.org/2022.2/common/silva-138-99-nb-cla
 * `qiime_container`: default `"quay.io/qiime2/core:${params.qiime_release}"`; location of QIIME container used for workflow; if running on platforms without Internet, point to a valid .sif file. **Note that local files must be prefixed with `file://`;** triple `/` denotes absolute filepaths.
 
 Reporting parameters:
-* `nxf_tower`: default `true`, allowing workflow metrics to be reported in the Nextflow Tower interface
+* `nxf_tower`: default `false`, allowing workflow metrics to be reported in the Nextflow Tower interface
+* `tower_token`: user token for Nextflow Tower reporting; required if running Nextflow Tower, unless `TOWER_ACCESS_TOKEN` has otherwise been defined in the runtime environment
 
 ### Parameters used for intermediate process skipping
 

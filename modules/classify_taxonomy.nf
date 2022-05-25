@@ -28,6 +28,7 @@ process CLASSIFY_TAXONOMY {
 
 process COLLAPSE_TAXA {
     label "singularity_qiime2"
+    publishDir "${parmas.outdir}/taxa/"
 
     input:
     path table
