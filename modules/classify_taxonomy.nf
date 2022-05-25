@@ -11,6 +11,14 @@ process CLASSIFY_TAXONOMY {
 
     script:
     """
+    # Hard copy required for q2-feature-classifier
+    cp ${classifier} classifier.qza
+    cp ${rep_seqs} rep_seqs.qza
+
+    # Modifying temp directory
+    mkdir tmp
+    export TMPDIR=${PWD}/tmp
+
     echo 'Generating taxonomic assignments with a feature classifier...'
 
     qiime feature-classifier classify-sklearn \
