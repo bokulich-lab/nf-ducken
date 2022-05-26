@@ -2,6 +2,7 @@ process CLASSIFY_TAXONOMY {
     label "singularity_qiime2"
     label "process_medium"
 
+
     input:
     path classifier
     path rep_seqs

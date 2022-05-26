@@ -1,5 +1,6 @@
 process CLUSTER_CLOSED_OTU {
     label "singularity_qiime2"
+    label "process_local"
 
     input:
     path table
