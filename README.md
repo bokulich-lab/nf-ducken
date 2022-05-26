@@ -38,7 +38,9 @@ Internally, the latest QIIME 2 container can be found at the following locations
 
 ## Inputs
 
-### End-to-end configuration 
+Unless otherwise noted, these parameters should be under the scope `params` in the `run.config` file.
+
+### Required parameters for end-to-end runs
 
 * `inp_id_file`: path to TSV file containing NCBI accession IDs for FASTQs to download. File must adhere to [QIIME 2 metadata formatting requirements](https://docs.qiime2.org/2022.2/tutorials/metadata/#metadata-formatting-requirements)
 * `email_address`: email address of user, required for SRA requests via `q2-fondue`
@@ -60,9 +62,17 @@ full-length sequences](https://data.qiime2.org/2022.2/common/silva-138-99-nb-cla
 * `qiime_release`: default `"2022.2"`, used to specify param `qiime_container` to particular QIIME version
 * `qiime_container`: default `"quay.io/qiime2/core:${params.qiime_release}"`; location of QIIME container used for workflow; if running on platforms without Internet, point to a valid .sif file. **Note that local files must be prefixed with `file://`;** triple `/` denotes absolute filepaths.
 
-Reporting parameters:
+### Additional configurations
+
+These run configurations fall under non-`param` scopes listed below.
+
+Reporting with Nextflow Tower (scope `tower`):
 * `nxf_tower`: default `false`, allowing workflow metrics to be reported in the Nextflow Tower interface
 * `tower_token`: user token for Nextflow Tower reporting; required if running Nextflow Tower, unless `TOWER_ACCESS_TOKEN` has otherwise been defined in the runtime environment
+
+Execution parameters (scope `process`):
+* `executor`: default `"local"`, resource manager to run workflow on; options include `"slurm"`, `"sge"`, `"awsbatch"`, and `"google-lifesciences"`
+* `withLabel:singularity_qiime2.container`: default `${params.qiime_container}`, but can be replaced with location of local container containing QIIME 2 core distribution
 
 ### Parameters used for intermediate process skipping
 
@@ -76,10 +86,20 @@ To skip processes through DADA2, if using pre-denoised feature tables and sequen
 
 ## Outputs
 
+* `outDir/taxa/collapsed_table.qza`: Artifact containing frequencies for features collapsed to a given level (default genus).
+
 ## Process
+
+### Steps
 
 1. Metadata pre-processing: `qiime tools import`
 2. FASTQ retrieval: `q2-fondue`
 3. Initial quality control: `q2-dada2`
 4. Closed reference OTU clustering: `q2-vsearch` 
 5. Taxonomy classification: `q2-feature-classifier`
+
+### Execution
+
+```bash
+nextflow run /path/to/workflow/main.nf -c run.config
+```

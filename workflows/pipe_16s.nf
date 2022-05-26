@@ -16,14 +16,6 @@
 ========================================================================================
 */
 
-if (params.nxf_tower) {
-    tower.enabled = params.nxf_tower
-}
-
-if (params.tower_token) {
-    tower.accessToken = params.tower_token
-}
-
 /*
 ========================================================================================
     INPUT AND VARIABLES
