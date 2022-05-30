@@ -1,7 +1,7 @@
 process CLASSIFY_TAXONOMY {
     label "singularity_qiime2"
     label "process_medium"
-
+    scratch true
 
     input:
     path classifier
@@ -16,10 +16,6 @@ process CLASSIFY_TAXONOMY {
     # Hard copy required for q2-feature-classifier
     cp ${classifier} classifier.qza
     cp ${rep_seqs} rep_seqs.qza
-
-    # Modifying temp directory
-    mkdir tmp
-    export TMPDIR=${PWD}/tmp
 
     echo 'Generating taxonomic assignments with a feature classifier...'
 
