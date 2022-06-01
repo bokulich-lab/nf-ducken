@@ -6,7 +6,7 @@ process GENERATE_ID_ARTIFACT {
     path "accession_id.qza"
 
     when:
-    start_process == "id_import"
+    start_process = "id_import"
 
     script:
     """
@@ -22,7 +22,7 @@ process GENERATE_ID_ARTIFACT {
 
 process GET_SRA_DATA {
     input:
-    file id_qza
+    path id_qza
 
     output:
     path "sra_download/failed_runs.qza",  emit: failed
@@ -31,7 +31,7 @@ process GET_SRA_DATA {
     path "sra_download/single_reads.qza", emit: single
 
     when:
-    start_process == "id_import"
+    start_process = "id_import"
 
     script:
     """

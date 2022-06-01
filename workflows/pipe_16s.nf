@@ -33,14 +33,8 @@ if (params.denoised_table && params.denoised_seqs) {
                                           checkIfExists: true )
     start_process = "fastq_import"
 
-    if (params.phred_offset) {
-        if (params.phred_offset == 64 || params.phred_offset == 33) {
-            val_phred_offset = params.phred_offset
-        } else {
-            exit 1, 'The only valid PHRED offset values are 33 or 64!'
-        }
-    } else {
-        val_phred_offset = 33
+    if (!(params.phred_offset == 64 || params.phred_offset == 33)) {
+        exit 1, 'The only valid PHRED offset values are 33 or 64!'
     }
 } else {
     start_process = "id_import"
@@ -51,9 +45,7 @@ switch (start_process) {
     case "id_import":
         if (params.inp_id_file) {       // TODO shift to input validation module
             ch_inp_ids        = Channel.fromPath( "${params.inp_id_file}", checkIfExists: true )
-            val_email         = params.email_address
             ch_fastq_manifest = Channel.empty()
-            val_phred_offset  = Channel.empty()
         } else {
             exit 1, 'Input file with sample accession numbers does not exist or is not specified!'
         }
@@ -61,15 +53,12 @@ switch (start_process) {
 
     case "fastq_import":
         ch_inp_ids = Channel.empty()
-        val_email  = Channel.empty()
         println "Skipping FASTQ download..."
         break
 
     case "clustering":
         ch_inp_ids        = Channel.empty()
-        val_email         = Channel.empty()
         ch_fastq_manifest = Channel.empty()
-        val_phred_offset  = Channel.empty()
         println "Skipping DADA2..."
         break
 }
@@ -83,30 +72,19 @@ if (start_process != "clustering") {
 
 if (params.otu_ref_file) {
     flag_get_ref    = false
-    val_otu_ref_url = ""
     ch_otu_ref_qza  = Channel.fromPath( "${params.otu_ref_file}",
                                         checkIfExists: true )
 } else {
     flag_get_ref    = true
-    val_otu_ref_url = params.otu_ref_url
 }
 
 if (params.trained_classifier) {
     flag_get_classifier        = false
-    val_trained_classifier_url = ""
     ch_trained_classifier      = Channel.fromPath( "${params.trained_classifier}",
                                                    checkIfExists: true )
 } else {
     flag_get_classifier        = true
-    val_trained_classifier_url = params.trained_classifier_url
 }
-
-// Required parameters with given defaults
-val_trunc_len        = params.trunc_len
-val_trunc_q          = params.trunc_q
-val_taxa_level       = params.taxa_level
-val_cluster_identity = params.cluster_identity
-
 
 /*
 ========================================================================================
@@ -129,6 +107,7 @@ include { CLASSIFY_TAXONOMY; COLLAPSE_TAXA;
 */
 
 workflow PIPE_16S {
+    ch_inp_ids.view()
     // Download
     GENERATE_ID_ARTIFACT ( ch_inp_ids )
     GET_SRA_DATA         ( GENERATE_ID_ARTIFACT.out )
