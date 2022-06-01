@@ -67,8 +67,8 @@ full-length sequences](https://data.qiime2.org/2022.2/common/silva-138-99-nb-cla
 These run configurations fall under non-`param` scopes listed below.
 
 Reporting with Nextflow Tower (scope `tower`):
-* `nxf_tower`: default `false`, allowing workflow metrics to be reported in the Nextflow Tower interface
-* `tower_token`: user token for Nextflow Tower reporting; required if running Nextflow Tower, unless `TOWER_ACCESS_TOKEN` has otherwise been defined in the runtime environment
+* `enabled`: default `false`, allowing workflow metrics to be reported in the Nextflow Tower interface
+* `accessToken`: user token for Nextflow Tower reporting; required if running Nextflow Tower, unless `TOWER_ACCESS_TOKEN` has otherwise been defined in the runtime environment
 
 Execution parameters (scope `process`):
 * `executor`: default `"local"`, resource manager to run workflow on; options include `"slurm"`, `"sge"`, `"awsbatch"`, and `"google-lifesciences"`
