@@ -12,23 +12,34 @@ process DENOISE_DADA2 {
 
     script:
 
-    if (params.read_type == "single") {
-        trunc_cmd = "--p-trunc-len ${params.trunc_len}"
-    } else if (params.read_type == "paired") {
-        trunc_cmd = "--p-trunc-len-f ${params.trunc_len} --p-trunc-len-r ${params.trunc_len}"
-    } else {
-        exit 1, "Read type must be single or paired!"
-    }
+    single_cmd = "--p-trunc_len ${params.dada2['single']['trunc_len']} " +
+                 "--p-trim-left ${params.dada2['single']['trim_left']} " +
+                 "--p-max-ee ${params.dada2['single']['max_ee']}"
+
+    paired_cmd = "--p-trunc-len-f ${params.dada2['paired']['trunc_len_f']} " +
+                 "--p-trunc-len-r ${params.dada2['paired']['trunc_len_r']} " +
+                 "--p-trim-left-f ${params.dada2['paired']['trim_left_f']} " +
+                 "--p-trim-left-r ${params.dada2['paired']['trim_left_r']} " +
+                 "--p-max-ee-f ${params.dada2['paired']['max_ee_f']} " +
+                 "--p-max-ee-r ${params.dada2['paired']['max_ee_r']} " +
+                 "--p-min-overlap ${params.dada2['paired']['min_overlap']}"
+
+    cmd_map = [ "single" : single_cmd,
+                "paired" : paired_cmd ]
 
     """
     echo 'Denoising with DADA2...'
-    echo ${trunc_cmd}
 
     qiime dada2 denoise-${params.read_type} \
         --i-demultiplexed-seqs ${fastq_qza} \
-        ${trunc_cmd} \
-        --p-trunc-q ${params.trunc_q} \
-        --p-n-threads 0 \
+        ${cmd_map[${params.read_type}]} \
+        --p-trunc-q ${params.dada2['trunc_q']} \
+        --p-pooling-method ${params.dada2['pooling_method']} \
+        --p-chimera-method ${params.dada2['chimera_method']} \
+        --p-min-fold-parent-over-abundance ${params.dada2['min_fold_parent_over_abundance']} \
+        --p-n-threads ${params.dada2['num_threads']} \
+        --p-n-reads-learn ${params.dada2['num_reads_learn']} \
+        --p-hashed-feature-ids ${params.dada2['hashed_feature_ids']} \
         --output-dir denoise_dada2 \
         --verbose
     """

@@ -40,21 +40,42 @@ Internally, the latest QIIME 2 container can be found at the following locations
 
 Unless otherwise noted, these parameters should be under the scope `params` in the `run.config` file.
 
-### Required parameters for end-to-end runs
+### Process parameters
 
+Used for file download and 
 * `inp_id_file`: path to TSV file containing NCBI accession IDs for FASTQs to download. File must adhere to [QIIME 2 metadata formatting requirements](https://docs.qiime2.org/2022.2/tutorials/metadata/#metadata-formatting-requirements)
 * `email_address`: email address of user, required for SRA requests via `q2-fondue`
 * `read_type`: FASTQ type, either`"paired"` or `"single"`
 
 ### Optional user-input parameters
 
-Process parameters:
-* `trunc_len`: default `0`; used in DADA2, position at which sequences should be truncated due to decrease in quality
-* `trunc_q`: default `2`; used in DADA2, reads are truncated at the first instance of a quality score less than or equal to this value
-* `taxa_level`: default `5`, collapsing taxonomic classifications to genus; used in `qiime taxa collapse`
-* `phred_offset`: default `33`; used in FASTQ import if using local FASTQs
-* `cluster_identity`: default `0.8`; used as identity threshold in VSEARCH for closed reference clustering
+DADA2 process parameters in scope `params.dada2`:
+  * `trunc_q`: default `2`, reads are truncated at the first instance of a quality score less than or equal to this value
+  * `pooling_method`: default `independent`
+  * `chimera_method`: default `consensus`
+  * `min_fold_parent_over_abundance`: default `1.0`
+  * `num_threads`: default `1`
+  * `num_reads_learn`: default `1000000`
+  * `hashed_feature_ids`: default `"True"`
+  * Parameters for **single-end runs**, in scope `params.dada2["single"]`:
+    * `trunc_len`: default `0`
+    * `trim_left`: default `0`
+    * `max_ee`: default `2.0`
+  * Parameters for **paired-end runs**, in scope `params.dada2["paired"]`:
+    * `trunc_len_f`: default `0`
+    * `trunc_len_r`: default `0`
+    * `trim_left_f`: default `0`
+    * `trim_left_r`: default `0`
+    * `max_ee_f`: default `2.0`
+    * `max_ee_r`: default `2.0`
+    * `min_overlap`: default `12`
+  
+Additional process parameters:
+  * `taxa_level`: default `5`, collapsing taxonomic classifications to genus; used in `qiime taxa collapse`
+  * `phred_offset`: default `33`; used in FASTQ import if using local FASTQs
+  * `cluster_identity`: default `0.8`; used as identity threshold in VSEARCH for closed reference clustering
 
+### Reference input parameters
 Reference files if available locally; otherwise, defaults will be downloaded from the [QIIME 2 data resources page](https://docs.qiime2.org/2022.2/data-resources/):
 * `otu_ref_file`: default `null`, downloading pre-formatted files from the [SILVA 138 SSURef NR99 full-length sequences](https://data.qiime2.org/2022.2/common/silva-138-99-seqs.qza); used in closed-reference OTU clustering with VSEARCH
 * `trained_classifier`: default `null`, downloading [naive Bayes taxonomic classifiers trained on SILVA 138 99% OTUs 
