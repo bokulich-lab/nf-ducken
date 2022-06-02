@@ -33,13 +33,13 @@ process DENOISE_DADA2 {
     qiime dada2 denoise-${params.read_type} \
         --i-demultiplexed-seqs ${fastq_qza} \
         ${cmd_map[${params.read_type}]} \
-        --p-trunc-q ${params.dada2['trunc_q']} \
-        --p-pooling-method ${params.dada2['pooling_method']} \
-        --p-chimera-method ${params.dada2['chimera_method']} \
-        --p-min-fold-parent-over-abundance ${params.dada2['min_fold_parent_over_abundance']} \
-        --p-n-threads ${params.dada2['num_threads']} \
-        --p-n-reads-learn ${params.dada2['num_reads_learn']} \
-        --p-hashed-feature-ids ${params.dada2['hashed_feature_ids']} \
+        --p-trunc-q ${params.dada2.trunc_q} \
+        --p-pooling-method ${params.dada2.pooling_method} \
+        --p-chimera-method ${params.dada2.chimera_method} \
+        --p-min-fold-parent-over-abundance ${params.dada2.min_fold_parent_over_abundance} \
+        --p-n-threads ${params.dada2.num_threads} \
+        --p-n-reads-learn ${params.dada2.num_reads_learn} \
+        --p-hashed-feature-ids ${params.dada2.hashed_feature_ids} \
         --output-dir denoise_dada2 \
         --verbose
     """
