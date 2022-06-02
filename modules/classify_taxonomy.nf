@@ -1,6 +1,6 @@
 process CLASSIFY_TAXONOMY {
     label "singularity_qiime2"
-    label "process_medium"
+    label "process_local"
     scratch true
 
     input:
