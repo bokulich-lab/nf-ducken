@@ -12,17 +12,17 @@ process DENOISE_DADA2 {
 
     script:
 
-    single_cmd = "--p-trunc_len ${params.dada2['single']['trunc_len']} " +
-                 "--p-trim-left ${params.dada2['single']['trim_left']} " +
-                 "--p-max-ee ${params.dada2['single']['max_ee']}"
+    single_cmd = "--p-trunc_len ${params.dada2.single.trunc_len} " +
+                 "--p-trim-left ${params.dada2.single.trim_left} " +
+                 "--p-max-ee ${params.dada2.single.max_ee}"
 
-    paired_cmd = "--p-trunc-len-f ${params.dada2['paired']['trunc_len_f']} " +
-                 "--p-trunc-len-r ${params.dada2['paired']['trunc_len_r']} " +
-                 "--p-trim-left-f ${params.dada2['paired']['trim_left_f']} " +
-                 "--p-trim-left-r ${params.dada2['paired']['trim_left_r']} " +
-                 "--p-max-ee-f ${params.dada2['paired']['max_ee_f']} " +
-                 "--p-max-ee-r ${params.dada2['paired']['max_ee_r']} " +
-                 "--p-min-overlap ${params.dada2['paired']['min_overlap']}"
+    paired_cmd = "--p-trunc-len-f ${params.dada2.paired.trunc_len_f} " +
+                 "--p-trunc-len-r ${params.dada2.paired.trunc_len_r} " +
+                 "--p-trim-left-f ${params.dada2.paired.trim_left_f} " +
+                 "--p-trim-left-r ${params.dada2.paired.trim_left_r} " +
+                 "--p-max-ee-f ${params.dada2.paired.max_ee_f} " +
+                 "--p-max-ee-r ${params.dada2.paired.max_ee_r} " +
+                 "--p-min-overlap ${params.dada2.paired.min_overlap}"
 
     cmd_map = [ "single" : single_cmd,
                 "paired" : paired_cmd ]
