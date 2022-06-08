@@ -55,6 +55,9 @@ process CHECK_FASTQ_TYPE {
     output:
     path "${fq_qza}"
 
+    when:
+    !(params.split_fastq)
+
     script:
     """
     echo 'Checking whether downloaded FASTQs consist of read type ${params.read_type}...'
@@ -87,5 +90,24 @@ process IMPORT_FASTQ {
         --input-path ${fq_manifest} \
         --input-format ${read_type_upper}EndFastqManifestPhred${params.phred_offset}V2 \
         --output-path sequences.qza
+    """
+}
+
+process SPLIT_FASTQ {
+    input:
+    path fq_manifest
+
+    output:
+    path '*_split.txt' into split_manifests
+
+    when:
+    params.split_fastq
+
+    script:
+
+    """
+    echo 'Splitting FASTQ manifest to process FASTQ files individually...'
+
+    bash ${workflow.projectDir}/bin/split_manifest.sh ${fq_manifest}
     """
 }

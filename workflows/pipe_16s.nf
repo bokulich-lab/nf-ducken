@@ -120,6 +120,13 @@ workflow PIPE_16S {
         ch_sra_artifact = Channel.empty()
     }
 
+    if (params.split_fastq) {
+        // ch_fastq_manifest may have to be grouped in a tuple with the input FASTQ files?
+        // or we may have to create a different process entirely for this
+        // assumes paired-end sequencing
+
+    }
+
     IMPORT_FASTQ ( ch_fastq_manifest )
 
     if (start_process == "fastq_import") {
