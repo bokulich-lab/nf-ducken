@@ -50,30 +50,35 @@ Used for file download and
 ### Optional user-input parameters
 
 DADA2 process parameters in scope `params.dada2`:
-  * `trunc_q`: default `2`, reads are truncated at the first instance of a quality score less than or equal to this value
-  * `pooling_method`: default `independent`
-  * `chimera_method`: default `consensus`
-  * `min_fold_parent_over_abundance`: default `1.0`
-  * `num_threads`: default `1`
-  * `num_reads_learn`: default `1000000`
-  * `hashed_feature_ids`: default `"True"`
-  * Parameters for **single-end runs**, in scope `params.dada2["single"]`:
-    * `trunc_len`: default `0`
-    * `trim_left`: default `0`
-    * `max_ee`: default `2.0`
-  * Parameters for **paired-end runs**, in scope `params.dada2["paired"]`:
-    * `trunc_len_f`: default `0`
-    * `trunc_len_r`: default `0`
-    * `trim_left_f`: default `0`
-    * `trim_left_r`: default `0`
-    * `max_ee_f`: default `2.0`
-    * `max_ee_r`: default `2.0`
-    * `min_overlap`: default `12`
+* `trunc_q`: default `2`, reads are truncated at the first instance of a quality score less than or equal to this value
+* `pooling_method`: default `independent`
+* `chimera_method`: default `consensus`
+* `min_fold_parent_over_abundance`: default `1.0`
+* `num_threads`: default `0`, to use all available cores on system
+* `num_reads_learn`: default `1000000`
+* `hashed_feature_ids`: default `"True"`
+* Parameters for **single-end runs**, in scope `params.dada2["single"]`:
+  * `trunc_len`: default `0`
+  * `trim_left`: default `0`
+  * `max_ee`: default `2.0`
+* Parameters for **paired-end runs**, in scope `params.dada2["paired"]`:
+  * `trunc_len_f`: default `0`
+  * `trunc_len_r`: default `0`
+  * `trim_left_f`: default `0`
+  * `trim_left_r`: default `0`
+  * `max_ee_f`: default `2.0`
+  * `max_ee_r`: default `2.0`
+  * `min_overlap`: default `12`
+    
+VSEARCH process parameters in scope `params.vsearch`:
+* `perc_identity`: default `0.8`
+* `strand`: default `"plus"`
+* `num_threads`: default `0`, to use a single thread per core
   
 Additional process parameters:
-  * `taxa_level`: default `5`, collapsing taxonomic classifications to genus; used in `qiime taxa collapse`
-  * `phred_offset`: default `33`; used in FASTQ import if using local FASTQs
-  * `cluster_identity`: default `0.8`; used as identity threshold in VSEARCH for closed reference clustering
+* `taxa_level`: default `5`, collapsing taxonomic classifications to genus; used in `qiime taxa collapse`
+* `phred_offset`: default `33`; used in FASTQ import if using local FASTQs
+* `cluster_identity`: default `0.8`; used as identity threshold in VSEARCH for closed reference clustering
 
 ### Reference input parameters
 Reference files if available locally; otherwise, defaults will be downloaded from the [QIIME 2 data resources page](https://docs.qiime2.org/2022.2/data-resources/):

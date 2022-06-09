@@ -20,7 +20,9 @@ process CLUSTER_CLOSED_OTU {
         --i-table ${table} \
         --i-sequences ${rep_seqs} \
         --i-reference-sequences ${ref_otus} \
-        --p-perc-identity ${params.cluster_identity} \
+        --p-perc-identity ${params.vsearch.perc_identity} \
+        --p-strand ${params.vsearch.strand} \
+        --p-threads ${params.vsearch.num_threads} \
         --output-dir vsearch_otus \
         --verbose
     """
