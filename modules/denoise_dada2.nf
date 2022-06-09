@@ -15,13 +15,13 @@ process DENOISE_DADA2 {
 
     if (params.read_type == "single")
         """
-        echo 'Denoising with DADA2...'
+        echo 'Denoising single-end reads with DADA2...'
 
         qiime dada2 denoise-${params.read_type} \
             --i-demultiplexed-seqs ${fastq_qza} \
-            --p-trunc_len ${params.dada2.single.trunc_len} \
-            --p-trim-left ${params.dada2.single.trim_left} \
-            --p-max-ee ${params.dada2.single.max_ee} \
+            --p-trunc_len ${params.dada2.trunc_len} \
+            --p-trim-left ${params.dada2.trim_left} \
+            --p-max-ee ${params.dada2.max_ee} \
             --p-trunc-q ${params.dada2.trunc_q} \
             --p-pooling-method ${params.dada2.pooling_method} \
             --p-chimera-method ${params.dada2.chimera_method} \
@@ -35,17 +35,17 @@ process DENOISE_DADA2 {
 
     else if (params.read_type == "paired")
         """
-        echo 'Denoising with DADA2...'
+        echo 'Denoising paired-end reads with DADA2...'
 
         qiime dada2 denoise-${params.read_type} \
             --i-demultiplexed-seqs ${fastq_qza} \
-            --p-trunc-len-f ${params.dada2.paired.trunc_len_f} \
-            --p-trunc-len-r ${params.dada2.paired.trunc_len_r} \
-            --p-trim-left-f ${params.dada2.paired.trim_left_f} \
-            --p-trim-left-r ${params.dada2.paired.trim_left_r} \
-            --p-max-ee-f ${params.dada2.paired.max_ee_f} \
-            --p-max-ee-r ${params.dada2.paired.max_ee_r} \
-            --p-min-overlap ${params.dada2.paired.min_overlap} \
+            --p-trunc-len-f ${params.dada2.trunc_len_f} \
+            --p-trunc-len-r ${params.dada2.trunc_len_r} \
+            --p-trim-left-f ${params.dada2.trim_left_f} \
+            --p-trim-left-r ${params.dada2.trim_left_r} \
+            --p-max-ee-f ${params.dada2.max_ee_f} \
+            --p-max-ee-r ${params.dada2.max_ee_r} \
+            --p-min-overlap ${params.dada2.min_overlap} \
             --p-trunc-q ${params.dada2.trunc_q} \
             --p-pooling-method ${params.dada2.pooling_method} \
             --p-chimera-method ${params.dada2.chimera_method} \
