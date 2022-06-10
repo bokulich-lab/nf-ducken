@@ -93,12 +93,12 @@ process IMPORT_FASTQ {
     """
 }
 
-process SPLIT_FASTQ {
+process SPLIT_FASTQ_MANIFEST {
     input:
     path fq_manifest
 
     output:
-    path '*_split.txt' into split_manifests
+    path '*_split.txt'
 
     when:
     params.split_fastq

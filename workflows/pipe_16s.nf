@@ -101,7 +101,8 @@ if (params.trained_classifier) {
 */
 
 include { GENERATE_ID_ARTIFACT; GET_SRA_DATA;
-          CHECK_FASTQ_TYPE; IMPORT_FASTQ      } from '../modules/get_sra_data'
+          CHECK_FASTQ_TYPE; IMPORT_FASTQ;
+          SPLIT_FASTQ_MANIFEST                } from '../modules/get_sra_data'
 include { DENOISE_DADA2                       } from '../modules/denoise_dada2'
 include { CLUSTER_CLOSED_OTU;
           DOWNLOAD_REF_SEQS                   } from '../modules/cluster_vsearch'
@@ -125,22 +126,24 @@ workflow PIPE_16S {
         ch_sra_artifact = GET_SRA_DATA.out.single
     } else if (params.read_type == "paired") {
         ch_sra_artifact = GET_SRA_DATA.out.paired
-    } else {
-        ch_sra_artifact = Channel.empty()
     }
 
     if (params.split_fastq) {
         // ch_fastq_manifest may have to be grouped in a tuple with the input FASTQ files?
         // or we may have to create a different process entirely for this
         // assumes paired-end sequencing
-
+        SPLIT_FASTQ_MANIFEST ( ch_fastq_manifest )
+        ch_split_manifests = SPLIT_FASTQ_MANIFEST.out.flatten()
+        IMPORT_FASTQ ( ch_split_manifests )
+    } else {
+        IMPORT_FASTQ ( ch_fastq_manifest )
     }
 
-    IMPORT_FASTQ ( ch_fastq_manifest )
-
-    if (start_process == "fastq_import") {
+    if (!(ch_sra_artifact)) {
         ch_sra_artifact = IMPORT_FASTQ.out
     }
+
+    ch_sra_artifact.view()
 
     // FASTQ check
     CHECK_FASTQ_TYPE ( ch_sra_artifact )

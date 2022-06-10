@@ -46,7 +46,7 @@ Used for file download and FASTQ processing.
 * `inp_id_file`: path to TSV file containing NCBI accession IDs for FASTQs to download. File must adhere to [QIIME 2 metadata formatting requirements](https://docs.qiime2.org/2022.2/tutorials/metadata/#metadata-formatting-requirements)
 * `email_address`: email address of user, required for SRA requests via `q2-fondue`
 * `read_type`: FASTQ type, either`"paired"` or `"single"`
-* `fastq_split`: default `null`, determines whether samples will be processed as a batch or individually.
+* `split_fastq`: default `null`, determines whether samples will be processed as a batch or individually.
 
 ### Optional user-input parameters
 
