@@ -106,7 +106,8 @@ include { DENOISE_DADA2                       } from '../modules/denoise_dada2'
 include { CLUSTER_CLOSED_OTU;
           DOWNLOAD_REF_SEQS                   } from '../modules/cluster_vsearch'
 include { CLASSIFY_TAXONOMY; COLLAPSE_TAXA;
-          DOWNLOAD_CLASSIFIER                 } from '../modules/classify_taxonomy'
+          DOWNLOAD_CLASSIFIER;
+          DOWNLOAD_REF_TAXONOMY               } from '../modules/classify_taxonomy'
 
 /*
 ========================================================================================
