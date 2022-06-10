@@ -6,30 +6,97 @@ process CLASSIFY_TAXONOMY {
     input:
     path classifier
     path rep_seqs
+    path ref_seqs
+    path ref_taxonomy
 
     output:
     path "taxonomy.qza", emit: taxonomy_qza
     path "taxonomy.qzv", emit: taxonomy_qzv
 
     script:
-    """
-    # Hard copy required for q2-feature-classifier
-    cp ${classifier} classifier.qza
-    cp ${rep_seqs} rep_seqs.qza
 
-    echo 'Generating taxonomic assignments with a feature classifier...'
+    if (params.classifier.method == "sklearn") {
+        """
+        # Hard copy required for q2-feature-classifier
+        cp ${classifier} classifier.qza
+        cp ${rep_seqs} rep_seqs.qza
 
-    qiime feature-classifier classify-sklearn \
-        --i-classifier ${classifier} \
-        --i-reads ${rep_seqs} \
-        --p-n-jobs -1 \
-        --o-classification taxonomy.qza \
-        --verbose
+        echo 'Generating taxonomic assignments with the sklearn fitted feature classifier...'
 
-    qiime metadata tabulate \
-        --m-input-file taxonomy.qza \
-        --o-visualization taxonomy.qzv
-    """
+        qiime feature-classifier classify-sklearn \
+            --i-classifier ${classifier} \
+            --i-reads ${rep_seqs} \
+            --p-reads-per-batch ${params.classifier.reads_per_batch} \
+            --p-n-jobs ${params.classifier.num_jobs} \
+            --p-pre-dispatch ${params.classifier.pre_dispatch} \
+            --p-confidence ${params.classifier.confidence} \
+            --p-read_orientation ${params.classifier.read_orientation} \
+            --o-classification taxonomy.qza \
+            --verbose
+
+        qiime metadata tabulate \
+            --m-input-file taxonomy.qza \
+            --o-visualization taxonomy.qzv
+        """
+    } else if (params.classifier.method == "blast") {
+        """
+        cp ${classifier} classifier.qza
+        cp ${rep_seqs} rep_seqs.qza
+        cp ${ref_seqs} ref_seqs.qza
+        cp ${ref_taxonomy} ref_taxonomy.qza
+
+        echo 'Generating taxonomic assignments with a BLAST+ based feature classifier...'
+
+        qiime feature-classifier classify-consensus-blast \
+            --i-query ${rep_seqs} \
+            --i-reference-reads ${ref_seqs} \
+            --i-reference-taxonomy ${ref_taxonomy} \
+            --p-maxaccepts ${params.classifier.max_accepts} \
+            --p-perc-identity ${params.classifier.perc_identity} \
+            --p-query-cov ${params.classifier.perc_identity} \
+            --p-strand ${params.classifier.strand} \
+            --p-evalue ${params.classifier.evalue} \
+            --p-min-consensus ${params.classifier.min_consensus} \
+            --p-unassignable-label ${params.classifier.unassignable_label} \
+            --o-classification taxonomy.qza \
+            --verbose
+
+        qiime metadata tabulate \
+            --m-input-file taxonomy.qza \
+            --o-visualization taxonomy.qzv
+        """
+    } else if (params.classifier.method == "vsearch") {
+        """
+        cp ${classifier} classifier.qza
+        cp ${rep_seqs} rep_seqs.qza
+
+        echo 'Generating taxonomic assignments with the VSEARCH fitted feature classifier...'
+
+        qiime feature-classifier classify-consensus-vsearch \
+            --i-query ${rep_seqs} \
+            --i-reference-reads ${ref_seqs} \
+            --i-reference-taxonomy ${ref_taxonomy} \
+            --p-maxaccepts ${params.classifier.max_accepts} \
+            --p-perc-identity ${params.classifier.perc_identity} \
+            --p-query-cov ${params.classifier.perc_identity} \
+            --p-strand ${params.classifier.strand} \
+            --p-min-consensus ${params.classifier.min_consensus} \
+            --p-unassignable-label ${params.classifier.unassignable_label} \
+            --p-search-exact ${params.classifier.search_exact} \
+            --p-top-hits-only ${params.classifier.top_hits_only} \
+            --p-maxhits ${params.classifier.max_hits} \
+            --p-maxrejects ${params.classifier.max_rejects} \
+            --p-output-no-hits ${params.classifier.output_no_hits} \
+            --p-weak-id ${params.classifier.weak_id} \
+            --p-threads ${params.classifier.num_threads} \
+            --o-classification taxonomy.qza \
+            --verbose
+
+        qiime metadata tabulate \
+            --m-input-file taxonomy.qza \
+            --o-visualization taxonomy.qzv
+        """
+    }
 }
 
 process COLLAPSE_TAXA {
@@ -67,5 +134,20 @@ process DOWNLOAD_CLASSIFIER {
     echo 'Downloading default taxonomy feature classifier...'
 
     wget -O classifier.qza ${params.classifier_url}
+    """
+}
+
+process DOWNLOAD_REF_TAXONOMY {
+    output:
+    path "ref_taxonomy.qza"
+
+    when:
+    flag_get_ref_taxa
+
+    script:
+    """
+    echo 'Download default reference taxonomy...'
+
+    wget -O ref_taxonomy.qza ${params.taxonomy_ref_url}
     """
 }

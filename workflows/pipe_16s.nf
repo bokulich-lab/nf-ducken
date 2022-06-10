@@ -78,6 +78,14 @@ if (params.otu_ref_file) {
     flag_get_ref    = true
 }
 
+if (params.taxonomy_ref_file) {
+    flag_get_ref_taxa = false
+    ch_taxa_ref_qza   = Channel.fromPath( "${params.taxonomy_ref_file}",
+                                          checkIfExists: true )
+} else {
+    flag_get_ref_taxa = true
+}
+
 if (params.trained_classifier) {
     flag_get_classifier        = false
     ch_trained_classifier      = Channel.fromPath( "${params.trained_classifier}",
@@ -98,7 +106,8 @@ include { DENOISE_DADA2                       } from '../modules/denoise_dada2'
 include { CLUSTER_CLOSED_OTU;
           DOWNLOAD_REF_SEQS                   } from '../modules/cluster_vsearch'
 include { CLASSIFY_TAXONOMY; COLLAPSE_TAXA;
-          DOWNLOAD_CLASSIFIER                 } from '../modules/classify_taxonomy'
+          DOWNLOAD_CLASSIFIER;
+          DOWNLOAD_REF_TAXONOMY               } from '../modules/classify_taxonomy'
 
 /*
 ========================================================================================
@@ -162,9 +171,16 @@ workflow PIPE_16S {
         ch_trained_classifier = DOWNLOAD_CLASSIFIER.out
     }
 
+    if (flag_get_ref_taxa) {
+        DOWNLOAD_REF_TAXONOMY ()
+        ch_taxa_ref_qza = DOWNLOAD_REF_TAXONOMY.out
+    }
+
     CLASSIFY_TAXONOMY (
         ch_trained_classifier,
-        CLUSTER_CLOSED_OTU.out.seqs
+        CLUSTER_CLOSED_OTU.out.seqs,
+        ch_otu_ref_qza,
+        ch_taxa_ref_qza
         )
 
     COLLAPSE_TAXA (

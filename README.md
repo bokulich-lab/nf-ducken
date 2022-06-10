@@ -51,36 +51,67 @@ Used for file download and FASTQ processing.
 ### Optional user-input parameters
 
 DADA2 process parameters in scope `params.dada2`:
-  * `trunc_q`: default `2`, reads are truncated at the first instance of a quality score less than or equal to this value
-  * `pooling_method`: default `independent`
-  * `chimera_method`: default `consensus`
-  * `min_fold_parent_over_abundance`: default `1.0`
+* `trunc_q`: default `2`, reads are truncated at the first instance of a quality score less than or equal to this value
+* `pooling_method`: default `"independent"`
+* `chimera_method`: default `"consensus"`
+* `min_fold_parent_over_abundance`: default `1.0`
+* `num_threads`: default `0`, to use all available cores on system
+* `num_reads_learn`: default `1000000`
+* `hashed_feature_ids`: default `"True"`
+* Parameters for **single-end runs**:
+  * `trunc_len`: default `0`
+  * `trim_left`: default `0`
+  * `max_ee`: default `2.0`
+* Parameters for **paired-end runs**:
+  * `trunc_len_f`: default `0`
+  * `trunc_len_r`: default `0`
+  * `trim_left_f`: default `0`
+  * `trim_left_r`: default `0`
+  * `max_ee_f`: default `2.0`
+  * `max_ee_r`: default `2.0`
+  * `min_overlap`: default `12`
+    
+VSEARCH process parameters in scope `params.vsearch`:
+* `perc_identity`: default `0.8`
+* `strand`: default `"plus"`
+* `num_threads`: default `0`, to use a single thread per core
+
+Feature classifier process parameters in scope `params.classifier`:
+* `method`: default `"sklearn"`; also accommodates `"blast"` and `"vsearch"`
+* Parameters for `sklearn`-based classifier:
+  * `reads_per_batch`: default `"auto"`
+  * `num_jobs`: default `-1`
+  * `pre_dispatch`: default `"2*n_jobs"`
+  * `confidence`: default `0.7`
+  * `read_orientation`: default `"auto"`
+* Parameters shared between BLAST+ and VSEARCH consensus classifiers:
+  * `max_accepts`: default `10`
+  * `perc_identity`: default `0.8`
+  * `query_cov`: default `0.8`
+  * `strand`: default `"both"`
+  * `min_consensus` default `0.51`
+  * `unassignable_label`: default `"Unassigned"`
+* Additional parameters for BLAST+ classifier:
+  * `evalue`: default `0.001`
+* Additional parameters for VSEARCH classifier:
+  * `search_exact`: default `"False"`
+  * `top_hits_only`: default `"False"`
+  * `max_hits`: default `"all"`
+  * `max_rejects`: default `"all"`
+  * `output_no_hits`: default `"True"`
+  * `weak_id`: default `0.0`
   * `num_threads`: default `1`
-  * `num_reads_learn`: default `1000000`
-  * `hashed_feature_ids`: default `"True"`
-  * Parameters for **single-end runs**, in scope `params.dada2["single"]`:
-    * `trunc_len`: default `0`
-    * `trim_left`: default `0`
-    * `max_ee`: default `2.0`
-  * Parameters for **paired-end runs**, in scope `params.dada2["paired"]`:
-    * `trunc_len_f`: default `0`
-    * `trunc_len_r`: default `0`
-    * `trim_left_f`: default `0`
-    * `trim_left_r`: default `0`
-    * `max_ee_f`: default `2.0`
-    * `max_ee_r`: default `2.0`
-    * `min_overlap`: default `12`
   
 Additional process parameters:
-  * `taxa_level`: default `5`, collapsing taxonomic classifications to genus; used in `qiime taxa collapse`
-  * `phred_offset`: default `33`; used in FASTQ import if using local FASTQs
-  * `cluster_identity`: default `0.8`; used as identity threshold in VSEARCH for closed reference clustering
+* `taxa_level`: default `5`, collapsing taxonomic classifications to genus; used in `qiime taxa collapse`
+* `phred_offset`: default `33`; used in FASTQ import if using local FASTQs
 
 ### Reference input parameters
 Reference files if available locally; otherwise, defaults will be downloaded from the [QIIME 2 data resources page](https://docs.qiime2.org/2022.2/data-resources/):
 * `otu_ref_file`: default `null`, downloading pre-formatted files from the [SILVA 138 SSURef NR99 full-length sequences](https://data.qiime2.org/2022.2/common/silva-138-99-seqs.qza); used in closed-reference OTU clustering with VSEARCH
 * `trained_classifier`: default `null`, downloading [naive Bayes taxonomic classifiers trained on SILVA 138 99% OTUs 
 full-length sequences](https://data.qiime2.org/2022.2/common/silva-138-99-nb-classifier.qza); used in taxonomy classification
+* `taxonomy_ref_file`: default `null`, downloading pre-formatted file from the [SILVA 138 SSURef NR99 full-length taxonomy](https://data.qiime2.org/2022.2/common/silva-138-99-tax.qza); used in `q2-feature-classifier` if running with BLAST+
 * `qiime_release`: default `"2022.2"`, used to specify param `qiime_container` to particular QIIME version
 * `qiime_container`: default `"quay.io/qiime2/core:${params.qiime_release}"`; location of QIIME container used for workflow; if running on platforms without Internet, point to a valid .sif file. **Note that local files must be prefixed with `file://`;** triple `/` denotes absolute filepaths.
 
