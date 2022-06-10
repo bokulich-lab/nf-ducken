@@ -30,7 +30,7 @@ process CLASSIFY_TAXONOMY {
             --p-n-jobs ${params.classifier.num_jobs} \
             --p-pre-dispatch ${params.classifier.pre_dispatch} \
             --p-confidence ${params.classifier.confidence} \
-            --p-read_orientation ${params.classifier.read_orientation} \
+            --p-read-orientation ${params.classifier.read_orientation} \
             --o-classification taxonomy.qza \
             --verbose
 
