@@ -21,7 +21,7 @@ process CLASSIFY_TAXONOMY {
         cp ${classifier} classifier.qza
         cp ${rep_seqs} rep_seqs.qza
 
-        echo 'Generating taxonomic assignments with sklearn's fitted feature classifier...'
+        echo 'Generating taxonomic assignments with the sklearn fitted feature classifier...'
 
         qiime feature-classifier classify-sklearn \
             --i-classifier ${classifier} \
@@ -70,7 +70,7 @@ process CLASSIFY_TAXONOMY {
         cp ${classifier} classifier.qza
         cp ${rep_seqs} rep_seqs.qza
 
-        echo 'Generating taxonomic assignments with sklearn's fitted feature classifier...'
+        echo 'Generating taxonomic assignments with the VSEARCH fitted feature classifier...'
 
         qiime feature-classifier classify-consensus-vsearch \
             --i-query ${rep_seqs} \
@@ -97,7 +97,6 @@ process CLASSIFY_TAXONOMY {
             --o-visualization taxonomy.qzv
         """
     }
-
 }
 
 process COLLAPSE_TAXA {
