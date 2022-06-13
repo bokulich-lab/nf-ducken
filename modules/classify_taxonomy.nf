@@ -1,7 +1,10 @@
 process CLASSIFY_TAXONOMY {
     label "singularity_qiime2"
     label "process_local"
-    scratch true
+
+    beforeScript "cp ${classifier} classifier.qza; cp ${rep_seqs} rep_seqs.qza"
+    beforeScript "export NXF_TEMP=$PWD/tmp_taxa"
+    afterScript "rm -rf $PWD/tmp_taxa"
 
     input:
     path classifier
@@ -14,13 +17,8 @@ process CLASSIFY_TAXONOMY {
     path "taxonomy.qzv", emit: taxonomy_qzv
 
     script:
-
     if (params.classifier.method == "sklearn") {
         """
-        # Hard copy required for q2-feature-classifier
-        cp ${classifier} classifier.qza
-        cp ${rep_seqs} rep_seqs.qza
-
         echo 'Generating taxonomic assignments with the sklearn fitted feature classifier...'
 
         qiime feature-classifier classify-sklearn \
@@ -40,8 +38,6 @@ process CLASSIFY_TAXONOMY {
         """
     } else if (params.classifier.method == "blast") {
         """
-        cp ${classifier} classifier.qza
-        cp ${rep_seqs} rep_seqs.qza
         cp ${ref_seqs} ref_seqs.qza
         cp ${ref_taxonomy} ref_taxonomy.qza
 
@@ -67,9 +63,6 @@ process CLASSIFY_TAXONOMY {
         """
     } else if (params.classifier.method == "vsearch") {
         """
-        cp ${classifier} classifier.qza
-        cp ${rep_seqs} rep_seqs.qza
-
         echo 'Generating taxonomic assignments with the VSEARCH fitted feature classifier...'
 
         qiime feature-classifier classify-consensus-vsearch \
