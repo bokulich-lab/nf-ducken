@@ -43,3 +43,35 @@ process DOWNLOAD_REF_SEQS {
     wget -O ref_seqs.qza ${params.otu_ref_url}
     """
 }
+
+process FIND_CHIMERAS {
+    input:
+    path table
+    path rep_seqs
+    path ref_otus
+
+    output:
+    path "chimera/chimeras.qza",    emit: chimeras
+    path "chimera/nonchimeras.qza", emit: nonchimeras
+    path "chimera/stats.qza",       emit: stats
+
+    when:
+    params.vsearch_chimera
+
+    script:
+    """
+    echo 'Using reference sequences to search for chimeras...'
+
+    qiime vsearch uchime-ref \
+        --i-sequences ${rep_seqs} \
+        --i-table ${table} \
+        --i-reference-sequences ${ref_otus} \
+        --p-dn ${uchime_ref.dn} \
+        --p-mindiffs ${uchime_ref.min_diffs} \
+        --p-mindiv ${uchime_ref.min_div} \
+        --p-minh ${uchime_ref.min_h} \
+        --p-xn ${uchime_ref.xn} \
+        --p-threads ${uchime_ref.num_threads} \
+        --verbose
+    """
+}
