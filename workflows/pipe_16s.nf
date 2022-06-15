@@ -147,8 +147,8 @@ workflow PIPE_16S {
         ch_denoised_seqs  = DENOISE_DADA2.out.rep_seqs
     }
 
-    ch_table_to_cluster = Channel.create()
-    ch_denoised_table.tap ( ch_table_to_cluster )
+    ch_table_to_cluster = Channel.empty()
+    ch_denoised_table.tap { ch_table_to_cluster }
 
     // Feature generation: Clustering
     if (flag_get_ref) {
