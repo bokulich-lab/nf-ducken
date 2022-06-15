@@ -66,12 +66,12 @@ process FIND_CHIMERAS {
         --i-sequences ${rep_seqs} \
         --i-table ${table} \
         --i-reference-sequences ${ref_otus} \
-        --p-dn ${uchime_ref.dn} \
-        --p-mindiffs ${uchime_ref.min_diffs} \
-        --p-mindiv ${uchime_ref.min_div} \
-        --p-minh ${uchime_ref.min_h} \
-        --p-xn ${uchime_ref.xn} \
-        --p-threads ${uchime_ref.num_threads} \
+        --p-dn ${params.uchime_ref.dn} \
+        --p-mindiffs ${params.uchime_ref.min_diffs} \
+        --p-mindiv ${params.uchime_ref.min_div} \
+        --p-minh ${params.uchime_ref.min_h} \
+        --p-xn ${params.uchime_ref.xn} \
+        --p-threads ${params.uchime_ref.num_threads} \
         --verbose
     """
 }
