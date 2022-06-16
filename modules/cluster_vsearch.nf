@@ -78,3 +78,40 @@ process FIND_CHIMERAS {
         --verbose
     """
 }
+
+process FILTER_CHIMERAS {
+    label "singularity_qiime2"
+    publishDir "${params.outdir}/stats/", pattern: "*.qzv"
+
+    input:
+    path table
+    path rep_seqs
+    path nonchimera_qza
+
+    output:
+    path table_filt_chimera.qza, emit: table
+    path seqs_filt_chimera.qza,  emit: rep_seqs
+    path table_filt_chimera.qzv, emit: viz_table
+
+    when:
+    params.vsearch_chimera
+
+    script:
+    """
+    echo 'Filtering chimeras from feature table and sequences...'
+
+    qiime feature-table filter-features \
+        --i-table ${table} \
+        --m-metadata-file ${nonchimera_qza} \
+        --o-filtered-table table_filt_chimera.qza
+
+    qiime feature-table filter-seqs \
+        --i-data ${rep_seqs} \
+        --m-metadata-file ${nonchimera_qza} \
+        --o-filtered-data seqs_filt_chimera.qza
+
+    qiime feature-table summarize \
+        --i-table table_filt_chimera.qza \
+        --o-visualization table_filt_chimera.qzv
+    """
+}

@@ -104,7 +104,8 @@ include { GENERATE_ID_ARTIFACT; GET_SRA_DATA;
           CHECK_FASTQ_TYPE; IMPORT_FASTQ      } from '../modules/get_sra_data'
 include { DENOISE_DADA2                       } from '../modules/denoise_dada2'
 include { CLUSTER_CLOSED_OTU;
-          DOWNLOAD_REF_SEQS; FIND_CHIMERAS    } from '../modules/cluster_vsearch'
+          DOWNLOAD_REF_SEQS; FIND_CHIMERAS;
+          FILTER_CHIMERAS                     } from '../modules/cluster_vsearch'
 include { CLASSIFY_TAXONOMY; COLLAPSE_TAXA;
           DOWNLOAD_CLASSIFIER;
           DOWNLOAD_REF_TAXONOMY               } from '../modules/classify_taxonomy'
@@ -147,9 +148,6 @@ workflow PIPE_16S {
         ch_denoised_seqs  = DENOISE_DADA2.out.rep_seqs
     }
 
-    ch_table_to_cluster = Channel.empty()
-    ch_denoised_table.tap { ch_table_to_cluster }
-
     // Feature generation: Clustering
     if (flag_get_ref) {
         DOWNLOAD_REF_SEQS ()
@@ -163,10 +161,19 @@ workflow PIPE_16S {
             ch_otu_ref_qza
             )
 
-        ch_seqs_to_cluster  = FIND_CHIMERAS.out.nonchimeras
+        FILTER_CHIMERAS (
+            ch_denoised_table,
+            ch_denoised_seqs,
+            FIND_CHIMERAS.out.nonchimeras
+        )
+
+        ch_seqs_to_cluster  = FILTER_CHIMERAS.out.rep_seqs
+        ch_table_to_cluster = FILTER_CHIMERAS.out.table
 
     } else {
         ch_seqs_to_cluster  = ch_denoised_seqs
+        ch_table_to_cluster = Channel.empty()
+        ch_denoised_table.tap { ch_table_to_cluster }
     }
 
     CLUSTER_CLOSED_OTU (
