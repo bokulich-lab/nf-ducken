@@ -28,7 +28,7 @@ qiime dev refresh-cache
 
 ### Singularity
 
-Singularity container integration in progress. To customize in run, modify the `params.qiime_container` in the input configuration file.
+A Singularity container is available for all processes except for sequence downloads using `q2-fondue`. To customize in run, modify the `params.qiime_container` in the input configuration file.
 
 If running in closed systems, the QIIME 2 Docker container can be built and saved into an .sif file by running: `sudo singularity build qiime2-2022.2.sif docker://quay.io/qiime2/core:2022.2`.
 
@@ -43,6 +43,8 @@ Unless otherwise noted, these parameters should be under the scope `params` in t
 ### Process parameters
 
 Used for file download and FASTQ processing.
+
+Required if running q2_fondue:
 * `inp_id_file`: path to TSV file containing NCBI accession IDs for FASTQs to download. File must adhere to [QIIME 2 metadata formatting requirements](https://docs.qiime2.org/2022.2/tutorials/metadata/#metadata-formatting-requirements)
 * `email_address`: email address of user, required for SRA requests via `q2-fondue`
 * `read_type`: FASTQ type, either`"paired"` or `"single"`
@@ -51,7 +53,7 @@ Used for file download and FASTQ processing.
 ### Optional user-input parameters
 
 DADA2 process parameters in scope `params.dada2`:
-* `trunc_q`: default `2`, reads are truncated at the first instance of a quality score less than or equal to this value
+* `trunc_q`: default `2`
 * `pooling_method`: default `"independent"`
 * `chimera_method`: default `"consensus"`
 * `min_fold_parent_over_abundance`: default `1.0`
@@ -101,10 +103,19 @@ Feature classifier process parameters in scope `params.classifier`:
   * `output_no_hits`: default `"True"`
   * `weak_id`: default `0.0`
   * `num_threads`: default `1`
+
+VSEARCH reference-based chimera identification process parameters in scope `params.uchime_ref`:
+* `dn`: default `1.4`
+* `min_diffs`: default `3`
+* `min_div`: default `0.8`
+* `min_h`: default `0.28`
+* `xn`: default `8.0`
+* `num_threads`: default `1`
   
 Additional process parameters:
 * `taxa_level`: default `5`, collapsing taxonomic classifications to genus; used in `qiime taxa collapse`
 * `phred_offset`: default `33`; used in FASTQ import if using local FASTQs
+* `vsearch_chimera`: default `"False"`
 
 ### Reference input parameters
 Reference files if available locally; otherwise, defaults will be downloaded from the [QIIME 2 data resources page](https://docs.qiime2.org/2022.2/data-resources/):

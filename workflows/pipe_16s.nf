@@ -25,8 +25,8 @@
 // Intermediate process skipping
 // Executed in reverse chronology
 if (params.denoised_table && params.denoised_seqs) {
-    ch_dada2_table = Channel.fromPath( "${params.denoised_table}", checkIfExists: true )
-    ch_dada2_seqs  = Channel.fromPath( "${params.denoised_seqs}",  checkIfExists: true )
+    ch_denoised_table = Channel.fromPath( "${params.denoised_table}", checkIfExists: true )
+    ch_denoised_seqs  = Channel.fromPath( "${params.denoised_seqs}",  checkIfExists: true )
     start_process  = "clustering"
 } else if (params.fastq_manifest) {
     ch_fastq_manifest = Channel.fromPath( "${params.fastq_manifest}",
@@ -105,7 +105,8 @@ include { GENERATE_ID_ARTIFACT; GET_SRA_DATA;
           SPLIT_FASTQ_MANIFEST                } from '../modules/get_sra_data'
 include { DENOISE_DADA2                       } from '../modules/denoise_dada2'
 include { CLUSTER_CLOSED_OTU;
-          DOWNLOAD_REF_SEQS                   } from '../modules/cluster_vsearch'
+          DOWNLOAD_REF_SEQS; FIND_CHIMERAS;
+          FILTER_CHIMERAS                     } from '../modules/cluster_vsearch'
 include { CLASSIFY_TAXONOMY; COLLAPSE_TAXA;
           DOWNLOAD_CLASSIFIER;
           DOWNLOAD_REF_TAXONOMY               } from '../modules/classify_taxonomy'
@@ -149,11 +150,12 @@ workflow PIPE_16S {
     CHECK_FASTQ_TYPE ( ch_sra_artifact )
 
     // Feature generation: Denoising for cleanup
-    DENOISE_DADA2 ( CHECK_FASTQ_TYPE.out )
 
     if (!(start_process == "clustering")) {
-        ch_dada2_table = DENOISE_DADA2.out.table
-        ch_dada2_seqs  = DENOISE_DADA2.out.rep_seqs
+        DENOISE_DADA2 ( CHECK_FASTQ_TYPE.out )
+
+        ch_denoised_table = DENOISE_DADA2.out.table
+        ch_denoised_seqs  = DENOISE_DADA2.out.rep_seqs
     }
 
     // Feature generation: Clustering
@@ -162,9 +164,31 @@ workflow PIPE_16S {
         ch_otu_ref_qza = DOWNLOAD_REF_SEQS.out
     }
 
+    if (params.vsearch_chimera) {
+        FIND_CHIMERAS (
+            ch_denoised_table,
+            ch_denoised_seqs,
+            ch_otu_ref_qza
+            )
+
+        FILTER_CHIMERAS (
+            ch_denoised_table,
+            ch_denoised_seqs,
+            FIND_CHIMERAS.out.nonchimeras
+        )
+
+        ch_seqs_to_cluster  = FILTER_CHIMERAS.out.rep_seqs
+        ch_table_to_cluster = FILTER_CHIMERAS.out.table
+
+    } else {
+        ch_seqs_to_cluster  = ch_denoised_seqs
+        ch_table_to_cluster = Channel.empty()
+        ch_denoised_table.tap { ch_table_to_cluster }
+    }
+
     CLUSTER_CLOSED_OTU (
-        ch_dada2_table,
-        ch_dada2_seqs,
+        ch_table_to_cluster,
+        ch_seqs_to_cluster,
         ch_otu_ref_qza
         )
 
