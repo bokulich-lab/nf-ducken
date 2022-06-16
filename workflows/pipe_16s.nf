@@ -170,8 +170,8 @@ workflow PIPE_16S {
     }
 
     CLUSTER_CLOSED_OTU (
-        ch_denoised_table,
-        ch_denoised_seqs,
+        ch_table_to_cluster,
+        ch_seqs_to_cluster,
         ch_otu_ref_qza
         )
 
