@@ -75,6 +75,7 @@ process FIND_CHIMERAS {
         --p-minh ${params.uchime_ref.min_h} \
         --p-xn ${params.uchime_ref.xn} \
         --p-threads ${params.uchime_ref.num_threads} \
+        --output-dir chimera \
         --verbose
     """
 }
