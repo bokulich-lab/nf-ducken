@@ -45,6 +45,9 @@ process DOWNLOAD_REF_SEQS {
 }
 
 process FIND_CHIMERAS {
+    label "singularity_qiime2"
+    label "process_local"    
+
     input:
     path table
     path rep_seqs
