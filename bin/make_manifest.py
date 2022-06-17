@@ -58,13 +58,37 @@ def get_sample_ids(inp_dir: str,
     sample_df = sample_df[sample_df["num_fastq"] == NUM_DICT[read_type]]
     sample_df.sort_values(inplace=True)
 
-    return sample_df
+    return sample_df.drop("num_fastq", axis=1)
 
 
 def assign_fastqs_per_sample(sample_fastq_df: pd.DataFrame,
-                             suffix_dict: dict):
+                             read_type: str,
+                             suffix_dict: dict) -> pd.DataFrame:
+    """
+    Convert sample ID-list association to
 
-    pass
+    :param sample_fastq_df:
+    :param read_type:
+    :param suffix_dict:
+    :return:
+    """
+    if read_type == "single":
+        fastq_df = sample_fastq_df["file_path"].apply(lambda x: x[0])
+        fastq_df.reset_index(inplace=True)
+        fastq_df.columns = HEADER_DICT[read_type]
+
+    elif read_type == "paired":
+        head_sam, head_fwd, head_rev = HEADER_DICT[read_type]
+        fwd_suffix, rev_suffix = suffix_dict[read_type]
+
+        fastq_df = pd.DataFrame(None, columns=HEADER_DICT[read_type])
+        fastq_df[head_sam] = sample_fastq_df.index
+        fastq_df[head_fwd] = sample_fastq_df.index.map(lambda x: x + fwd_suffix)
+        fastq_df[head_rev] = sample_fastq_df.index.map(lambda x: x + rev_suffix)
+    else:
+        raise ValueError
+
+    return fastq_df
 
 
 def arg_parse():
@@ -127,6 +151,7 @@ def main(args):
 
     sample_df = get_sample_ids(args.inp_dir, args.read_type, args.suffix)
     sample_fastq_df = assign_fastqs_per_sample(sample_df, suffix_dict)
+    sample_fastq_df.to_csv(sep="\t", index=False)
 
 
 if __name__ == "__main__":
