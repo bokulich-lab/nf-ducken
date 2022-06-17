@@ -11,7 +11,7 @@ import re
 
 
 HEADER_DICT = {"single": ["sample-id", "absolute-filepath"],
-               "paired": ["sample-id, forward-absolute-filepath",
+               "paired": ["sample-id", "forward-absolute-filepath",
                           "reverse-absolute-filepath"]}
 
 NUM_DICT = {"single": 1,
@@ -56,7 +56,7 @@ def get_sample_ids(inp_dir: str,
         f"There are no FASTQs matching read type {read_type}! Exiting..."
 
     sample_df = sample_df[sample_df["num_fastq"] == NUM_DICT[read_type]]
-    sample_df.sort_values(inplace=True)
+    sample_df.sort_values(by="file_path", inplace=True)
 
     return sample_df.drop("num_fastq", axis=1)
 
@@ -149,9 +149,10 @@ def main(args):
     suffix_dict = {"single": [args.suffix],
                    "paired": [args.r1_suffix, args.r2_suffix]}
 
-    sample_df = get_sample_ids(args.inp_dir, args.read_type, args.suffix)
-    sample_fastq_df = assign_fastqs_per_sample(sample_df, suffix_dict)
-    sample_fastq_df.to_csv(sep="\t", index=False)
+    sample_df = get_sample_ids(args.input_dir, args.read_type, args.suffix)
+    sample_fastq_df = assign_fastqs_per_sample(sample_df, args.read_type,
+                                               suffix_dict)
+    sample_fastq_df.to_csv(args.output_fname, sep="\t", index=False)
 
 
 if __name__ == "__main__":
