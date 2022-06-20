@@ -83,8 +83,12 @@ def assign_fastqs_per_sample(sample_fastq_df: pd.DataFrame,
 
         fastq_df = pd.DataFrame(None, columns=HEADER_DICT[read_type])
         fastq_df[head_sam] = sample_fastq_df.index
-        fastq_df[head_fwd] = sample_fastq_df.index.map(lambda x: x + fwd_suffix)
-        fastq_df[head_rev] = sample_fastq_df.index.map(lambda x: x + rev_suffix)
+
+        dir_path = Path(sample_fastq_df["file_path"][0][0]).resolve().parent
+        fastq_df[head_fwd] = sample_fastq_df.index.map(lambda x: dir_path / x +
+                                                                 fwd_suffix)
+        fastq_df[head_rev] = sample_fastq_df.index.map(lambda x: dir_path / x +
+                                                                 rev_suffix)
     else:
         raise ValueError
 
