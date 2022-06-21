@@ -118,7 +118,6 @@ include { CLASSIFY_TAXONOMY; COLLAPSE_TAXA;
 */
 
 workflow PIPE_16S {
-    ch_inp_ids.view()
     // Download
     GENERATE_ID_ARTIFACT ( ch_inp_ids )
     GET_SRA_DATA         ( GENERATE_ID_ARTIFACT.out )

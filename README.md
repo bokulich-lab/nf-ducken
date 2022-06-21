@@ -111,6 +111,10 @@ VSEARCH reference-based chimera identification process parameters in scope `para
 * `min_h`: default `0.28`
 * `xn`: default `8.0`
 * `num_threads`: default `1`
+
+FASTQ artifact splitting parameters in scope `params.fastq_split`:
+* `suffix`: default `"_split.tsv"`
+* `method`: default `"sample"`
   
 Additional process parameters:
 * `taxa_level`: default `5`, collapsing taxonomic classifications to genus; used in `qiime taxa collapse`

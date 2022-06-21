@@ -108,6 +108,10 @@ process SPLIT_FASTQ_MANIFEST {
     """
     echo 'Splitting FASTQ manifest to process FASTQ files individually...'
 
-    bash ${workflow.projectDir}/bin/split_manifest.sh ${fq_manifest}
+    python ${workflow.projectDir}/bin/split_manifest.py \
+        --input_manifest ${fq_manifest} \
+        --output_dir $PWD \
+        --suffix ${params.fastq_split.suffix} \
+        --split_method ${params.fastq_split.method}
     """
 }
