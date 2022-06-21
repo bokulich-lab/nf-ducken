@@ -8,8 +8,6 @@ import argparse
 import numpy as np
 import pandas as pd
 
-ALLOWED_METHODS = ["sample"]
-
 
 def split_manifest(inp_manifest: pd.DataFrame,
                    out_dir: str,
@@ -45,6 +43,8 @@ def arg_parse():
         type=str,
         required=True,
     )
+
+    # Optional user-input arguments
     parser.add_argument(
         "-o", "--output_dir",
         help="Location to print output files.",
@@ -61,6 +61,7 @@ def arg_parse():
         "--split_method",
         help="Method to split input manifest. Options include 'sample'.",
         type=str,
+        choices={"sample"},
         default="sample"
     )
 
@@ -69,7 +70,6 @@ def arg_parse():
 
 
 def main(args):
-    assert args.split_method in ALLOWED_METHODS
     assert Path(args.output_dir).is_dir()
 
     try:
