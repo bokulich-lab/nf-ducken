@@ -1,5 +1,5 @@
 process CLUSTER_CLOSED_OTU {
-    label "singularity_qiime2"
+    label "container_qiime2"
     label "process_local"
     scratch true
 
@@ -45,7 +45,7 @@ process DOWNLOAD_REF_SEQS {
 }
 
 process FIND_CHIMERAS {
-    label "singularity_qiime2"
+    label "container_qiime2"
     label "process_local"    
 
     input:
@@ -81,7 +81,7 @@ process FIND_CHIMERAS {
 }
 
 process FILTER_CHIMERAS {
-    label "singularity_qiime2"
+    label "container_qiime2"
     publishDir "${params.outdir}/stats/", pattern: "*.qzv"
 
     input:

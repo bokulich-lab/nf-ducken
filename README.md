@@ -129,6 +129,8 @@ full-length sequences](https://data.qiime2.org/2022.2/common/silva-138-99-nb-cla
 * `taxonomy_ref_file`: default `null`, downloading pre-formatted file from the [SILVA 138 SSURef NR99 full-length taxonomy](https://data.qiime2.org/2022.2/common/silva-138-99-tax.qza); used in `q2-feature-classifier` if running with BLAST+
 * `qiime_release`: default `"2022.2"`, used to specify param `qiime_container` to particular QIIME version
 * `qiime_container`: default `"quay.io/qiime2/core:${params.qiime_release}"`; location of QIIME container used for workflow; if running on platforms without Internet, point to a valid .sif file. **Note that local files must be prefixed with `file://`;** triple `/` denotes absolute filepaths.
+* `pandas_release`: default `"1.4.2"`, used to specify param `pandas_container` to particular `pandas` version
+* `pandas_container`: default `"docker://amancevice/pandas:${params.pandas_release}-slim"`; location of `pandas` container used for workflow
 
 ### Additional configurations
 
@@ -140,7 +142,7 @@ Reporting with Nextflow Tower (scope `tower`):
 
 Execution parameters (scope `process`):
 * `executor`: default `"local"`, resource manager to run workflow on; options include `"slurm"`, `"sge"`, `"awsbatch"`, and `"google-lifesciences"`
-* `withLabel:singularity_qiime2.container`: default `${params.qiime_container}`, but can be replaced with location of local container containing QIIME 2 core distribution
+* `withLabel:container_qiime2.container`: default `${params.qiime_container}`, but can be replaced with location of local container containing QIIME 2 core distribution
 
 ### Parameters used for intermediate process skipping
 

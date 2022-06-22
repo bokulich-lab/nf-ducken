@@ -1,5 +1,5 @@
 process DENOISE_DADA2 {
-    label "singularity_qiime2"
+    label "container_qiime2"
     label "process_local"
     scratch true
 

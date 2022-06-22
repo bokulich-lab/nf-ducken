@@ -1,5 +1,5 @@
 process CLASSIFY_TAXONOMY {
-    label "singularity_qiime2"
+    label "container_qiime2"
     label "process_local"
 
     beforeScript "cp ${classifier} classifier.qza; cp ${rep_seqs} rep_seqs.qza"
@@ -93,7 +93,7 @@ process CLASSIFY_TAXONOMY {
 }
 
 process COLLAPSE_TAXA {
-    label "singularity_qiime2"
+    label "container_qiime2"
     publishDir "${params.outdir}/taxa/"
 
     input:

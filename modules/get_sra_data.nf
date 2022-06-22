@@ -47,7 +47,7 @@ process GET_SRA_DATA {
 }
 
 process CHECK_FASTQ_TYPE {
-    label "singularity_qiime2"
+    label "container_qiime2"
 
     input:
     path fq_qza
@@ -71,7 +71,7 @@ process CHECK_FASTQ_TYPE {
 }
 
 process IMPORT_FASTQ {
-    label "singularity_qiime2"
+    label "container_qiime2"
 
     input:
     path fq_manifest
@@ -94,6 +94,7 @@ process IMPORT_FASTQ {
 }
 
 process SPLIT_FASTQ_MANIFEST {
+    label "container_pandas"
     input:
     path fq_manifest
 
