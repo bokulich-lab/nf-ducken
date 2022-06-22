@@ -34,7 +34,7 @@ If running in closed systems, the QIIME 2 Docker container can be built and save
 
 Internally, the latest QIIME 2 container can be found at the following locations:
 * On the SPHN container registry (accessible from Leonhard Med): container-registry.dcc.sib.swiss
-* As an .sif file on Leonhard Med: `/cluster/work/saga/singularity/qiime2-2022.2.sif`
+* As an .sif file on Leonhard Med: `/cluster/work/saga/containers/qiime2-2022.2.sif`
 
 ## Inputs
 

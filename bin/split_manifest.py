@@ -27,6 +27,10 @@ def split_manifest(inp_manifest: pd.DataFrame,
 
     split_list = np.array_split(inp_manifest, num_sections)
     split_dict = {df.iloc[0][0]: df for df in split_list}
+
+    if not Path(out_dir).is_dir():
+        Path(out_dir).mkdir()
+
     for sample_name, df in split_dict.items():
         df.to_csv(Path(out_dir) / f"{sample_name}{suffix_str}",
                   sep="\t",
