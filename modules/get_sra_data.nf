@@ -99,7 +99,7 @@ process SPLIT_FASTQ_MANIFEST {
     path fq_manifest
 
     output:
-    path '*_split.txt'
+    path "*${params.fastq_split.suffix}"
 
     when:
     params.split_fastq
