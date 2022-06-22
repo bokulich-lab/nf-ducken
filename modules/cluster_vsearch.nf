@@ -90,9 +90,9 @@ process FILTER_CHIMERAS {
     path nonchimera_qza
 
     output:
-    path table_filt_chimera.qza, emit: table
-    path seqs_filt_chimera.qza,  emit: rep_seqs
-    path table_filt_chimera.qzv, emit: viz_table
+    path "table_filt_chimera.qza", emit: table
+    path "seqs_filt_chimera.qza",  emit: rep_seqs
+    path "table_filt_chimera.qzv", emit: viz_table
 
     when:
     params.vsearch_chimera
