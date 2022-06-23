@@ -111,7 +111,7 @@ process SPLIT_FASTQ_MANIFEST {
 
     python ${workflow.projectDir}/bin/split_manifest.py \
         --input_manifest ${fq_manifest} \
-        --output_dir $PWD \
+        --output_dir . \
         --suffix ${params.fastq_split.suffix} \
         --split_method ${params.fastq_split.method}
     """

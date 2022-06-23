@@ -27,6 +27,7 @@ def split_manifest(inp_manifest: pd.DataFrame,
 
     split_list = np.array_split(inp_manifest, num_sections)
     split_dict = {df.iloc[0][0]: df for df in split_list}
+    split_dict = check_special_char(split_dict)
 
     if not Path(out_dir).is_dir():
         Path(out_dir).mkdir()
@@ -35,6 +36,49 @@ def split_manifest(inp_manifest: pd.DataFrame,
         df.to_csv(Path(out_dir) / f"{sample_name}{suffix_str}",
                   sep="\t",
                   index=False)
+
+
+def check_special_char(df_dict):
+    """
+    Checks and replaces sample name to FASTQ path dictionary for special
+    characters.
+
+    :param df_dict:
+    :return:
+    """
+    sample_names = df_dict.keys()
+    special_char_names = [name for name in sample_names
+                          if not name[0].isalnum()]
+
+    print(f"A total of {len(special_char_names)} sample names begin with "
+          f"non-alphanumeric characters!")
+
+    names_to_change = rename_samples(special_char_names, sample_names)
+    new_dict = {changed_name: df_dict[name] for name, changed_name in
+                names_to_change.items()}
+    new_dict.update({key: val for key, val in df_dict.items() if key not in
+                     names_to_change.keys()})
+    return new_dict
+
+
+def rename_samples(samples_to_rename, all_samples, change_dict={}):
+    """
+    Renames samples by prefixing. Recurses to ensure no duplicate sample
+    names are generated.
+
+    :param samples_to_rename:
+    :param all_samples:
+    :param change_dict:
+    :return:
+    """
+    renamed_samples = {name: "o" + name for name in samples_to_rename}
+    changes = change_dict.copy()
+    changes.update(renamed_samples)
+
+    name_overlap = set(renamed_samples.values()) & set(all_samples)
+    if any(name_overlap):
+        return rename_samples(name_overlap, all_samples, changes)
+    return changes
 
 
 def arg_parse():
