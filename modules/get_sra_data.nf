@@ -73,6 +73,8 @@ process CHECK_FASTQ_TYPE {
 process IMPORT_FASTQ {
     label "container_qiime2"
 
+    errorStrategy "ignore"
+
     input:
     path fq_manifest
 

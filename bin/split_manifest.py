@@ -27,7 +27,6 @@ def split_manifest(inp_manifest: pd.DataFrame,
 
     split_list = np.array_split(inp_manifest, num_sections)
     split_dict = {df.iloc[0][0]: df for df in split_list}
-    split_dict = check_special_char(split_dict)
 
     if not Path(out_dir).is_dir():
         Path(out_dir).mkdir()
@@ -38,30 +37,41 @@ def split_manifest(inp_manifest: pd.DataFrame,
                   index=False)
 
 
-def check_special_char(df_dict):
+def check_special_char(path_df):
     """
     Checks and replaces sample name to FASTQ path dictionary for special
     characters.
 
-    :param df_dict:
+    :param path_df:
     :return:
     """
-    sample_names = df_dict.keys()
+
+    sample_dict = dict(zip(path_df.iloc[:, 0].values.tolist(),
+                           path_df.drop(path_df.columns[0],
+                                        axis=1).values.tolist()))
+    sample_names = sample_dict.keys()
     special_char_names = [name for name in sample_names
                           if not name[0].isalnum()]
 
-    print(f"A total of {len(special_char_names)} sample names begin with "
-          f"non-alphanumeric characters!")
+    if len(special_char_names) > 0:
+        print(f"A total of {len(special_char_names)} sample names begin with "
+              f"non-alphanumeric characters!")
 
-    names_to_change = rename_samples(special_char_names, sample_names)
-    new_dict = {changed_name: df_dict[name] for name, changed_name in
+    names_to_change = _rename_samples(special_char_names, sample_names)
+    new_dict = {changed_name: sample_dict[name] for name, changed_name in
                 names_to_change.items()}
-    new_dict.update({key: val for key, val in df_dict.items() if key not in
+    new_dict.update({key: val for key, val in sample_dict.items() if key not in
                      names_to_change.keys()})
-    return new_dict
+
+    if len(path_df.columns) == 2:
+        new_df_list = [[key] + [val] for key, val in new_dict.items()]
+    elif len(path_df.columns) == 3:
+        new_df_list = [[key] + val for key, val in new_dict.items()]
+    new_df = pd.DataFrame(new_df_list, columns=path_df.columns)
+    return new_df
 
 
-def rename_samples(samples_to_rename, all_samples, change_dict={}):
+def _rename_samples(samples_to_rename, all_samples, change_dict={}):
     """
     Renames samples by prefixing. Recurses to ensure no duplicate sample
     names are generated.
@@ -77,7 +87,7 @@ def rename_samples(samples_to_rename, all_samples, change_dict={}):
 
     name_overlap = set(renamed_samples.values()) & set(all_samples)
     if any(name_overlap):
-        return rename_samples(name_overlap, all_samples, changes)
+        return _rename_samples(name_overlap, all_samples, changes)
     return changes
 
 
@@ -118,6 +128,7 @@ def arg_parse():
 
 
 def main(args):
+    assert Path(args.input_manifest).is_file()
     assert Path(args.output_dir).is_dir()
 
     try:
@@ -130,7 +141,8 @@ def main(args):
     except FileNotFoundError:
         print(f"The input manifest file {args.input_manifest} was not found!")
 
-    split_manifest(manifest_df, args.output_dir, args.suffix, args.split_method)
+    renamed_df = check_special_char(manifest_df)
+    split_manifest(renamed_df, args.output_dir, args.suffix, args.split_method)
 
 
 if __name__ == "__main__":
