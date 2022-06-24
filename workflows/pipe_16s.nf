@@ -129,9 +129,7 @@ workflow PIPE_16S {
     }
 
     if (params.split_fastq) {
-        // ch_fastq_manifest may have to be grouped in a tuple with the input FASTQ files?
-        // or we may have to create a different process entirely for this
-        // assumes paired-end sequencing
+        // TODO: need to carry sample name as tuple along the rest of the workflow
         SPLIT_FASTQ_MANIFEST ( ch_fastq_manifest )
         ch_split_manifests = SPLIT_FASTQ_MANIFEST.out.flatten()
         IMPORT_FASTQ ( ch_split_manifests )
@@ -139,11 +137,9 @@ workflow PIPE_16S {
         IMPORT_FASTQ ( ch_fastq_manifest )
     }
 
-    if (!(ch_sra_artifact)) {
+    if (ch_sra_artifact != null) {
         ch_sra_artifact = IMPORT_FASTQ.out
     }
-
-    ch_sra_artifact.view()
 
     // FASTQ check
     CHECK_FASTQ_TYPE ( ch_sra_artifact )
@@ -151,6 +147,8 @@ workflow PIPE_16S {
     // Feature generation: Denoising for cleanup
 
     if (!(start_process == "clustering")) {
+        // TODO: pass on DADA2 outputs as a pair? Currently doesn't pass on all elements from previous channel;
+        // 24 elements became 1 at FIND_CHIMERAS
         DENOISE_DADA2 ( CHECK_FASTQ_TYPE.out )
 
         ch_denoised_table = DENOISE_DADA2.out.table

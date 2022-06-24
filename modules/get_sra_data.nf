@@ -55,9 +55,6 @@ process CHECK_FASTQ_TYPE {
     output:
     path "${fq_qza}"
 
-    when:
-    !(params.split_fastq)
-
     script:
     """
     echo 'Checking whether downloaded FASTQs consist of read type ${params.read_type}...'
