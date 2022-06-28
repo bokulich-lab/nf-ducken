@@ -9,10 +9,7 @@ process CLASSIFY_TAXONOMY {
     afterScript "rm -rf $PWD/tmp_taxa"
 
     input:
-    tuple val(sample_id), path(rep_seqs)
-    path classifier
-    path ref_seqs
-    path ref_taxonomy
+    tuple val(sample_id), path(rep_seqs), path(classifier), path(ref_seqs), path(ref_taxonomy)
 
     output:
     tuple val(sample_id), path("taxonomy.qza"), emit: taxonomy_qza

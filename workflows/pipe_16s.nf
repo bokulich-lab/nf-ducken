@@ -27,7 +27,11 @@
 if (params.denoised_table && params.denoised_seqs) {
     ch_denoised_table = Channel.fromPath( "${params.denoised_table}", checkIfExists: true )
     ch_denoised_seqs  = Channel.fromPath( "${params.denoised_seqs}",  checkIfExists: true )
+    ch_denoised_table.concat(ch_denoised_seqs)
+        .map { ["all", it[0], it[1]] }
+        .set { ch_denoised_qzas }
     start_process  = "clustering"
+
 } else if (params.fastq_manifest) {
     ch_fastq_manifest = Channel.fromPath( "${params.fastq_manifest}",
                                           checkIfExists: true )
@@ -36,6 +40,7 @@ if (params.denoised_table && params.denoised_seqs) {
     if (!(params.phred_offset == 64 || params.phred_offset == 33)) {
         exit 1, 'The only valid PHRED offset values are 33 or 64!'
     }
+
 } else {
     start_process = "id_import"
 }
@@ -135,7 +140,6 @@ workflow PIPE_16S {
         ch_split_manifests = SPLIT_FASTQ_MANIFEST.out
             .flatten()
             .map { [(it.getName() - manifest_suffix), it] }
-            .view()
 
         IMPORT_FASTQ ( ch_split_manifests )
     } else {
@@ -151,9 +155,8 @@ workflow PIPE_16S {
     CHECK_FASTQ_TYPE ( ch_sra_artifact )
 
     // Feature generation: Denoising for cleanup
-    if (!(start_process == "clustering")) {
+    if (start_process != "clustering") {
         DENOISE_DADA2 ( CHECK_FASTQ_TYPE.out )
-
         ch_denoised_qzas = DENOISE_DADA2.out.table_seqs
     }
 
@@ -164,14 +167,16 @@ workflow PIPE_16S {
     }
 
     if (params.vsearch_chimera) {
+        ch_denoised_qzas.tap { ch_to_find_chimeras }
+        ch_to_find_chimeras.combine ( ch_otu_ref_qza )
+            .set { ch_to_find_chimeras }
+
         FIND_CHIMERAS (
-            ch_denoised_qzas,
-            ch_otu_ref_qza
+            ch_to_find_chimeras
             )
 
         ch_denoised_qzas
-            .join(FIND_CHIMERAS.out.nonchimeras)
-            .view()
+            .join( FIND_CHIMERAS.out.nonchimeras )
             .set { ch_qzas_to_filter }
 
         FILTER_CHIMERAS (
@@ -181,12 +186,14 @@ workflow PIPE_16S {
         ch_qzas_to_cluster  = FILTER_CHIMERAS.out.filt_qzas
 
     } else {
-        ch_denoised_qzas.tap { ch_qzas_to_cluster }
+        ch_denoised_qzas.set { ch_qzas_to_cluster }
     }
 
+    ch_qzas_to_cluster.combine( ch_otu_ref_qza )
+        .set { ch_qzas_to_cluster }
+
     CLUSTER_CLOSED_OTU (
-        ch_qzas_to_cluster,
-        ch_otu_ref_qza
+        ch_qzas_to_cluster
         )
 
     // Classification
@@ -200,21 +207,18 @@ workflow PIPE_16S {
         ch_taxa_ref_qza = DOWNLOAD_REF_TAXONOMY.out
     }
 
-    CLASSIFY_TAXONOMY (
-        CLUSTER_CLOSED_OTU.out.seqs,
-        ch_trained_classifier,
-        ch_otu_ref_qza,
-        ch_taxa_ref_qza
-        )
+    ch_to_classify = CLUSTER_CLOSED_OTU.out.seqs
+                        .combine ( ch_trained_classifier )
+                        .combine ( ch_otu_ref_qza )
+                        .combine ( ch_taxa_ref_qza )
+
+    CLASSIFY_TAXONOMY ( ch_to_classify )
 
     CLUSTER_CLOSED_OTU.out.table
-        .join(CLASSIFY_TAXONOMY.out.taxonomy_qza)
-        .view()
+        .join( CLASSIFY_TAXONOMY.out.taxonomy_qza )
         .set { ch_qza_to_collapse }
 
-    COLLAPSE_TAXA (
-        ch_qza_to_collapse
-        )
+    COLLAPSE_TAXA ( ch_qza_to_collapse )
 }
 
 /*

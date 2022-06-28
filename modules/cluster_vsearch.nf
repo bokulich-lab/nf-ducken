@@ -6,8 +6,7 @@ process CLUSTER_CLOSED_OTU {
     scratch true
 
     input:
-    tuple val(sample_id), path(table), path(rep_seqs)
-    path ref_otus
+    tuple val(sample_id), path(table), path(rep_seqs), path(ref_otus)
 
     output:
     tuple val(sample_id), path("vsearch_otus/clustered_table.qza"),     emit: table
@@ -52,8 +51,7 @@ process FIND_CHIMERAS {
     publishDir "${params.outdir}/stats/", pattern: "*_stats.qza"
 
     input:
-    tuple val(sample_id), path(table), path(rep_seqs)
-    path ref_otus
+    tuple val(sample_id), path(table), path(rep_seqs), path(ref_otus)
 
     output:
     tuple val(sample_id), path("chimera/nonchimeras.qza"), emit: nonchimeras
