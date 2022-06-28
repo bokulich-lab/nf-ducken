@@ -131,7 +131,13 @@ workflow PIPE_16S {
     if (params.split_fastq) {
         // TODO: need to carry sample name as tuple along the rest of the workflow
         SPLIT_FASTQ_MANIFEST ( ch_fastq_manifest )
-        ch_split_manifests = SPLIT_FASTQ_MANIFEST.out.flatten()
+
+        manifest_suffix = ~/${params.fastq_split.suffix}/
+        ch_split_manifests = SPLIT_FASTQ_MANIFEST.out
+            .flatten()
+            .map { [(it.getName() - manifest_suffix), it] }
+            .view()
+
         IMPORT_FASTQ ( ch_split_manifests )
     } else {
         IMPORT_FASTQ ( ch_fastq_manifest )
@@ -145,7 +151,6 @@ workflow PIPE_16S {
     CHECK_FASTQ_TYPE ( ch_sra_artifact )
 
     // Feature generation: Denoising for cleanup
-
     if (!(start_process == "clustering")) {
         // TODO: pass on DADA2 outputs as a pair? Currently doesn't pass on all elements from previous channel;
         // 24 elements became 1 at FIND_CHIMERAS
