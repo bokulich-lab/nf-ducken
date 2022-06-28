@@ -31,6 +31,7 @@ if (params.denoised_table && params.denoised_seqs) {
 } else if (params.fastq_manifest) {
     ch_fastq_manifest = Channel.fromPath( "${params.fastq_manifest}",
                                           checkIfExists: true )
+                                          .map { ["all", it] }
     start_process = "fastq_import"
 
     if (!(params.phred_offset == 64 || params.phred_offset == 33)) {
@@ -156,8 +157,7 @@ workflow PIPE_16S {
         // 24 elements became 1 at FIND_CHIMERAS
         DENOISE_DADA2 ( CHECK_FASTQ_TYPE.out )
 
-        ch_denoised_table = DENOISE_DADA2.out.table
-        ch_denoised_seqs  = DENOISE_DADA2.out.rep_seqs
+        ch_denoised_qzas = DENOISE_DADA2.out.table_seqs
     }
 
     // Feature generation: Clustering
@@ -168,24 +168,23 @@ workflow PIPE_16S {
 
     if (params.vsearch_chimera) {
         FIND_CHIMERAS (
-            ch_denoised_table,
-            ch_denoised_seqs,
+            ch_denoised_qzas,
             ch_otu_ref_qza
             )
 
+        ch_denoised_qzas
+            .join(FIND_CHIMERAS.out.nonchimeras)
+            .view()
+            .set { ch_qzas_to_filter }
+
         FILTER_CHIMERAS (
-            ch_denoised_table,
-            ch_denoised_seqs,
-            FIND_CHIMERAS.out.nonchimeras
+            ch_qzas_to_filter
         )
 
-        ch_seqs_to_cluster  = FILTER_CHIMERAS.out.rep_seqs
-        ch_table_to_cluster = FILTER_CHIMERAS.out.table
+        ch_qzas_to_cluster  = FILTER_CHIMERAS.out.filt_qzas
 
     } else {
-        ch_seqs_to_cluster  = ch_denoised_seqs
-        ch_table_to_cluster = Channel.empty()
-        ch_denoised_table.tap { ch_table_to_cluster }
+        ch_denoised_qzas.tap { ch_qzas_to_cluster }
     }
 
     CLUSTER_CLOSED_OTU (
@@ -206,15 +205,19 @@ workflow PIPE_16S {
     }
 
     CLASSIFY_TAXONOMY (
-        ch_trained_classifier,
         CLUSTER_CLOSED_OTU.out.seqs,
+        ch_trained_classifier,
         ch_otu_ref_qza,
         ch_taxa_ref_qza
         )
 
+    CLUSTER_CLOSED_OTU.out.table
+        .join(CLASSIFY_TAXONOMY.out.taxonomy.qza)
+        .view()
+        .set { ch_qza_to_collapse }
+
     COLLAPSE_TAXA (
-        CLUSTER_CLOSED_OTU.out.table,
-        CLASSIFY_TAXONOMY.out.taxonomy_qza
+        ch_qza_to_collapse
         )
 }
 

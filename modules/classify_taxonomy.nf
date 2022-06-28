@@ -1,19 +1,20 @@
 process CLASSIFY_TAXONOMY {
     label "container_qiime2"
     label "process_local"
+    publishDir "{params.outdir}/", pattern: "*.qzv"
 
     beforeScript "cp ${classifier} classifier.qza; cp ${rep_seqs} rep_seqs.qza"
     beforeScript "export NXF_TEMP=$PWD/tmp_taxa"
     afterScript "rm -rf $PWD/tmp_taxa"
 
     input:
+    tuple val(sample_id), path(rep_seqs)
     path classifier
-    path rep_seqs
     path ref_seqs
     path ref_taxonomy
 
     output:
-    path "taxonomy.qza", emit: taxonomy_qza
+    tuple val(sample_id), path("taxonomy.qza"), emit: taxonomy_qza
     path "taxonomy.qzv", emit: taxonomy_qzv
 
     script:
@@ -97,8 +98,7 @@ process COLLAPSE_TAXA {
     publishDir "${params.outdir}/taxa/"
 
     input:
-    path table
-    path taxonomy
+    tuple val(sample_id), path(table), path(taxonomy)
 
     output:
     path "collapsed_table.qza"

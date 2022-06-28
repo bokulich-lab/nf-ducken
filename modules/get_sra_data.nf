@@ -50,10 +50,10 @@ process CHECK_FASTQ_TYPE {
     label "container_qiime2"
 
     input:
-    path fq_qza
+    tuple val(sample_id), path(fq_qza)
 
     output:
-    path "${fq_qza}"
+    tuple val(sample_id), path("${fq_qza}")
 
     script:
     """
@@ -73,10 +73,10 @@ process IMPORT_FASTQ {
     errorStrategy "ignore"
 
     input:
-    path fq_manifest
+    tuple val(sample_id), path(fq_manifest)
 
     output:
-    path "sequences.qza"
+    tuple val(sample_id), path("sequences.qza")
 
     script:
     read_type_upper = params.read_type.capitalize()

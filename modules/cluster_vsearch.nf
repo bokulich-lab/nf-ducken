@@ -4,14 +4,13 @@ process CLUSTER_CLOSED_OTU {
     scratch true
 
     input:
-    path table
-    path rep_seqs
+    tuple val(sample_id), path(table), path(rep_seqs)
     path ref_otus
 
     output:
-    path "vsearch_otus/clustered_table.qza",     emit: table
-    path "vsearch_otus/clustered_sequences.qza", emit: seqs
-    path "vsearch_otus/unmatched_sequences.qza", emit: unmatched_seqs
+    tuple val(sample_id), path("vsearch_otus/clustered_table.qza"),     emit: table
+    tuple val(sample_id), path("vsearch_otus/clustered_sequences.qza"), emit: seqs
+    path "vsearch_otus/unmatched_sequences.qza",                        emit: unmatched_seqs
 
     script:
     """
@@ -46,17 +45,17 @@ process DOWNLOAD_REF_SEQS {
 
 process FIND_CHIMERAS {
     label "container_qiime2"
-    label "process_local"    
+    label "process_local"
+    publishDir "${params.outdir}/stats/", pattern: "*_stats.qza"
 
     input:
-    path table
-    path rep_seqs
+    tuple val(sample_id), path(table), path(rep_seqs)
     path ref_otus
 
     output:
-    path "chimera/chimeras.qza",    emit: chimeras
-    path "chimera/nonchimeras.qza", emit: nonchimeras
-    path "chimera/stats.qza",       emit: stats
+    tuple val(sample_id), path("chimera/nonchimeras.qza"), emit: nonchimeras
+    path "chimera/chimeras.qza",                           emit: chimeras
+    path "chimera/stats.qza",                              emit: stats
 
     when:
     params.vsearch_chimera
@@ -85,13 +84,10 @@ process FILTER_CHIMERAS {
     publishDir "${params.outdir}/stats/", pattern: "*.qzv"
 
     input:
-    path table
-    path rep_seqs
-    path nonchimera_qza
+    tuple val(sample_id), path(table), path(rep_seqs), path(nonchimera_qza)
 
     output:
-    path "table_filt_chimera.qza", emit: table
-    path "seqs_filt_chimera.qza",  emit: rep_seqs
+    tuple val(sample_id), path("table_filt_chimera.qza"), path("seqs_filt_chimera.qza"), emit: filt_qzas
     path "table_filt_chimera.qzv", emit: viz_table
 
     when:

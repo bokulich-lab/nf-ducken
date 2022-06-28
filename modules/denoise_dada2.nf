@@ -1,15 +1,16 @@
 process DENOISE_DADA2 {
     label "container_qiime2"
     label "process_local"
+    publishDir "${params.outdir}/stats/", pattern: "*_stats.qza"
+
     scratch true
 
     input:
-    path fastq_qza
+    tuple val(sample_id), path(fastq_qza)
 
     output:
-    path "denoise_dada2/table.qza",                    emit: table
-    path "denoise_dada2/representative_sequences.qza", emit: rep_seqs
-    path "denoise_dada2/denoising_stats.qza",          emit: stats
+    tuple val(sample_id), path("denoise_dada2/table.qza", path("denoise_dada2/representative_sequences.qza"), emit: table_seqs
+    path "denoise_dada2/denoising_stats.qza",    emit: stats
 
     script:
 
