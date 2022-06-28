@@ -1,6 +1,7 @@
 process CLASSIFY_TAXONOMY {
     label "container_qiime2"
     label "process_local"
+    tag "${sample_id}"
     publishDir "{params.outdir}/", pattern: "*.qzv"
 
     beforeScript "cp ${classifier} classifier.qza; cp ${rep_seqs} rep_seqs.qza"
@@ -95,6 +96,7 @@ process CLASSIFY_TAXONOMY {
 
 process COLLAPSE_TAXA {
     label "container_qiime2"
+    tag "${sample_id}"
     publishDir "${params.outdir}/taxa/"
 
     input:

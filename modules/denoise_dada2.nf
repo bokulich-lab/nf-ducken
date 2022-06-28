@@ -1,6 +1,8 @@
 process DENOISE_DADA2 {
     label "container_qiime2"
     label "process_local"
+    tag "${sample_id}"
+
     publishDir "${params.outdir}/stats/", pattern: "*_stats.qza"
 
     scratch true
@@ -9,11 +11,10 @@ process DENOISE_DADA2 {
     tuple val(sample_id), path(fastq_qza)
 
     output:
-    tuple val(sample_id), path("denoise_dada2/table.qza", path("denoise_dada2/representative_sequences.qza"), emit: table_seqs
+    tuple val(sample_id), path("denoise_dada2/table.qza"), path("denoise_dada2/representative_sequences.qza"), emit: table_seqs
     path "denoise_dada2/denoising_stats.qza",    emit: stats
 
     script:
-
     if (params.read_type == "single")
         """
         echo 'Denoising single-end reads with DADA2...'

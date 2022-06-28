@@ -1,6 +1,8 @@
 process CLUSTER_CLOSED_OTU {
     label "container_qiime2"
     label "process_local"
+    tag "${sample_id}"
+
     scratch true
 
     input:
@@ -46,6 +48,7 @@ process DOWNLOAD_REF_SEQS {
 process FIND_CHIMERAS {
     label "container_qiime2"
     label "process_local"
+    tag "${sample_id}"
     publishDir "${params.outdir}/stats/", pattern: "*_stats.qza"
 
     input:
@@ -81,6 +84,7 @@ process FIND_CHIMERAS {
 
 process FILTER_CHIMERAS {
     label "container_qiime2"
+    tag "${sample_id}"
     publishDir "${params.outdir}/stats/", pattern: "*.qzv"
 
     input:

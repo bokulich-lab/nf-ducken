@@ -48,6 +48,7 @@ process GET_SRA_DATA {
 
 process CHECK_FASTQ_TYPE {
     label "container_qiime2"
+    tag "${sample_id}"
 
     input:
     tuple val(sample_id), path(fq_qza)
@@ -69,6 +70,7 @@ process CHECK_FASTQ_TYPE {
 
 process IMPORT_FASTQ {
     label "container_qiime2"
+    tag "${sample_id}"
 
     errorStrategy "ignore"
 

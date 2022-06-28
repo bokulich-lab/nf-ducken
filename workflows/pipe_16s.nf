@@ -31,7 +31,6 @@ if (params.denoised_table && params.denoised_seqs) {
 } else if (params.fastq_manifest) {
     ch_fastq_manifest = Channel.fromPath( "${params.fastq_manifest}",
                                           checkIfExists: true )
-                                          .map { ["all", it] }
     start_process = "fastq_import"
 
     if (!(params.phred_offset == 64 || params.phred_offset == 33)) {
@@ -130,7 +129,6 @@ workflow PIPE_16S {
     }
 
     if (params.split_fastq) {
-        // TODO: need to carry sample name as tuple along the rest of the workflow
         SPLIT_FASTQ_MANIFEST ( ch_fastq_manifest )
 
         manifest_suffix = ~/${params.fastq_split.suffix}/
@@ -141,6 +139,7 @@ workflow PIPE_16S {
 
         IMPORT_FASTQ ( ch_split_manifests )
     } else {
+        ch_fastq_manifest.map { ["all", it] }
         IMPORT_FASTQ ( ch_fastq_manifest )
     }
 
@@ -153,8 +152,6 @@ workflow PIPE_16S {
 
     // Feature generation: Denoising for cleanup
     if (!(start_process == "clustering")) {
-        // TODO: pass on DADA2 outputs as a pair? Currently doesn't pass on all elements from previous channel;
-        // 24 elements became 1 at FIND_CHIMERAS
         DENOISE_DADA2 ( CHECK_FASTQ_TYPE.out )
 
         ch_denoised_qzas = DENOISE_DADA2.out.table_seqs
@@ -188,8 +185,7 @@ workflow PIPE_16S {
     }
 
     CLUSTER_CLOSED_OTU (
-        ch_table_to_cluster,
-        ch_seqs_to_cluster,
+        ch_qzas_to_cluster,
         ch_otu_ref_qza
         )
 
@@ -212,7 +208,7 @@ workflow PIPE_16S {
         )
 
     CLUSTER_CLOSED_OTU.out.table
-        .join(CLASSIFY_TAXONOMY.out.taxonomy.qza)
+        .join(CLASSIFY_TAXONOMY.out.taxonomy_qza)
         .view()
         .set { ch_qza_to_collapse }
 
