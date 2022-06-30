@@ -4,7 +4,6 @@ process DENOISE_DADA2 {
     tag "${sample_id}"
 
     publishDir "${params.outdir}/stats/", pattern: "*_stats.qza"
-
     scratch true
 
     input:

@@ -9,9 +9,9 @@ process CLUSTER_CLOSED_OTU {
     tuple val(sample_id), path(table), path(rep_seqs), path(ref_otus)
 
     output:
-    tuple val(sample_id), path("vsearch_otus/clustered_table.qza"),     emit: table
-    tuple val(sample_id), path("vsearch_otus/clustered_sequences.qza"), emit: seqs
-    path "vsearch_otus/unmatched_sequences.qza",                        emit: unmatched_seqs
+    tuple val(sample_id), path("${sample_id}_clustered_table.qza"),     emit: table
+    tuple val(sample_id), path("${sample_id}_clustered_sequences.qza"), emit: seqs
+    path "${sample_id}_unmatched_sequences.qza",                        emit: unmatched_seqs
 
     script:
     """
@@ -24,7 +24,9 @@ process CLUSTER_CLOSED_OTU {
         --p-perc-identity ${params.vsearch.perc_identity} \
         --p-strand ${params.vsearch.strand} \
         --p-threads ${params.vsearch.num_threads} \
-        --output-dir vsearch_otus \
+        --o-clustered-table ${sample_id}_clustered_table.qza \
+        --o-clustered-sequences ${sample_id}_clustered_sequences.qza \
+        --o-unmatched-sequences ${sample_id}_unmatched_sequences.qza \
         --verbose
     """
 }
@@ -54,9 +56,9 @@ process FIND_CHIMERAS {
     tuple val(sample_id), path(table), path(rep_seqs), path(ref_otus)
 
     output:
-    tuple val(sample_id), path("chimera/nonchimeras.qza"), emit: nonchimeras
-    path "chimera/chimeras.qza",                           emit: chimeras
-    path "chimera/stats.qza",                              emit: stats
+    tuple val(sample_id), path("${sample_id}_nonchimeras.qza"), emit: nonchimeras
+    path "${sample_id}_chimeras.qza",                           emit: chimeras
+    path "${sample_id}_stats.qza",                              emit: stats
 
     when:
     params.vsearch_chimera
@@ -75,7 +77,9 @@ process FIND_CHIMERAS {
         --p-minh ${params.uchime_ref.min_h} \
         --p-xn ${params.uchime_ref.xn} \
         --p-threads ${params.uchime_ref.num_threads} \
-        --output-dir chimera \
+        --o-chimeras ${sample_id}_chimeras.qza \
+        --o-nonchimeras ${sample_id}_nonchimeras.qza \
+        --o-stats ${sample_id}_stats.qza \
         --verbose
     """
 }
@@ -89,8 +93,8 @@ process FILTER_CHIMERAS {
     tuple val(sample_id), path(table), path(rep_seqs), path(nonchimera_qza)
 
     output:
-    tuple val(sample_id), path("table_filt_chimera.qza"), path("seqs_filt_chimera.qza"), emit: filt_qzas
-    path "table_filt_chimera.qzv", emit: viz_table
+    tuple val(sample_id), path("${sample_id}_table_filt_chimera.qza"), path("${sample_id}_seqs_filt_chimera.qza"), emit: filt_qzas
+    path "${sample_id}_table_filt_chimera.qzv", emit: viz_table
 
     when:
     params.vsearch_chimera
@@ -102,15 +106,15 @@ process FILTER_CHIMERAS {
     qiime feature-table filter-features \
         --i-table ${table} \
         --m-metadata-file ${nonchimera_qza} \
-        --o-filtered-table table_filt_chimera.qza
+        --o-filtered-table ${sample_id}_table_filt_chimera.qza
 
     qiime feature-table filter-seqs \
         --i-data ${rep_seqs} \
         --m-metadata-file ${nonchimera_qza} \
-        --o-filtered-data seqs_filt_chimera.qza
+        --o-filtered-data ${sample_id}_seqs_filt_chimera.qza
 
     qiime feature-table summarize \
         --i-table table_filt_chimera.qza \
-        --o-visualization table_filt_chimera.qzv
+        --o-visualization ${sample_id}_table_filt_chimera.qzv
     """
 }

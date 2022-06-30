@@ -12,8 +12,8 @@ process CLASSIFY_TAXONOMY {
     tuple val(sample_id), path(rep_seqs), path(classifier), path(ref_seqs), path(ref_taxonomy)
 
     output:
-    tuple val(sample_id), path("taxonomy.qza"), emit: taxonomy_qza
-    path "taxonomy.qzv", emit: taxonomy_qzv
+    tuple val(sample_id), path("${sample_id}_taxonomy.qza"), emit: taxonomy_qza
+    path "${sample_id}_taxonomy.qzv", emit: taxonomy_qzv
 
     script:
     if (params.classifier.method == "sklearn") {
@@ -28,12 +28,12 @@ process CLASSIFY_TAXONOMY {
             --p-pre-dispatch ${params.classifier.pre_dispatch} \
             --p-confidence ${params.classifier.confidence} \
             --p-read-orientation ${params.classifier.read_orientation} \
-            --o-classification taxonomy.qza \
+            --o-classification ${sample_id}_taxonomy.qza \
             --verbose
 
         qiime metadata tabulate \
-            --m-input-file taxonomy.qza \
-            --o-visualization taxonomy.qzv
+            --m-input-file ${sample_id}_taxonomy.qza \
+            --o-visualization ${sample_id}_taxonomy.qzv
         """
     } else if (params.classifier.method == "blast") {
         """
@@ -53,12 +53,12 @@ process CLASSIFY_TAXONOMY {
             --p-evalue ${params.classifier.evalue} \
             --p-min-consensus ${params.classifier.min_consensus} \
             --p-unassignable-label ${params.classifier.unassignable_label} \
-            --o-classification taxonomy.qza \
+            --o-classification ${sample_id}_taxonomy.qza \
             --verbose
 
         qiime metadata tabulate \
-            --m-input-file taxonomy.qza \
-            --o-visualization taxonomy.qzv
+            --m-input-file ${sample_id}_taxonomy.qza \
+            --o-visualization ${sample_id}_taxonomy.qzv
         """
     } else if (params.classifier.method == "vsearch") {
         """
@@ -81,12 +81,12 @@ process CLASSIFY_TAXONOMY {
             --p-output-no-hits ${params.classifier.output_no_hits} \
             --p-weak-id ${params.classifier.weak_id} \
             --p-threads ${params.classifier.num_threads} \
-            --o-classification taxonomy.qza \
+            --o-classification ${sample_id}_taxonomy.qza \
             --verbose
 
         qiime metadata tabulate \
-            --m-input-file taxonomy.qza \
-            --o-visualization taxonomy.qzv
+            --m-input-file ${sample_id}_taxonomy.qza \
+            --o-visualization ${sample_id}_taxonomy.qzv
         """
     }
 }
@@ -94,13 +94,13 @@ process CLASSIFY_TAXONOMY {
 process COLLAPSE_TAXA {
     label "container_qiime2"
     tag "${sample_id}"
-    publishDir "${params.outdir}/taxa/"
+    publishDir "${params.outdir}/"
 
     input:
     tuple val(sample_id), path(table), path(taxonomy)
 
     output:
-    path "collapsed_table.qza"
+    path "${sample_id}_collapsed_table.qza"
 
     script:
     """
@@ -110,7 +110,7 @@ process COLLAPSE_TAXA {
         --i-table ${table} \
         --i-taxonomy ${taxonomy} \
         --p-level ${params.taxa_level} \
-        --o-collapsed-table collapsed_table.qza
+        --o-collapsed-table ${sample_id}_collapsed_table.qza
     """
 }
 
