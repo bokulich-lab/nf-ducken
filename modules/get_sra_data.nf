@@ -96,6 +96,7 @@ process IMPORT_FASTQ {
 
 process SPLIT_FASTQ_MANIFEST {
     label "container_pandas"
+
     input:
     path fq_manifest
 

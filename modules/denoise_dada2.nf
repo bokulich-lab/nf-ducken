@@ -11,8 +11,8 @@ process DENOISE_DADA2 {
     tuple val(sample_id), path(fastq_qza)
 
     output:
-    tuple val(sample_id), path("denoise_dada2/table.qza"), path("denoise_dada2/representative_sequences.qza"), emit: table_seqs
-    path "denoise_dada2/denoising_stats.qza",    emit: stats
+    tuple val(sample_id), path("${sample_id}_table.qza"), path("${sample_id}_representative_sequences.qza"), emit: table_seqs
+    path "${sample_id}_denoising_stats.qza",    emit: stats
 
     script:
     if (params.read_type == "single")
@@ -31,7 +31,9 @@ process DENOISE_DADA2 {
             --p-n-threads ${params.dada2.num_threads} \
             --p-n-reads-learn ${params.dada2.num_reads_learn} \
             --p-hashed-feature-ids ${params.dada2.hashed_feature_ids} \
-            --output-dir denoise_dada2 \
+            --o-table ${sample_id}_table.qza \
+            --o-representative-sequences ${sample_id}_representative_sequences.qza \
+            --o-denoising-stats ${sample_id}_denoising_stats.qza \
             --verbose
         """
 
@@ -55,7 +57,9 @@ process DENOISE_DADA2 {
             --p-n-threads ${params.dada2.num_threads} \
             --p-n-reads-learn ${params.dada2.num_reads_learn} \
             --p-hashed-feature-ids ${params.dada2.hashed_feature_ids} \
-            --output-dir denoise_dada2 \
+            --o-table ${sample_id}_table.qza \
+            --o-representative-sequences ${sample_id}_representative_sequences.qza \
+            --o-denoising-stats ${sample_id}_denoising_stats.qza \
             --verbose
         """
 }
