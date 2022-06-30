@@ -114,7 +114,7 @@ process FILTER_CHIMERAS {
         --o-filtered-data ${sample_id}_seqs_filt_chimera.qza
 
     qiime feature-table summarize \
-        --i-table table_filt_chimera.qza \
+        --i-table ${sample_id}_table_filt_chimera.qza \
         --o-visualization ${sample_id}_table_filt_chimera.qzv
     """
 }
