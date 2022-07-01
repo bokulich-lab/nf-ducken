@@ -47,13 +47,14 @@ process GET_SRA_DATA {
 }
 
 process CHECK_FASTQ_TYPE {
-    label "singularity_qiime2"
+    label "container_qiime2"
+    tag "${sample_id}"
 
     input:
-    path fq_qza
+    tuple val(sample_id), path(fq_qza)
 
     output:
-    path "${fq_qza}"
+    tuple val(sample_id), path("${fq_qza}")
 
     script:
     """
@@ -68,13 +69,16 @@ process CHECK_FASTQ_TYPE {
 }
 
 process IMPORT_FASTQ {
-    label "singularity_qiime2"
+    label "container_qiime2"
+    tag "${sample_id}"
+
+    errorStrategy "ignore"
 
     input:
-    path fq_manifest
+    tuple val(sample_id), path(fq_manifest)
 
     output:
-    path "sequences.qza"
+    tuple val(sample_id), path("sequences.qza")
 
     script:
     read_type_upper = params.read_type.capitalize()
@@ -87,5 +91,30 @@ process IMPORT_FASTQ {
         --input-path ${fq_manifest} \
         --input-format ${read_type_upper}EndFastqManifestPhred${params.phred_offset}V2 \
         --output-path sequences.qza
+    """
+}
+
+process SPLIT_FASTQ_MANIFEST {
+    label "container_pandas"
+
+    input:
+    path fq_manifest
+
+    output:
+    path "*${params.fastq_split.suffix}"
+
+    when:
+    params.split_fastq
+
+    script:
+
+    """
+    echo 'Splitting FASTQ manifest to process FASTQ files individually...'
+
+    python ${workflow.projectDir}/bin/split_manifest.py \
+        --input_manifest ${fq_manifest} \
+        --output_dir . \
+        --suffix ${params.fastq_split.suffix} \
+        --split_method ${params.fastq_split.method}
     """
 }

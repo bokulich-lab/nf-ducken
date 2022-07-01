@@ -25,17 +25,22 @@
 // Intermediate process skipping
 // Executed in reverse chronology
 if (params.denoised_table && params.denoised_seqs) {
-    ch_denoised_table = Channel.fromPath( "${params.denoised_table}", checkIfExists: true )
-    ch_denoised_seqs  = Channel.fromPath( "${params.denoised_seqs}",  checkIfExists: true )
+    ch_denoised_table = Channel.fromPath ( "${params.denoised_table}", checkIfExists: true )
+    ch_denoised_seqs  = Channel.fromPath ( "${params.denoised_seqs}",  checkIfExists: true )
+    ch_denoised_table.concat(ch_denoised_seqs)
+        .map { ["all", it[0], it[1]] }
+        .set { ch_denoised_qzas }
     start_process  = "clustering"
+
 } else if (params.fastq_manifest) {
-    ch_fastq_manifest = Channel.fromPath( "${params.fastq_manifest}",
-                                          checkIfExists: true )
+    ch_fastq_manifest = Channel.fromPath ( "${params.fastq_manifest}",
+                                           checkIfExists: true )
     start_process = "fastq_import"
 
     if (!(params.phred_offset == 64 || params.phred_offset == 33)) {
         exit 1, 'The only valid PHRED offset values are 33 or 64!'
     }
+
 } else {
     start_process = "id_import"
 }
@@ -44,7 +49,7 @@ if (params.denoised_table && params.denoised_seqs) {
 switch (start_process) {
     case "id_import":
         if (params.inp_id_file) {       // TODO shift to input validation module
-            ch_inp_ids        = Channel.fromPath( "${params.inp_id_file}", checkIfExists: true )
+            ch_inp_ids        = Channel.fromPath ( "${params.inp_id_file}", checkIfExists: true )
             ch_fastq_manifest = Channel.empty()
         } else {
             exit 1, 'Input file with sample accession numbers does not exist or is not specified!'
@@ -72,24 +77,24 @@ if (start_process != "clustering") {
 
 if (params.otu_ref_file) {
     flag_get_ref    = false
-    ch_otu_ref_qza  = Channel.fromPath( "${params.otu_ref_file}",
-                                        checkIfExists: true )
+    ch_otu_ref_qza  = Channel.fromPath ( "${params.otu_ref_file}",
+                                         checkIfExists: true )
 } else {
     flag_get_ref    = true
 }
 
 if (params.taxonomy_ref_file) {
     flag_get_ref_taxa = false
-    ch_taxa_ref_qza   = Channel.fromPath( "${params.taxonomy_ref_file}",
-                                          checkIfExists: true )
+    ch_taxa_ref_qza   = Channel.fromPath ( "${params.taxonomy_ref_file}",
+                                           checkIfExists: true )
 } else {
     flag_get_ref_taxa = true
 }
 
 if (params.trained_classifier) {
     flag_get_classifier        = false
-    ch_trained_classifier      = Channel.fromPath( "${params.trained_classifier}",
-                                                   checkIfExists: true )
+    ch_trained_classifier      = Channel.fromPath ( "${params.trained_classifier}",
+                                                    checkIfExists: true )
 } else {
     flag_get_classifier        = true
 }
@@ -101,7 +106,8 @@ if (params.trained_classifier) {
 */
 
 include { GENERATE_ID_ARTIFACT; GET_SRA_DATA;
-          CHECK_FASTQ_TYPE; IMPORT_FASTQ      } from '../modules/get_sra_data'
+          CHECK_FASTQ_TYPE; IMPORT_FASTQ;
+          SPLIT_FASTQ_MANIFEST                } from '../modules/get_sra_data'
 include { DENOISE_DADA2                       } from '../modules/denoise_dada2'
 include { CLUSTER_CLOSED_OTU;
           DOWNLOAD_REF_SEQS; FIND_CHIMERAS;
@@ -117,7 +123,6 @@ include { CLASSIFY_TAXONOMY; COLLAPSE_TAXA;
 */
 
 workflow PIPE_16S {
-    ch_inp_ids.view()
     // Download
     GENERATE_ID_ARTIFACT ( ch_inp_ids )
     GET_SRA_DATA         ( GENERATE_ID_ARTIFACT.out )
@@ -126,13 +131,23 @@ workflow PIPE_16S {
         ch_sra_artifact = GET_SRA_DATA.out.single
     } else if (params.read_type == "paired") {
         ch_sra_artifact = GET_SRA_DATA.out.paired
-    } else {
-        ch_sra_artifact = Channel.empty()
     }
 
-    IMPORT_FASTQ ( ch_fastq_manifest )
+    if (params.split_fastq) {
+        SPLIT_FASTQ_MANIFEST ( ch_fastq_manifest )
 
-    if (start_process == "fastq_import") {
+        manifest_suffix = ~/${params.fastq_split.suffix}/
+        ch_split_manifests = SPLIT_FASTQ_MANIFEST.out
+            .flatten()
+            .map { [(it.getName() - manifest_suffix), it] }
+
+        IMPORT_FASTQ ( ch_split_manifests )
+    } else {
+        ch_fastq_manifest.map { ["all", it] }
+        IMPORT_FASTQ ( ch_fastq_manifest )
+    }
+
+    if (ch_sra_artifact != null) {
         ch_sra_artifact = IMPORT_FASTQ.out
     }
 
@@ -140,12 +155,9 @@ workflow PIPE_16S {
     CHECK_FASTQ_TYPE ( ch_sra_artifact )
 
     // Feature generation: Denoising for cleanup
-
-    if (!(start_process == "clustering")) {
+    if (start_process != "clustering") {
         DENOISE_DADA2 ( CHECK_FASTQ_TYPE.out )
-
-        ch_denoised_table = DENOISE_DADA2.out.table
-        ch_denoised_seqs  = DENOISE_DADA2.out.rep_seqs
+        ch_denoised_qzas = DENOISE_DADA2.out.table_seqs
     }
 
     // Feature generation: Clustering
@@ -155,31 +167,33 @@ workflow PIPE_16S {
     }
 
     if (params.vsearch_chimera) {
+        ch_denoised_qzas.tap { ch_to_find_chimeras }
+        ch_to_find_chimeras.combine ( ch_otu_ref_qza )
+            .set { ch_to_find_chimeras }
+
         FIND_CHIMERAS (
-            ch_denoised_table,
-            ch_denoised_seqs,
-            ch_otu_ref_qza
+            ch_to_find_chimeras
             )
 
+        ch_denoised_qzas
+            .join ( FIND_CHIMERAS.out.nonchimeras )
+            .set { ch_qzas_to_filter }
+
         FILTER_CHIMERAS (
-            ch_denoised_table,
-            ch_denoised_seqs,
-            FIND_CHIMERAS.out.nonchimeras
+            ch_qzas_to_filter
         )
 
-        ch_seqs_to_cluster  = FILTER_CHIMERAS.out.rep_seqs
-        ch_table_to_cluster = FILTER_CHIMERAS.out.table
+        ch_qzas_to_cluster  = FILTER_CHIMERAS.out.filt_qzas
 
     } else {
-        ch_seqs_to_cluster  = ch_denoised_seqs
-        ch_table_to_cluster = Channel.empty()
-        ch_denoised_table.tap { ch_table_to_cluster }
+        ch_denoised_qzas.set { ch_qzas_to_cluster }
     }
 
+    ch_qzas_to_cluster.combine ( ch_otu_ref_qza )
+        .set { ch_qzas_to_cluster }
+
     CLUSTER_CLOSED_OTU (
-        ch_table_to_cluster,
-        ch_seqs_to_cluster,
-        ch_otu_ref_qza
+        ch_qzas_to_cluster
         )
 
     // Classification
@@ -193,17 +207,18 @@ workflow PIPE_16S {
         ch_taxa_ref_qza = DOWNLOAD_REF_TAXONOMY.out
     }
 
-    CLASSIFY_TAXONOMY (
-        ch_trained_classifier,
-        CLUSTER_CLOSED_OTU.out.seqs,
-        ch_otu_ref_qza,
-        ch_taxa_ref_qza
-        )
+    ch_to_classify = CLUSTER_CLOSED_OTU.out.seqs
+                        .combine ( ch_trained_classifier )
+                        .combine ( ch_otu_ref_qza )
+                        .combine ( ch_taxa_ref_qza )
 
-    COLLAPSE_TAXA (
-        CLUSTER_CLOSED_OTU.out.table,
-        CLASSIFY_TAXONOMY.out.taxonomy_qza
-        )
+    CLASSIFY_TAXONOMY ( ch_to_classify )
+
+    CLUSTER_CLOSED_OTU.out.table
+        .join ( CLASSIFY_TAXONOMY.out.taxonomy_qza )
+        .set { ch_qza_to_collapse }
+
+    COLLAPSE_TAXA ( ch_qza_to_collapse )
 }
 
 /*

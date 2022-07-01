@@ -34,7 +34,7 @@ If running in closed systems, the QIIME 2 Docker container can be built and save
 
 Internally, the latest QIIME 2 container can be found at the following locations:
 * On the SPHN container registry (accessible from Leonhard Med): container-registry.dcc.sib.swiss
-* As an .sif file on Leonhard Med: `/cluster/work/saga/singularity/qiime2-2022.2.sif`
+* As an .sif file on Leonhard Med: `/cluster/work/saga/containers/qiime2-2022.2.sif`
 
 ## Inputs
 
@@ -42,10 +42,14 @@ Unless otherwise noted, these parameters should be under the scope `params` in t
 
 ### Process parameters
 
+Used for file download and FASTQ processing.
+
 Required if running q2_fondue:
 * `inp_id_file`: path to TSV file containing NCBI accession IDs for FASTQs to download. File must adhere to [QIIME 2 metadata formatting requirements](https://docs.qiime2.org/2022.2/tutorials/metadata/#metadata-formatting-requirements)
+  * **Note:** FASTQ file names starting with non-alphanumeric characters (particularly `#`) are NOT supported. These will throw an error in your workflow!
 * `email_address`: email address of user, required for SRA requests via `q2-fondue`
 * `read_type`: FASTQ type, either`"paired"` or `"single"`
+* `split_fastq`: default `null`, determines whether samples will be processed as a batch or individually.
 
 ### Optional user-input parameters
 
@@ -108,6 +112,10 @@ VSEARCH reference-based chimera identification process parameters in scope `para
 * `min_h`: default `0.28`
 * `xn`: default `8.0`
 * `num_threads`: default `1`
+
+FASTQ artifact splitting parameters in scope `params.fastq_split`:
+* `suffix`: default `"_split.tsv"`
+* `method`: default `"sample"`
   
 Additional process parameters:
 * `taxa_level`: default `5`, collapsing taxonomic classifications to genus; used in `qiime taxa collapse`
@@ -122,6 +130,8 @@ full-length sequences](https://data.qiime2.org/2022.2/common/silva-138-99-nb-cla
 * `taxonomy_ref_file`: default `null`, downloading pre-formatted file from the [SILVA 138 SSURef NR99 full-length taxonomy](https://data.qiime2.org/2022.2/common/silva-138-99-tax.qza); used in `q2-feature-classifier` if running with BLAST+
 * `qiime_release`: default `"2022.2"`, used to specify param `qiime_container` to particular QIIME version
 * `qiime_container`: default `"quay.io/qiime2/core:${params.qiime_release}"`; location of QIIME container used for workflow; if running on platforms without Internet, point to a valid .sif file. **Note that local files must be prefixed with `file://`;** triple `/` denotes absolute filepaths.
+* `pandas_release`: default `"1.4.2"`, used to specify param `pandas_container` to particular `pandas` version
+* `pandas_container`: default `"docker://amancevice/pandas:${params.pandas_release}-slim"`; location of `pandas` container used for workflow
 
 ### Additional configurations
 
@@ -133,7 +143,7 @@ Reporting with Nextflow Tower (scope `tower`):
 
 Execution parameters (scope `process`):
 * `executor`: default `"local"`, resource manager to run workflow on; options include `"slurm"`, `"sge"`, `"awsbatch"`, and `"google-lifesciences"`
-* `withLabel:singularity_qiime2.container`: default `${params.qiime_container}`, but can be replaced with location of local container containing QIIME 2 core distribution
+* `withLabel:container_qiime2.container`: default `${params.qiime_container}`, but can be replaced with location of local container containing QIIME 2 core distribution
 
 ### Parameters used for intermediate process skipping
 
