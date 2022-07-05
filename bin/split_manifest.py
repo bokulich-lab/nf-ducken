@@ -9,10 +9,9 @@ import numpy as np
 import pandas as pd
 
 
-def split_manifest(inp_manifest: pd.DataFrame,
-                   out_dir: str,
-                   suffix_str: str,
-                   split_method: str) -> None:
+def split_manifest(
+    inp_manifest: pd.DataFrame, out_dir: str, suffix_str: str, split_method: str
+) -> None:
     """
     Splits manifest and saves to multiple output files.
 
@@ -32,9 +31,7 @@ def split_manifest(inp_manifest: pd.DataFrame,
         Path(out_dir).mkdir()
 
     for sample_name, df in split_dict.items():
-        df.to_csv(Path(out_dir) / f"{sample_name}{suffix_str}",
-                  sep="\t",
-                  index=False)
+        df.to_csv(Path(out_dir) / f"{sample_name}{suffix_str}", sep="\t", index=False)
 
 
 def check_special_char(path_df):
@@ -46,22 +43,33 @@ def check_special_char(path_df):
     :return:
     """
 
-    sample_dict = dict(zip(path_df.iloc[:, 0].values.tolist(),
-                           path_df.drop(path_df.columns[0],
-                                        axis=1).values.tolist()))
+    sample_dict = dict(
+        zip(
+            path_df.iloc[:, 0].values.tolist(),
+            path_df.drop(path_df.columns[0], axis=1).values.tolist(),
+        )
+    )
     sample_names = sample_dict.keys()
-    special_char_names = [name for name in sample_names
-                          if not name[0].isalnum()]
+    special_char_names = [name for name in sample_names if not name[0].isalnum()]
 
     if len(special_char_names) > 0:
-        print(f"A total of {len(special_char_names)} sample names begin with "
-              f"non-alphanumeric characters!")
+        print(
+            f"A total of {len(special_char_names)} sample names begin with "
+            f"non-alphanumeric characters!"
+        )
 
     names_to_change = _rename_samples(special_char_names, sample_names)
-    new_dict = {changed_name: sample_dict[name] for name, changed_name in
-                names_to_change.items()}
-    new_dict.update({key: val for key, val in sample_dict.items() if key not in
-                     names_to_change.keys()})
+    new_dict = {
+        changed_name: sample_dict[name]
+        for name, changed_name in names_to_change.items()
+    }
+    new_dict.update(
+        {
+            key: val
+            for key, val in sample_dict.items()
+            if key not in names_to_change.keys()
+        }
+    )
 
     if len(path_df.columns) == 2:
         new_df_list = [[key] + [val] for key, val in new_dict.items()]
@@ -96,7 +104,8 @@ def arg_parse():
 
     # Required user-input arguments
     parser.add_argument(
-        "-i", "--input_manifest",
+        "-i",
+        "--input_manifest",
         help="Path to input manifest file for splitting.",
         type=str,
         required=True,
@@ -104,23 +113,24 @@ def arg_parse():
 
     # Optional user-input arguments
     parser.add_argument(
-        "-o", "--output_dir",
+        "-o",
+        "--output_dir",
         help="Location to print output files.",
         type=str,
-        default=Path.cwd()
+        default=Path.cwd(),
     )
     parser.add_argument(
         "--suffix",
         help="Optional suffix to add to each split manifest.",
         type=str,
-        default="_split.tsv"
+        default="_split.tsv",
     )
     parser.add_argument(
         "--split_method",
         help="Method to split input manifest. Options include 'sample'.",
         type=str,
         choices={"sample"},
-        default="sample"
+        default="sample",
     )
 
     args = parser.parse_args()
@@ -132,8 +142,7 @@ def main(args):
     assert Path(args.output_dir).is_dir()
 
     try:
-        manifest_df = pd.read_csv(args.input_manifest,
-                                  sep="\t")
+        manifest_df = pd.read_csv(args.input_manifest, sep="\t")
         manifest_df.dropna(inplace=True)
         assert len(manifest_df.columns) == manifest_df.shape[1]
         assert len(manifest_df.index) > 0
