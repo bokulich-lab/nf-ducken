@@ -23,6 +23,11 @@ def split_manifest(
 
     if split_method == "sample":
         num_sections = len(inp_manifest.index)
+    elif int(split_method) < len(inp_manifest.index):
+        num_sections = int(split_method)
+    else:
+        print(f"")
+        num_sections = len(inp_manifest.index)
 
     split_list = np.array_split(inp_manifest, num_sections)
     split_dict = {df.iloc[0][0]: df for df in split_list}
@@ -127,7 +132,8 @@ def arg_parse():
     )
     parser.add_argument(
         "--split_method",
-        help="Method to split input manifest. Options include 'sample'.",
+        help="Method to split input manifest. Options include 'sample' or an "
+             "integer representing number of output files.",
         type=str,
         choices={"sample"},
         default="sample",
@@ -140,6 +146,7 @@ def arg_parse():
 def main(args):
     assert Path(args.input_manifest).is_file()
     assert Path(args.output_dir).is_dir()
+    assert args.split_method == "sample" or args.split_method.isdigit()
 
     try:
         manifest_df = pd.read_csv(args.input_manifest, sep="\t")
