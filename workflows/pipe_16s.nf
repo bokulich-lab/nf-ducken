@@ -133,7 +133,7 @@ workflow PIPE_16S {
         ch_sra_artifact = GET_SRA_DATA.out.paired
     }
 
-    if (params.split_fastq) {
+    if (params.fastq_split.enabled) {
         SPLIT_FASTQ_MANIFEST ( ch_fastq_manifest )
 
         manifest_suffix = ~/${params.fastq_split.suffix}/
@@ -142,8 +142,9 @@ workflow PIPE_16S {
             .map { [(it.getName() - manifest_suffix), it] }
 
         IMPORT_FASTQ ( ch_split_manifests )
+
     } else {
-        ch_fastq_manifest.map { ["all", it] }
+        ch_fastq_manifest = ch_fastq_manifest.map { ["all", it] }
         IMPORT_FASTQ ( ch_fastq_manifest )
     }
 
