@@ -26,7 +26,8 @@ def split_manifest(
     elif int(split_method) < len(inp_manifest.index):
         num_sections = int(split_method)
     else:
-        print(f"")
+        print(f"More splits were requested ({split_method}) than there are "
+              f"samples ({len(inp_manifest.index)}! Splitting per sample...")
         num_sections = len(inp_manifest.index)
 
     split_list = np.array_split(inp_manifest, num_sections)
@@ -133,9 +134,8 @@ def arg_parse():
     parser.add_argument(
         "--split_method",
         help="Method to split input manifest. Options include 'sample' or an "
-             "integer representing number of output files.",
+             "integer representing the number of output files.",
         type=str,
-        choices={"sample"},
         default="sample",
     )
 

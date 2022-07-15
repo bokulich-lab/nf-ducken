@@ -104,10 +104,9 @@ process SPLIT_FASTQ_MANIFEST {
     path "*${params.fastq_split.suffix}"
 
     when:
-    params.split_fastq
+    params.fastq_split.enabled
 
     script:
-
     """
     echo 'Splitting FASTQ manifest to process FASTQ files individually...'
 
