@@ -43,7 +43,7 @@ def split_manifest(
 def check_special_char(path_df):
     """
     Checks and replaces sample name to FASTQ path dictionary for special
-    characters.
+    characters found in sample names.
 
     :param path_df:
     :return:
@@ -56,12 +56,17 @@ def check_special_char(path_df):
         )
     )
     sample_names = sample_dict.keys()
-    special_char_names = [name for name in sample_names if not name[0].isalnum()]
+    special_char_names = [name for name in sample_names if not name.isalnum()]
 
     if len(special_char_names) > 0:
+        # Also permitted: period ["."], dash ["-"], and underscore ["_"]
+        # Also permitted: leading/trailing whitespace, which are stripped by default
+        # Definitely not permitted and must be removed: pound ["#"]
+
         print(
-            f"A total of {len(special_char_names)} sample names begin with "
-            f"non-alphanumeric characters!"
+            f"Warning: A total of {len(special_char_names)} sample names contain "
+            f"non-alphanumeric characters! It is recommended to use only characters"
+            f"within [a-zA-Z0-9_-\.]."
         )
 
     names_to_change = _rename_samples(special_char_names, sample_names)
