@@ -40,7 +40,7 @@ def split_manifest(
         df.to_csv(Path(out_dir) / f"{sample_name}{suffix_str}", sep="\t", index=False)
 
 
-def check_special_char(path_df):
+def replace_special_char(path_df):
     """
     Checks and replaces sample name to FASTQ path dictionary for special
     characters found in sample names.
@@ -48,6 +48,8 @@ def check_special_char(path_df):
     :param path_df:
     :return:
     """
+    # TODO: should also check file paths, not just sample names!
+    # Check input dir path separately, since these should be the same across file path list
 
     sample_dict = dict(
         zip(
@@ -90,24 +92,25 @@ def check_special_char(path_df):
     return new_df
 
 
-def _rename_samples(samples_to_rename, all_samples, change_dict={}):
+def check_special_char(inp_str):
     """
-    Renames samples by prefixing. Recurses to ensure no duplicate sample
-    names are generated.
+    Establishes whether input strings adhere to QIIME 2 metadata formatting.
+    Returns tags "pass", "fail", or "warn".
 
-    :param samples_to_rename:
-    :param all_samples:
-    :param change_dict:
+    :param inp_str:
     :return:
     """
-    renamed_samples = {name: "o" + name for name in samples_to_rename}
-    changes = change_dict.copy()
-    changes.update(renamed_samples)
+    # Can return as a dict with val "pass", "warn", or "fail"
+    if inp_str.isalnum():
+        return "pass"
+    elif "#" in inp_str:
+        return "fail"
 
-    name_overlap = set(renamed_samples.values()) & set(all_samples)
-    if any(name_overlap):
-        return _rename_samples(name_overlap, all_samples, changes)
-    return changes
+    non_alnum_ch = set([ch for ch in inp_str if not ch.isalnum()])
+    if non_alnum_ch.issubset({".", "-"}):
+        return "pass"
+    else:
+        return "warn"
 
 
 def arg_parse():
@@ -162,7 +165,7 @@ def main(args):
     except FileNotFoundError:
         print(f"The input manifest file {args.input_manifest} was not found!")
 
-    renamed_df = check_special_char(manifest_df)
+    renamed_df = replace_special_char(manifest_df)
     split_manifest(renamed_df, args.output_dir, args.suffix, args.split_method)
 
 
