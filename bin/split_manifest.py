@@ -40,10 +40,10 @@ def split_manifest(
         df.to_csv(Path(out_dir) / f"{sample_name}{suffix_str}", sep="\t", index=False)
 
 
-def replace_special_char(path_df):
+def filter_special_char(path_df):
     """
     Checks and replaces sample name to FASTQ path dictionary for special
-    characters found in sample names.
+    characters found.
 
     :param path_df:
     :return:
@@ -58,7 +58,8 @@ def replace_special_char(path_df):
         )
     )
     sample_names = sample_dict.keys()
-    special_char_names = [name for name in sample_names if not name.isalnum()]
+    special_char_dict = {ch: check_special_char(ch) for ch in sample_names}
+    #special_char_names = [name for name in sample_names if not name.isalnum()]
 
     if len(special_char_names) > 0:
         # Also permitted: period ["."], dash ["-"], and underscore ["_"]
@@ -165,8 +166,8 @@ def main(args):
     except FileNotFoundError:
         print(f"The input manifest file {args.input_manifest} was not found!")
 
-    renamed_df = replace_special_char(manifest_df)
-    split_manifest(renamed_df, args.output_dir, args.suffix, args.split_method)
+    filt_df = filter_special_char(manifest_df)
+    split_manifest(filt_df, args.output_dir, args.suffix, args.split_method)
 
 
 if __name__ == "__main__":
