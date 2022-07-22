@@ -3,6 +3,7 @@
 Splits FASTQ manifest files into individual samples.
 """
 
+from collections import Counter
 from pathlib import Path
 import argparse
 import numpy as np
@@ -48,8 +49,8 @@ def filter_special_char(path_df):
     :param path_df:
     :return:
     """
-    # TODO: should also check file paths, not just sample names!
-    # Check input dir path separately, since these should be the same across file path list
+    # TODO: should also check file paths as potential issues, not just sample names!
+    # TODO: note '#' characters in file names will not throw a QIIME error but will still access incorrect file paths
 
     sample_dict = dict(
         zip(
@@ -59,38 +60,36 @@ def filter_special_char(path_df):
     )
     sample_names = sample_dict.keys()
     special_char_dict = {ch: check_special_char(ch) for ch in sample_names}
-    #special_char_names = [name for name in sample_names if not name.isalnum()]
+    special_char_count = Counter(special_char_dict.values())
+    if special_char_count["fail"] > 0:
+        pass
 
-    if len(special_char_names) > 0:
-        # Also permitted: period ["."], dash ["-"], and underscore ["_"]
-        # Also permitted: leading/trailing whitespace, which are stripped by default
-        # Definitely not permitted and must be removed: pound ["#"]
-
+    if special_char_count["warn"] > 0:
         print(
-            f"Warning: A total of {len(special_char_names)} sample names contain "
-            f"non-alphanumeric characters! It is recommended to use only characters"
-            f"within [a-zA-Z0-9_-\.]."
+            f"Warning: A total of {len(special_char_count['warn'])} sample names contain "
+            f"non-alphanumeric characters! It is recommended to use only alphanumerics"
+            f"or '-', '_', and '.' characters in sample identifiers."
         )
 
-    names_to_change = _rename_samples(special_char_names, sample_names)
-    new_dict = {
-        changed_name: sample_dict[name]
-        for name, changed_name in names_to_change.items()
-    }
-    new_dict.update(
-        {
-            key: val
-            for key, val in sample_dict.items()
-            if key not in names_to_change.keys()
-        }
-    )
-
-    if len(path_df.columns) == 2:
-        new_df_list = [[key] + [val] for key, val in new_dict.items()]
-    elif len(path_df.columns) == 3:
-        new_df_list = [[key] + val for key, val in new_dict.items()]
-    new_df = pd.DataFrame(new_df_list, columns=path_df.columns)
-    return new_df
+    # names_to_change = _rename_samples(special_char_names, sample_names)
+    # new_dict = {
+    #     changed_name: sample_dict[name]
+    #     for name, changed_name in names_to_change.items()
+    # }
+    # new_dict.update(
+    #     {
+    #         key: val
+    #         for key, val in sample_dict.items()
+    #         if key not in names_to_change.keys()
+    #     }
+    # )
+    #
+    # if len(path_df.columns) == 2:
+    #     new_df_list = [[key] + [val] for key, val in new_dict.items()]
+    # elif len(path_df.columns) == 3:
+    #     new_df_list = [[key] + val for key, val in new_dict.items()]
+    # new_df = pd.DataFrame(new_df_list, columns=path_df.columns)
+    # return new_df
 
 
 def check_special_char(inp_str):
