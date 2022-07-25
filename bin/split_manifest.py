@@ -41,7 +41,7 @@ def split_manifest(
         df.to_csv(Path(out_dir) / f"{sample_name}{suffix_str}", sep="\t", index=False)
 
 
-def filter_special_char(path_df):
+def filter_special_char(path_df: pd.DataFrame) -> dict:
     """
     Checks and replaces sample name to FASTQ path dictionary for special
     characters found.
@@ -49,47 +49,53 @@ def filter_special_char(path_df):
     :param path_df:
     :return:
     """
-    # TODO: should also check file paths as potential issues, not just sample names!
-    # TODO: note '#' characters in file names will not throw a QIIME error but will still access incorrect file paths
 
     sample_dict = dict(
         zip(
-            path_df.iloc[:, 0].values.tolist(),
-            path_df.drop(path_df.columns[0], axis=1).values.tolist(),
+            path_df.iloc[:, 0].values.tolist(),                        # sample ID
+            path_df.drop(path_df.columns[0], axis=1).values.tolist(),  # [path1, path2]
         )
     )
-    sample_names = sample_dict.keys()
-    special_char_dict = {ch: check_special_char(ch) for ch in sample_names}
-    special_char_count = Counter(special_char_dict.values())
-    if special_char_count["fail"] > 0:
-        pass
 
-    if special_char_count["warn"] > 0:
+    # Checking sample names for special characters, as per QIIME 2 recommendations
+    # https://docs.qiime2.org/2022.2/tutorials/metadata/#recommendations-for-identifiers
+    sample_names = sample_dict.keys()
+    special_name_dict = {name: check_special_char(name) for name in sample_names}
+    special_name_count = Counter(special_name_dict.values())
+    if special_name_count["fail"] > 0:
+        print(f"Warning: A total of {len(special_name_count['fail'])} sample names contain "
+              f"# symbols, which are not permitted in manifest files! These samples have been "
+              f"removed from further analysis.")
+
+        failed_sample_list = [sample for sample, val in special_name_dict.items() if val == "fail"]
+        for sam in failed_sample_list:
+            del sample_dict[sam]
+
+    if special_name_count["warn"] > 0:
         print(
-            f"Warning: A total of {len(special_char_count['warn'])} sample names contain "
-            f"non-alphanumeric characters! It is recommended to use only alphanumerics"
+            f"Warning: A total of {len(special_name_count['warn'])} sample names contain "
+            f"non-alphanumeric characters! It is recommended to use only alphanumerics "
             f"or '-', '_', and '.' characters in sample identifiers."
         )
 
-    # names_to_change = _rename_samples(special_char_names, sample_names)
-    # new_dict = {
-    #     changed_name: sample_dict[name]
-    #     for name, changed_name in names_to_change.items()
-    # }
-    # new_dict.update(
-    #     {
-    #         key: val
-    #         for key, val in sample_dict.items()
-    #         if key not in names_to_change.keys()
-    #     }
-    # )
-    #
-    # if len(path_df.columns) == 2:
-    #     new_df_list = [[key] + [val] for key, val in new_dict.items()]
-    # elif len(path_df.columns) == 3:
-    #     new_df_list = [[key] + val for key, val in new_dict.items()]
-    # new_df = pd.DataFrame(new_df_list, columns=path_df.columns)
-    # return new_df
+    # Checking file paths for '#' character, which will cause access to incorrect file paths
+    # though will not throw a QIIME error
+    path_names = [val for inner_list in sample_dict.values() for val in inner_list]
+    special_path_dict = {fpath: check_special_char(fpath) for fpath in path_names}
+    special_path_count = Counter(special_path_dict.values())
+
+    if special_path_count["fail"] > 0:
+        print(f"Warning: A total of {len(special_path_count['fail'])} sample paths contain "
+              f"# symbols, which are not permitted in manifest files! These samples have been "
+              f"removed from further analysis.")
+
+        failed_path_list = [fpath for fpath, val in special_path_dict.items() if val == "fail"]
+        for fpath in failed_path_list:
+            sam = [key for key, val in sample_dict.items() if fpath in sample_dict.values()]
+            for s in sam:
+                del sample_dict[s]
+
+    return sample_dict
 
 
 def check_special_char(inp_str):
