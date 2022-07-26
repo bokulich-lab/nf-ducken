@@ -49,6 +49,7 @@ def filter_special_char(path_df: pd.DataFrame) -> dict:
     :param path_df:
     :return:
     """
+    colname_list = path_df.columns.tolist()
 
     sample_dict = dict(
         zip(
@@ -63,7 +64,7 @@ def filter_special_char(path_df: pd.DataFrame) -> dict:
     special_name_dict = {name: check_special_char(name) for name in sample_names}
     special_name_count = Counter(special_name_dict.values())
     if special_name_count["fail"] > 0:
-        print(f"Warning: A total of {len(special_name_count['fail'])} sample names contain "
+        print(f"Warning: A total of {special_name_count['fail']} sample names contain "
               f"# symbols, which are not permitted in manifest files! These samples have been "
               f"removed from further analysis.")
 
@@ -73,7 +74,7 @@ def filter_special_char(path_df: pd.DataFrame) -> dict:
 
     if special_name_count["warn"] > 0:
         print(
-            f"Warning: A total of {len(special_name_count['warn'])} sample names contain "
+            f"Warning: A total of {special_name_count['warn']} sample names contain "
             f"non-alphanumeric characters! It is recommended to use only alphanumerics "
             f"or '-', '_', and '.' characters in sample identifiers."
         )
@@ -85,7 +86,7 @@ def filter_special_char(path_df: pd.DataFrame) -> dict:
     special_path_count = Counter(special_path_dict.values())
 
     if special_path_count["fail"] > 0:
-        print(f"Warning: A total of {len(special_path_count['fail'])} sample paths contain "
+        print(f"Warning: A total of {special_path_count['fail']} sample paths contain "
               f"# symbols, which are not permitted in manifest files! These samples have been "
               f"removed from further analysis.")
 
@@ -95,7 +96,11 @@ def filter_special_char(path_df: pd.DataFrame) -> dict:
             for s in sam:
                 del sample_dict[s]
 
-    return sample_dict
+    new_df = pd.DataFrame.from_dict(sample_dict, orient="index")
+    new_df.reset_index(inplace=True)
+    new_df.columns = colname_list
+
+    return new_df
 
 
 def check_special_char(inp_str):
@@ -166,6 +171,7 @@ def main(args):
         manifest_df = pd.read_csv(args.input_manifest, sep="\t")
         manifest_df.dropna(inplace=True)
         assert len(manifest_df.columns) == manifest_df.shape[1]
+        assert len(manifest_df.columns) > 1
         assert len(manifest_df.index) > 0
 
     except FileNotFoundError:
