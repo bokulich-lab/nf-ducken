@@ -28,9 +28,9 @@ def get_sample_ids(inp_dir: str, read_type: str, suffix: str) -> pd.DataFrame:
     :return:
     """
     fastq_path_list = sorted(Path(inp_dir).resolve().glob(f"*{suffix}"))
-    assert len(list(fastq_path_list)) > 0, (
-        f"No files were found in {inp_dir} matching the suffix {suffix}! Exiting..."
-    )
+    assert (
+        len(list(fastq_path_list)) > 0
+    ), f"No files were found in {inp_dir} matching the suffix {suffix}! Exiting..."
 
     # Get all FASTQs
     fname_df = pd.DataFrame(fastq_path_list, index=None, columns=["file_path"])
@@ -124,10 +124,7 @@ def arg_parse():
         default="fastq_manifest.tsv",
     )
     parser.add_argument(
-        "--suffix",
-        help="Suffix for FASTQ files.",
-        type=str,
-        default="_R[1-2].fastq.gz"
+        "--suffix", help="Suffix for FASTQ files.", type=str, default="_R[1-2].fastq.gz"
     )
     parser.add_argument(
         "--r1_suffix",

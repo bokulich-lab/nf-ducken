@@ -27,8 +27,10 @@ def split_manifest(
     elif int(split_method) < len(inp_manifest.index):
         num_sections = int(split_method)
     else:
-        print(f"More splits were requested ({split_method}) than there are "
-              f"samples ({len(inp_manifest.index)}! Splitting per sample...")
+        print(
+            f"More splits were requested ({split_method}) than there are "
+            f"samples ({len(inp_manifest.index)}! Splitting per sample..."
+        )
         num_sections = len(inp_manifest.index)
 
     split_list = np.array_split(inp_manifest, num_sections)
@@ -53,7 +55,7 @@ def filter_special_char(path_df: pd.DataFrame) -> dict:
 
     sample_dict = dict(
         zip(
-            path_df.iloc[:, 0].values.tolist(),                        # sample ID
+            path_df.iloc[:, 0].values.tolist(),  # sample ID
             path_df.drop(path_df.columns[0], axis=1).values.tolist(),  # [path1, path2]
         )
     )
@@ -64,11 +66,15 @@ def filter_special_char(path_df: pd.DataFrame) -> dict:
     special_name_dict = {name: check_special_char(name) for name in sample_names}
     special_name_count = Counter(special_name_dict.values())
     if special_name_count["fail"] > 0:
-        print(f"Warning: A total of {special_name_count['fail']} sample names contain "
-              f"# symbols, which are not permitted in manifest files! These samples have been "
-              f"removed from further analysis.")
+        print(
+            f"Warning: A total of {special_name_count['fail']} sample names contain "
+            f"# symbols, which are not permitted in manifest files! These samples have been "
+            f"removed from further analysis."
+        )
 
-        failed_sample_list = [sample for sample, val in special_name_dict.items() if val == "fail"]
+        failed_sample_list = [
+            sample for sample, val in special_name_dict.items() if val == "fail"
+        ]
         for sam in failed_sample_list:
             del sample_dict[sam]
 
@@ -86,13 +92,19 @@ def filter_special_char(path_df: pd.DataFrame) -> dict:
     special_path_count = Counter(special_path_dict.values())
 
     if special_path_count["fail"] > 0:
-        print(f"Warning: A total of {special_path_count['fail']} sample paths contain "
-              f"# symbols, which are not permitted in manifest files! These samples have been "
-              f"removed from further analysis.")
+        print(
+            f"Warning: A total of {special_path_count['fail']} sample paths contain "
+            f"# symbols, which are not permitted in manifest files! These samples have been "
+            f"removed from further analysis."
+        )
 
-        failed_path_list = [fpath for fpath, val in special_path_dict.items() if val == "fail"]
+        failed_path_list = [
+            fpath for fpath, val in special_path_dict.items() if val == "fail"
+        ]
         for fpath in failed_path_list:
-            sam = [key for key, val in sample_dict.items() if fpath in sample_dict.values()]
+            sam = [
+                key for key, val in sample_dict.items() if fpath in sample_dict.values()
+            ]
             for s in sam:
                 del sample_dict[s]
 
@@ -103,7 +115,7 @@ def filter_special_char(path_df: pd.DataFrame) -> dict:
     return new_df
 
 
-def check_special_char(inp_str):
+def check_special_char(inp_str) -> str:
     """
     Establishes whether input strings adhere to QIIME 2 metadata formatting.
     Returns tags "pass", "fail", or "warn".
@@ -153,7 +165,7 @@ def arg_parse():
     parser.add_argument(
         "--split_method",
         help="Method to split input manifest. Options include 'sample' or an "
-             "integer representing the number of output files.",
+        "integer representing the number of output files.",
         type=str,
         default="sample",
     )
