@@ -3,7 +3,10 @@ process CLUSTER_CLOSED_OTU {
     label "process_local"
     tag "${sample_id}"
 
-    scratch true
+    beforeScript "cp ${ref_otus} ref_otus.qza; cp ${rep_seqs} rep_seqs.qza"
+    beforeScript "export NXF_TEMP=$PWD/tmp_cluster"
+    beforeScript "export TMPDIR=$PWD/tmp_cluster"
+    afterScript "rm -rf $PWD/tmp_cluster"
 
     input:
     tuple val(sample_id), path(table), path(rep_seqs), path(ref_otus)
@@ -19,8 +22,8 @@ process CLUSTER_CLOSED_OTU {
 
     qiime vsearch cluster-features-closed-reference \
         --i-table ${table} \
-        --i-sequences ${rep_seqs} \
-        --i-reference-sequences ${ref_otus} \
+        --i-sequences rep_seqs.qza \
+        --i-reference-sequences ref_otus.qza \
         --p-perc-identity ${params.vsearch.perc_identity} \
         --p-strand ${params.vsearch.strand} \
         --p-threads ${params.vsearch.num_threads} \
