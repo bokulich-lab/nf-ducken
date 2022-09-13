@@ -1,6 +1,7 @@
 process CLASSIFY_TAXONOMY {
     label "container_qiime2"
     label "process_local"
+    label "error_retry"
     tag "${sample_id}"
     publishDir "${params.outdir}/", pattern: "*.qzv"
 

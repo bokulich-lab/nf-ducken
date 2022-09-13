@@ -1,6 +1,7 @@
 process DENOISE_DADA2 {
     label "container_qiime2"
     label "process_local"
+    label "error_retry"
     tag "${sample_id}"
 
     publishDir "${params.outdir}/stats/", pattern: "*_stats.qza"
