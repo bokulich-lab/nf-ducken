@@ -6,9 +6,9 @@ process CLASSIFY_TAXONOMY {
     publishDir "${params.outdir}/", pattern: "*.qzv"
 
     beforeScript "cp ${classifier} classifier.qza; cp ${rep_seqs} rep_seqs.qza"
-    beforeScript "export NXF_TEMP=$PWD/tmp_taxa"
-    beforeScript "mkdir $NXF_TEMP; export TMPDIR=$PWD/tmp_taxa"
-    afterScript "rm -rf $PWD/tmp_taxa"
+    beforeScript "export NXF_TEMP=${PWD}/tmp_taxa"
+    beforeScript "mkdir ${NXF_TEMP}; export TMPDIR=${PWD}/tmp_taxa"
+    afterScript "rm -rf ${PWD}/tmp_taxa"
 
     input:
     tuple val(sample_id), path(rep_seqs), path(classifier), path(ref_seqs), path(ref_taxonomy)

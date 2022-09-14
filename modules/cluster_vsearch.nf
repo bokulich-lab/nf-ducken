@@ -3,9 +3,9 @@ process CLUSTER_CLOSED_OTU {
     label "process_local"
     tag "${sample_id}"
 
-    beforeScript "export NXF_TEMP=$PWD/tmp_cluster"
-    beforeScript "mkdir $NXF_TEMP; export TMPDIR=$PWD/tmp_cluster"
-    afterScript "rm -rf $PWD/tmp_cluster"
+    beforeScript "export NXF_TEMP=${PWD}/tmp_cluster"
+    beforeScript "mkdir ${NXF_TEMP}; export TMPDIR=${PWD}/tmp_cluster"
+    afterScript "rm -rf ${PWD}/tmp_cluster"
 
     input:
     tuple val(sample_id), path(table), path(rep_seqs), path(ref_otus)
