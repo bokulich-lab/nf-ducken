@@ -7,7 +7,7 @@ process CLASSIFY_TAXONOMY {
 
     beforeScript "cp ${classifier} classifier.qza; cp ${rep_seqs} rep_seqs.qza"
     beforeScript "export NXF_TEMP=$PWD/tmp_taxa"
-    beforeScript "export TMPDIR=$PWD/tmp_taxa"
+    beforeScript "mkdir $NXF_TEMP; export TMPDIR=$PWD/tmp_taxa"
     afterScript "rm -rf $PWD/tmp_taxa"
 
     input:

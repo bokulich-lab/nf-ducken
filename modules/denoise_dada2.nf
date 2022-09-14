@@ -5,7 +5,9 @@ process DENOISE_DADA2 {
     tag "${sample_id}"
 
     publishDir "${params.outdir}/stats/", pattern: "*_stats.qza"
-    scratch true
+    beforeScript "export NXF_TEMP=$PWD/tmp_denoise"
+    beforeScript "mkdir $NXF_TEMP; export TMPDIR=$PWD/tmp_denoise"
+    afterScript "rm -rf $PWD/tmp_denoise"
 
     input:
     tuple val(sample_id), path(fastq_qza)
