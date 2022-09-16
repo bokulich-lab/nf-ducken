@@ -1,11 +1,10 @@
 process CLUSTER_CLOSED_OTU {
     label "container_qiime2"
     label "process_local"
+    label "error_retry"
     tag "${sample_id}"
 
-    beforeScript "export NXF_TEMP=${PWD}/tmp_cluster"
-    beforeScript "mkdir ${NXF_TEMP}; export TMPDIR=${PWD}/tmp_cluster"
-    afterScript "rm -rf ${PWD}/tmp_cluster"
+    afterScript "rm -rf \${PWD}/tmp_cluster"
 
     input:
     tuple val(sample_id), path(table), path(rep_seqs), path(ref_otus)
@@ -18,6 +17,8 @@ process CLUSTER_CLOSED_OTU {
     script:
     """
     echo 'Clustering features with VSEARCH...'
+
+    export NXF_TEMP=\${PWD}/tmp_cluster
 
     qiime vsearch cluster-features-closed-reference \
         --i-table ${table} \

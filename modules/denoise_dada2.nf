@@ -5,9 +5,7 @@ process DENOISE_DADA2 {
     tag "${sample_id}"
 
     publishDir "${params.outdir}/stats/", pattern: "*_stats.qza"
-    beforeScript "export NXF_TEMP=${PWD}/tmp_denoise"
-    beforeScript "mkdir ${NXF_TEMP}; export TMPDIR=${PWD}/tmp_denoise"
-    afterScript "rm -rf ${PWD}/tmp_denoise"
+    afterScript "rm -rf \${PWD}/tmp_denoise"
 
     input:
     tuple val(sample_id), path(fastq_qza)
@@ -20,6 +18,8 @@ process DENOISE_DADA2 {
     if (params.read_type == "single")
         """
         echo 'Denoising single-end reads with DADA2...'
+
+        export NXF_TEMP=\${PWD}/tmp_denoise
 
         qiime dada2 denoise-${params.read_type} \
             --i-demultiplexed-seqs ${fastq_qza} \
@@ -42,6 +42,8 @@ process DENOISE_DADA2 {
     else if (params.read_type == "paired")
         """
         echo 'Denoising paired-end reads with DADA2...'
+
+        export NXF_TEMP=\${PWD}/tmp_denoise
 
         qiime dada2 denoise-${params.read_type} \
             --i-demultiplexed-seqs ${fastq_qza} \

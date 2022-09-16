@@ -6,9 +6,7 @@ process CLASSIFY_TAXONOMY {
     publishDir "${params.outdir}/", pattern: "*.qzv"
 
     beforeScript "cp ${classifier} classifier.qza; cp ${rep_seqs} rep_seqs.qza"
-    beforeScript "export NXF_TEMP=${PWD}/tmp_taxa"
-    beforeScript "mkdir ${NXF_TEMP}; export TMPDIR=${PWD}/tmp_taxa"
-    afterScript "rm -rf ${PWD}/tmp_taxa"
+    afterScript "rm -rf \${PWD}/tmp_taxa"
 
     input:
     tuple val(sample_id), path(rep_seqs), path(classifier), path(ref_seqs), path(ref_taxonomy)
@@ -21,6 +19,8 @@ process CLASSIFY_TAXONOMY {
     if (params.classifier.method == "sklearn") {
         """
         echo 'Generating taxonomic assignments with the sklearn fitted feature classifier...'
+
+        export NXF_TEMP=\${PWD}/tmp_taxa
 
         qiime feature-classifier classify-sklearn \
             --i-classifier ${classifier} \
@@ -44,6 +44,8 @@ process CLASSIFY_TAXONOMY {
 
         echo 'Generating taxonomic assignments with a BLAST+ based feature classifier...'
 
+        export NXF_TEMP=\${PWD}/tmp_taxa
+
         qiime feature-classifier classify-consensus-blast \
             --i-query ${rep_seqs} \
             --i-reference-reads ${ref_seqs} \
@@ -65,6 +67,8 @@ process CLASSIFY_TAXONOMY {
     } else if (params.classifier.method == "vsearch") {
         """
         echo 'Generating taxonomic assignments with the VSEARCH fitted feature classifier...'
+
+        export NXF_TEMP=\${PWD}/tmp_taxa
 
         qiime feature-classifier classify-consensus-vsearch \
             --i-query ${rep_seqs} \
