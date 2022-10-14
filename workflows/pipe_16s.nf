@@ -114,7 +114,8 @@ include { CLUSTER_CLOSED_OTU;
           FILTER_CHIMERAS                     } from '../modules/cluster_vsearch'
 include { CLASSIFY_TAXONOMY; COLLAPSE_TAXA;
           DOWNLOAD_CLASSIFIER;
-          DOWNLOAD_REF_TAXONOMY               } from '../modules/classify_taxonomy'
+          DOWNLOAD_REF_TAXONOMY;
+          COMBINE_FEATURE_TABLES              } from '../modules/classify_taxonomy'
 
 /*
 ========================================================================================
@@ -220,6 +221,10 @@ workflow PIPE_16S {
         .set { ch_qza_to_collapse }
 
     COLLAPSE_TAXA ( ch_qza_to_collapse )
+
+    ch_qza_to_combine = COLLAPSE_TAXA.out.collect()
+    COMBINE_FEATURE_TABLES ( ch_qza_to_combine )
+
 }
 
 /*

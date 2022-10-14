@@ -5,7 +5,6 @@ process CLASSIFY_TAXONOMY {
     tag "${sample_id}"
     publishDir "${params.outdir}/", pattern: "*.qzv"
 
-    beforeScript "cp ${classifier} classifier.qza; cp ${rep_seqs} rep_seqs.qza"
     afterScript "rm -rf \${PWD}/tmp_taxa"
 
     input:
@@ -39,9 +38,6 @@ process CLASSIFY_TAXONOMY {
         """
     } else if (params.classifier.method == "blast") {
         """
-        cp ${ref_seqs} ref_seqs.qza
-        cp ${ref_taxonomy} ref_taxonomy.qza
-
         echo 'Generating taxonomic assignments with a BLAST+ based feature classifier...'
 
         export NXF_TEMP=\${PWD}/tmp_taxa
@@ -116,7 +112,33 @@ process COLLAPSE_TAXA {
         --i-table ${table} \
         --i-taxonomy ${taxonomy} \
         --p-level ${params.taxa_level} \
-        --o-collapsed-table ${sample_id}_collapsed_table.qza
+        --o-collapsed-table ${sample_id}_collapsed_table.qza \
+        --verbose
+    """
+}
+
+process COMBINE_FEATURE_TABLES {
+    label "container_qiime2"
+    publishDir "${params.outdir}/"
+
+    input:
+    path(table_list)
+
+    output:
+
+
+    script:
+    """
+    echo 'Combining feature tables into a single output...'
+
+    for table in ${table_list}; do
+      full_table_list="${fname} ${table}"
+    done
+
+    qiime feature-table merge \
+        --i-tables ${full_table_list} \
+        --o-merged-table merged_feature_table.qza \
+        --verbose
     """
 }
 
