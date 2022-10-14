@@ -132,7 +132,7 @@ process COMBINE_FEATURE_TABLES {
     echo 'Combining feature tables into a single output...'
 
     for table in ${table_list}; do
-      full_table_list="${fname} ${table}"
+      full_table_list="${full_table_list} ${table}"
     done
 
     qiime feature-table merge \
