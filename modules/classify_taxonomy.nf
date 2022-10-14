@@ -20,6 +20,9 @@ process CLASSIFY_TAXONOMY {
         echo 'Generating taxonomic assignments with the sklearn fitted feature classifier...'
 
         export NXF_TEMP=\${PWD}/tmp_taxa
+        export JOBLIB_TEMP_FOLDER=\$PWD/tmp_taxa
+        mkdir \${PWD}/tmp_taxa
+        export TMPDIR=\${PWD}/tmp_taxa
 
         qiime feature-classifier classify-sklearn \
             --i-classifier ${classifier} \
@@ -41,6 +44,9 @@ process CLASSIFY_TAXONOMY {
         echo 'Generating taxonomic assignments with a BLAST+ based feature classifier...'
 
         export NXF_TEMP=\${PWD}/tmp_taxa
+        export JOBLIB_TEMP_FOLDER=\$PWD/tmp_taxa
+        mkdir \${PWD}/tmp_taxa
+        export TMPDIR=\${PWD}/tmp_taxa
 
         qiime feature-classifier classify-consensus-blast \
             --i-query ${rep_seqs} \
@@ -65,6 +71,9 @@ process CLASSIFY_TAXONOMY {
         echo 'Generating taxonomic assignments with the VSEARCH fitted feature classifier...'
 
         export NXF_TEMP=\${PWD}/tmp_taxa
+        export JOBLIB_TEMP_FOLDER=\$PWD/tmp_taxa
+        mkdir \${PWD}/tmp_taxa
+        export TMPDIR=\${PWD}/tmp_taxa
 
         qiime feature-classifier classify-consensus-vsearch \
             --i-query ${rep_seqs} \
