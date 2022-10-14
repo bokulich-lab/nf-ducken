@@ -12,7 +12,7 @@ process CLASSIFY_TAXONOMY {
 
     output:
     tuple val(sample_id), path("${sample_id}_taxonomy.qza"), emit: taxonomy_qza
-    path "${sample_id}_taxonomy.qzv", emit: taxonomy_qzv
+    path "${sample_id}_taxonomy.qzv",                        emit: taxonomy_qzv
 
     script:
     if (params.classifier.method == "sklearn") {
@@ -126,6 +126,36 @@ process COLLAPSE_TAXA {
     """
 }
 
+process COMBINE_TAXONOMIES {
+    label "container_qiime2"
+    publishDir "${params.outdir}/"
+
+    input:
+    path(taxonomy_list)
+
+    output:
+    path "merged_taxonomy.qza"
+    path "merged_taxonomy.qzv"
+
+    script:
+    """
+    echo 'Combining taxonomies into a single output...'
+
+    for taxonomy in ${taxonomy_list}; do
+      full_taxonomy_list=\"${full_taxonomy_list} ${taxonomy}\"
+    done
+
+    qiime feature-table merge-taxa \
+        --i-data ${full_taxonomy_list} \
+        --o-merged-data merged_taxonomy.qza \
+        --verbose
+
+    qiime metadata tabulate \
+        --m-input-file merged_taxonomy.qza \
+        --o-visualization merged_taxonomy.qzv
+    """
+}
+
 process COMBINE_FEATURE_TABLES {
     label "container_qiime2"
     publishDir "${params.outdir}/"
@@ -134,14 +164,14 @@ process COMBINE_FEATURE_TABLES {
     path(table_list)
 
     output:
-
+    path "merged_feature_table.qza"
 
     script:
     """
     echo 'Combining feature tables into a single output...'
 
     for table in ${table_list}; do
-      full_table_list="${full_table_list} ${table}"
+      full_table_list=\"${full_table_list} ${table}\"
     done
 
     qiime feature-table merge \

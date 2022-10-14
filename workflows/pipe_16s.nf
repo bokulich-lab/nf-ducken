@@ -115,6 +115,7 @@ include { CLUSTER_CLOSED_OTU;
 include { CLASSIFY_TAXONOMY; COLLAPSE_TAXA;
           DOWNLOAD_CLASSIFIER;
           DOWNLOAD_REF_TAXONOMY;
+          COMBINE_TAXONOMIES;
           COMBINE_FEATURE_TABLES              } from '../modules/classify_taxonomy'
 
 /*
@@ -215,6 +216,9 @@ workflow PIPE_16S {
                         .combine ( ch_taxa_ref_qza )
 
     CLASSIFY_TAXONOMY ( ch_to_classify )
+
+    // need to split off channel of taxonomies here to merge
+    // COMBINE_TAXONOMIES ( )
 
     CLUSTER_CLOSED_OTU.out.table
         .join ( CLASSIFY_TAXONOMY.out.taxonomy_qza )
