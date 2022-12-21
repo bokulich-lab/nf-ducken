@@ -61,7 +61,7 @@ def get_sample_ids(inp_dir: str, read_type: str, suffix: str) -> pd.DataFrame:
     # Get all FASTQs
     fname_df = pd.DataFrame(fastq_path_list, index=None, columns=["file_path"])
 
-    fname_df["sample_id"] = fname_df["file_path"].apply(match_fastq_suffix)
+    fname_df["sample_id"] = fname_df["file_path"].apply(match_fastq_suffix, suffix=suffix)
     nonmatch_fq = fname_df[fname_df["sample_id"].isnull()]["sample_id"].tolist()
 
     logging.info(f"The following FASTQ files were removed from further "
