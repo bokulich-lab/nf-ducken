@@ -6,16 +6,40 @@ Generates a manifest for FASTQ files based on file presence.
 from pathlib import Path
 import argparse
 import logging
+import numpy as np
 import pandas as pd
 import re
 
 
 HEADER_DICT = {
     "single": ["sample-id", "absolute-filepath"],
-    "paired": ["sample-id", "forward-absolute-filepath", "reverse-absolute-filepath"],
+    "paired": ["sample-id", "forward-absolute-filepath",
+               "reverse-absolute-filepath"],
 }
 
 NUM_DICT = {"single": 1, "paired": 2}
+
+
+def match_fastq_suffix(file_path: str, suffix: str) -> str:
+    """
+
+    :param file_path:
+    :param suffix:
+    :return:
+    """
+    suffix_search = re.search(f"(\w+)({suffix})", str(file_path))
+    if suffix_search:
+        return suffix_search.group(1)
+
+    # Try relaxing query to allow non-alphanumerics
+    if re.search(f"(\S+)({suffix})", str(file_path.name)):
+        logging.warning(f"There are non-alphanumeric characters in your file "
+                        f"name {file_path}! These will be excluded from "
+                        f"further analysis.")
+        return np.NaN
+
+    # Too late, there is no hope
+    return np.NaN
 
 
 def get_sample_ids(inp_dir: str, read_type: str, suffix: str) -> pd.DataFrame:
@@ -28,15 +52,23 @@ def get_sample_ids(inp_dir: str, read_type: str, suffix: str) -> pd.DataFrame:
     :return:
     """
     fastq_path_list = sorted(Path(inp_dir).resolve().glob(f"*{suffix}"))
+
     assert (
         len(list(fastq_path_list)) > 0
-    ), f"No files were found in {inp_dir} matching the suffix {suffix}! Exiting..."
+    ), f"No files were found in {inp_dir} matching the suffix {suffix}! " \
+       f"Exiting..."
 
     # Get all FASTQs
     fname_df = pd.DataFrame(fastq_path_list, index=None, columns=["file_path"])
-    fname_df["sample_id"] = fname_df["file_path"].apply(
-        lambda x: re.search(f"(\w+)({suffix})", str(x)).group(1)
-    )
+
+    fname_df["sample_id"] = fname_df["file_path"].apply(match_fastq_suffix)
+    nonmatch_fq = fname_df[fname_df["sample_id"].isnull()]["sample_id"].tolist()
+
+    logging.info(f"The following FASTQ files were removed from further "
+                 f"analysis due to non-alphanumerics in the file names:"
+                 f"{nonmatch_fq}")
+
+    fname_df = fname_df[~fname_df["sample_id"].isnull()]
 
     # Group by sample ID
     group = fname_df.groupby("sample_id")
