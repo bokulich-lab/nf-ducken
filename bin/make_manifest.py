@@ -64,9 +64,9 @@ def get_sample_ids(inp_dir: str, read_type: str, suffix: str) -> pd.DataFrame:
     fname_df["sample_id"] = fname_df["file_path"].apply(match_fastq_suffix, suffix=suffix)
     nonmatch_fq = fname_df[fname_df["sample_id"].isnull()]["sample_id"].tolist()
 
-    logging.info(f"The following FASTQ files were removed from further "
-                 f"analysis due to non-alphanumerics in the file names:"
-                 f"{nonmatch_fq}")
+    logging.warning(f"The following FASTQ files were removed from further "
+                    f"analysis due to non-alphanumerics in the file names:"
+                    f"{nonmatch_fq}")
 
     fname_df = fname_df[~fname_df["sample_id"].isnull()]
 
@@ -77,11 +77,15 @@ def get_sample_ids(inp_dir: str, read_type: str, suffix: str) -> pd.DataFrame:
     # Filter out samples with incorrect number of FASTQs
     sample_df["num_fastq"] = sample_df.iloc[:, 0].apply(len)
     num_mismatch_fq = sum(sample_df["num_fastq"] != NUM_DICT[read_type])
+    num_mismatch_names = sample_df[sample_df["num_fastq"] != NUM_DICT[
+        read_type]]["sample_id"]
     if num_mismatch_fq > 0:
         logging.warning(
             f"There is/are {num_mismatch_fq} sample(s) with the "
             f"incorrect number of FASTQs!"
         )
+        logging.warning(f"The following FASTQs had the incorrect number of "
+                        f"FASTQs: {num_mismatch_names}")
     assert (
         num_mismatch_fq != sample_df.shape[0]
     ), f"There are no FASTQs matching read type {read_type}! Exiting..."
