@@ -27,7 +27,7 @@ def match_fastq_suffix(file_path: str, suffix: str) -> str:
     :param suffix:
     :return:
     """
-    suffix_search = re.search(f"(\w+)({suffix})", str(file_path))
+    suffix_search = re.search(f"([\w\.]+)({suffix})", str(file_path))
     if suffix_search:
         return suffix_search.group(1)
 
@@ -62,7 +62,7 @@ def get_sample_ids(inp_dir: str, read_type: str, suffix: str) -> pd.DataFrame:
     fname_df = pd.DataFrame(fastq_path_list, index=None, columns=["file_path"])
 
     fname_df["sample_id"] = fname_df["file_path"].apply(match_fastq_suffix, suffix=suffix)
-    nonmatch_fq = fname_df[fname_df["sample_id"].isnull()]["sample_id"].tolist()
+    nonmatch_fq = fname_df[fname_df["sample_id"].isnull()]["file_path"].tolist()
 
     logging.warning(f"The following FASTQ files were removed from further "
                     f"analysis due to non-alphanumerics in the file names:"
@@ -78,7 +78,7 @@ def get_sample_ids(inp_dir: str, read_type: str, suffix: str) -> pd.DataFrame:
     sample_df["num_fastq"] = sample_df.iloc[:, 0].apply(len)
     num_mismatch_fq = sum(sample_df["num_fastq"] != NUM_DICT[read_type])
     num_mismatch_names = sample_df[sample_df["num_fastq"] != NUM_DICT[
-        read_type]]["sample_id"]
+        read_type]]
     if num_mismatch_fq > 0:
         logging.warning(
             f"There is/are {num_mismatch_fq} sample(s) with the "
