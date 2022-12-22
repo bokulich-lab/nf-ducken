@@ -10,7 +10,6 @@ import numpy as np
 import pandas as pd
 import re
 
-
 HEADER_DICT = {
     "single": ["sample-id", "absolute-filepath"],
     "paired": ["sample-id", "forward-absolute-filepath",
@@ -18,27 +17,21 @@ HEADER_DICT = {
 }
 
 NUM_DICT = {"single": 1, "paired": 2}
+NEWLINE = "\n"
 
 
 def match_fastq_suffix(file_path: str, suffix: str) -> str:
     """
+    Retrieves sample ID from FASTQ file path and suffix.
 
     :param file_path:
     :param suffix:
     :return:
     """
-    suffix_search = re.search(f"([\w\.-]+)({suffix})", str(file_path))
+    suffix_search = re.search(f"^([\w\.-]+)({suffix})", str(file_path.name))
     if suffix_search:
         return suffix_search.group(1)
 
-    # Try relaxing query to allow non-alphanumerics
-    if re.search(f"(\S+)({suffix})", str(file_path.name)):
-        logging.warning(f"There are non-alphanumeric characters in your file "
-                        f"name {file_path}! These will be excluded from "
-                        f"further analysis.")
-        return np.NaN
-
-    # Too late, there is no hope
     return np.NaN
 
 
@@ -54,19 +47,21 @@ def get_sample_ids(inp_dir: str, read_type: str, suffix: str) -> pd.DataFrame:
     fastq_path_list = sorted(Path(inp_dir).resolve().glob(f"*{suffix}"))
 
     assert (
-        len(list(fastq_path_list)) > 0
+            len(list(fastq_path_list)) > 0
     ), f"No files were found in {inp_dir} matching the suffix {suffix}! " \
        f"Exiting..."
 
     # Get all FASTQs
     fname_df = pd.DataFrame(fastq_path_list, index=None, columns=["file_path"])
 
-    fname_df["sample_id"] = fname_df["file_path"].apply(match_fastq_suffix, suffix=suffix)
+    fname_df["sample_id"] = fname_df["file_path"].apply(match_fastq_suffix,
+                                                        suffix=suffix)
     nonmatch_fq = fname_df[fname_df["sample_id"].isnull()]["file_path"].tolist()
+    nonmatch_fq = [str(fpath) for fpath in nonmatch_fq]
 
-    logging.warning(f"The following FASTQ files were removed from further "
-                    f"analysis due to non-alphanumerics in the file names:"
-                    f"{nonmatch_fq}")
+    logging.info(f"The following FASTQ files were removed from further "
+                 f"analysis due to non-permitted characters in the file "
+                 f"names:{NEWLINE}{NEWLINE.join(nonmatch_fq)}")
 
     fname_df = fname_df[~fname_df["sample_id"].isnull()]
 
@@ -78,16 +73,18 @@ def get_sample_ids(inp_dir: str, read_type: str, suffix: str) -> pd.DataFrame:
     sample_df["num_fastq"] = sample_df.iloc[:, 0].apply(len)
     num_mismatch_fq = sum(sample_df["num_fastq"] != NUM_DICT[read_type])
     num_mismatch_names = sample_df[sample_df["num_fastq"] != NUM_DICT[
-        read_type]]
+        read_type]].reset_index()
     if num_mismatch_fq > 0:
         logging.warning(
             f"There is/are {num_mismatch_fq} sample(s) with the "
             f"incorrect number of FASTQs!"
         )
-        logging.warning(f"The following FASTQs had the incorrect number of "
-                        f"FASTQs: {num_mismatch_names}")
+        logging.info(f"The following samples had the incorrect number of "
+                     f"associated FASTQs:{NEWLINE}"
+                     f"{NEWLINE.join([f'Sample {row.sample_id} has {row.num_fastq} FASTQ file(s): {[str(fpath) for fpath in row.file_path]}' for i, row in num_mismatch_names.iterrows()])}")
+
     assert (
-        num_mismatch_fq != sample_df.shape[0]
+            num_mismatch_fq != sample_df.shape[0]
     ), f"There are no FASTQs matching read type {read_type}! Exiting..."
 
     sample_df = sample_df[sample_df["num_fastq"] == NUM_DICT[read_type]]
@@ -97,7 +94,7 @@ def get_sample_ids(inp_dir: str, read_type: str, suffix: str) -> pd.DataFrame:
 
 
 def assign_fastqs_per_sample(
-    sample_fastq_df: pd.DataFrame, read_type: str, suffix_dict: dict
+        sample_fastq_df: pd.DataFrame, read_type: str, suffix_dict: dict
 ) -> pd.DataFrame:
     """
     Convert sample ID-list association to
@@ -160,7 +157,8 @@ def arg_parse():
         default="fastq_manifest.tsv",
     )
     parser.add_argument(
-        "--suffix", help="Suffix for FASTQ files.", type=str, default="_R[1-2].fastq.gz"
+        "--suffix", help="Suffix for FASTQ files.", type=str,
+        default="_R[1-2].fastq.gz"
     )
     parser.add_argument(
         "--r1_suffix",
@@ -183,12 +181,17 @@ def main(args):
     assert Path(args.input_dir).is_dir()
     assert Path(args.output_fname).parent.is_dir()
 
-    logging.basicConfig(filename=Path(args.output_fname).parent / "manifest.log")
+    logging.basicConfig(filename=Path(args.output_fname).parent /
+                                 f"{Path(args.output_fname).stem}.log")
+    logger = logging.getLogger()
+    logger.setLevel("INFO")
 
-    suffix_dict = {"single": [args.suffix], "paired": [args.r1_suffix, args.r2_suffix]}
+    suffix_dict = {"single": [args.suffix],
+                   "paired": [args.r1_suffix, args.r2_suffix]}
 
     sample_df = get_sample_ids(args.input_dir, args.read_type, args.suffix)
-    sample_fastq_df = assign_fastqs_per_sample(sample_df, args.read_type, suffix_dict)
+    sample_fastq_df = assign_fastqs_per_sample(sample_df, args.read_type,
+                                               suffix_dict)
     sample_fastq_df.to_csv(args.output_fname, sep="\t", index=False)
 
 
