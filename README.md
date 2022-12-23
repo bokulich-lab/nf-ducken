@@ -44,7 +44,7 @@ Unless otherwise noted, these parameters should be under the scope `params` in t
 
 Used for file download and FASTQ processing.
 
-Required if running q2_fondue:
+Required if running `q2_fondue`:
 * `inp_id_file`: path to TSV file containing NCBI accession IDs for FASTQs to download. File must adhere to [QIIME 2 metadata formatting requirements](https://docs.qiime2.org/2022.2/tutorials/metadata/#metadata-formatting-requirements)
   * **Note:** FASTQ file names starting with non-alphanumeric characters (particularly `#`) are NOT supported. These will throw an error in your workflow!
 * `email_address`: email address of user, required for SRA requests via `q2-fondue`
@@ -148,7 +148,8 @@ Execution parameters (scope `process`):
 ### Parameters used for intermediate process skipping
 
 To skip SRA FASTQ retrieval, if using local FASTQs:
-* `fastq_manifest`: Path to TSV file mapping sample identifiers to FASTQ absolute file paths; manifest must adhere to [QIIME 2 FASTQ manifest formatting requirements](https://docs.qiime2.org/2022.2/tutorials/importing/#fastq-manifest-formats)
+* `fastq_manifest`: Path to TSV file mapping sample identifiers to FASTQ absolute file paths; manifest must adhere to [QIIME 2 FASTQ manifest formatting requirements](https://docs.qiime2.org/2022.11/tutorials/importing/#fastq-manifest-formats)
+  * In particular, the first column must adhere to requirements of the [QIIME 2 Metadata Format](https://docs.qiime2.org/2022.11/tutorials/metadata/#identifier-column). Notably, the ID may contain Unicode characters but must not begin with the pound sign (`#`).
 * `phred_offset`: default `33`, should be either `33` or `64`; integer indicating quality score encoding scheme for FASTQs
 
 To skip processes through DADA2, if using pre-denoised feature tables and sequences:
