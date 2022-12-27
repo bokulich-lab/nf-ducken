@@ -217,17 +217,20 @@ workflow PIPE_16S {
 
     CLASSIFY_TAXONOMY ( ch_to_classify )
 
-    // need to split off channel of taxonomies here to merge
-    // COMBINE_TAXONOMIES ( )
+    // Split taxonomies off to merge
+    // TODO split off input channels to combine_taxonomies and combine_feature_tables in order to remove the sample_id which is the first element
+    CLASSIFY_TAXONOMY.out.taxonomy_qza.tap { ch_taxa_to_combine }
+    ch_taxa_to_combine = ch_taxa_to_combine.collect()
+    COMBINE_TAXONOMIES ( ch_taxa_to_combine )
 
     CLUSTER_CLOSED_OTU.out.table
         .join ( CLASSIFY_TAXONOMY.out.taxonomy_qza )
-        .set { ch_qza_to_collapse }
+        .set { ch_table_to_collapse }
 
-    COLLAPSE_TAXA ( ch_qza_to_collapse )
+    COLLAPSE_TAXA ( ch_table_to_collapse )
 
-    ch_qza_to_combine = COLLAPSE_TAXA.out.collect()
-    COMBINE_FEATURE_TABLES ( ch_qza_to_combine )
+    ch_table_to_combine = COLLAPSE_TAXA.out.collect()
+    COMBINE_FEATURE_TABLES ( ch_table_to_combine )
 
 }
 

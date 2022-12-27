@@ -141,12 +141,13 @@ process COMBINE_TAXONOMIES {
     """
     echo 'Combining taxonomies into a single output...'
 
+    full_taxonomy_list=""
     for taxonomy in ${taxonomy_list}; do
-      full_taxonomy_list=\"${full_taxonomy_list} ${taxonomy}\"
+      full_taxonomy_list=\"\${full_taxonomy_list} \${taxonomy}\"
     done
 
     qiime feature-table merge-taxa \
-        --i-data ${full_taxonomy_list} \
+        --i-data \${full_taxonomy_list} \
         --o-merged-data merged_taxonomy.qza \
         --verbose
 
@@ -170,12 +171,13 @@ process COMBINE_FEATURE_TABLES {
     """
     echo 'Combining feature tables into a single output...'
 
+    full_table_list=""
     for table in ${table_list}; do
-      full_table_list=\"${full_table_list} ${table}\"
+      full_table_list=\"\${full_table_list} \${table}\"
     done
 
     qiime feature-table merge \
-        --i-tables ${full_table_list} \
+        --i-tables \${full_table_list} \
         --o-merged-table merged_feature_table.qza \
         --verbose
     """
