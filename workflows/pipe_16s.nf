@@ -221,7 +221,7 @@ workflow PIPE_16S {
     CLASSIFY_TAXONOMY.out.taxonomy_qza.tap { ch_taxa_to_combine }
     ch_taxa_to_combine = ch_taxa_to_combine
                             .collect()
-                            .map { it[0] }
+                            .map { it[1] }
 
     COMBINE_TAXONOMIES ( ch_taxa_to_combine )
 
@@ -233,7 +233,7 @@ workflow PIPE_16S {
 
     ch_table_to_combine = COLLAPSE_TAXA.out
                             .collect()
-                            .map { it[0] }
+                            .map { it[1] }
     COMBINE_FEATURE_TABLES ( ch_table_to_combine )
 
 }
