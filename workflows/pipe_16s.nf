@@ -220,8 +220,9 @@ workflow PIPE_16S {
     // Split taxonomies off to merge
     CLASSIFY_TAXONOMY.out.taxonomy_qza.tap { ch_taxa_to_combine }
     ch_taxa_to_combine = ch_taxa_to_combine
-                            .collect()
                             .map { it[1] }
+                            .collect()
+
 
     COMBINE_TAXONOMIES ( ch_taxa_to_combine )
 
@@ -232,8 +233,8 @@ workflow PIPE_16S {
     COLLAPSE_TAXA ( ch_table_to_collapse )
 
     ch_table_to_combine = COLLAPSE_TAXA.out
-                            .collect()
                             .map { it[1] }
+                            .collect()
     COMBINE_FEATURE_TABLES ( ch_table_to_combine )
 
 }

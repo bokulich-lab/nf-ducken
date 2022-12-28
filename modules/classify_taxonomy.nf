@@ -3,7 +3,6 @@ process CLASSIFY_TAXONOMY {
     label "process_local"
     label "error_retry"
     tag "${sample_id}"
-    publishDir "${params.outdir}/", pattern: "*.qzv"
 
     afterScript "rm -rf \${PWD}/tmp_taxa"
 
@@ -105,7 +104,6 @@ process CLASSIFY_TAXONOMY {
 process COLLAPSE_TAXA {
     label "container_qiime2"
     tag "${sample_id}"
-    publishDir "${params.outdir}/"
 
     input:
     tuple val(sample_id), path(table), path(taxonomy)
