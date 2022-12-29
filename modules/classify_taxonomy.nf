@@ -177,7 +177,7 @@ process COMBINE_FEATURE_TABLES {
 
     qiime feature-table merge \
         --i-tables \${full_table_list} \
-        --o-merged-table merged_feature_table.qza \
+        --o-merged-table merged_${inp_type}_table.qza \
         --verbose
     """
 }
