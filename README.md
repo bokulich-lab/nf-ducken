@@ -42,17 +42,25 @@ Unless otherwise noted, these parameters should be under the scope `params` in t
 
 ### Process parameters
 
-Used for file download and FASTQ processing.
+Used for initial FASTQ processing.
+
+* `read_type`: FASTQ type, either `"paired"` or `"single"`
 
 Required if running q2_fondue:
 * `inp_id_file`: path to TSV file containing NCBI accession IDs for FASTQs to download. File must adhere to [QIIME 2 metadata formatting requirements](https://docs.qiime2.org/2022.2/tutorials/metadata/#metadata-formatting-requirements)
   * **Note:** FASTQ file names starting with non-alphanumeric characters (particularly `#`) are NOT supported. These will throw an error in your workflow!
 * `email_address`: email address of user, required for SRA requests via `q2-fondue`
-* `read_type`: FASTQ type, either`"paired"` or `"single"`
-* `split_fastq`: default `null`, determines whether samples will be processed as a batch or individually.
+
+Required if running from local FASTQ files:
+* `fastq_manifest`: Path to TSV file mapping sample identifiers to FASTQ absolute file paths; manifest must adhere to [QIIME 2 FASTQ manifest formatting requirements](https://docs.qiime2.org/2022.2/tutorials/importing/#fastq-manifest-formats)
 
 ### Optional user-input parameters
 
+Used for initial FASTQ processing in scope `params.fastq_split`:
+* `enabled`: default `null`, determines whether samples will be processed as a batch or individually; either `"True"` or `"False"`
+* `method`: default `"sample"`, represents method by which to split input FASTQ file manifest; either `"sample"` or an integer representing the number of split artifacts for processing 
+* `suffix`: default `"_split.tsv"`, suffix for split FASTQ manifest files used as intermediates
+  
 DADA2 process parameters in scope `params.dada2`:
 * `trunc_q`: default `2`
 * `pooling_method`: default `"independent"`
@@ -113,10 +121,6 @@ VSEARCH reference-based chimera identification process parameters in scope `para
 * `xn`: default `8.0`
 * `num_threads`: default `1`
 
-FASTQ artifact splitting parameters in scope `params.fastq_split`:
-* `suffix`: default `"_split.tsv"`
-* `method`: default `"sample"`
-  
 Additional process parameters:
 * `taxa_level`: default `5`, collapsing taxonomic classifications to genus; used in `qiime taxa collapse`
 * `phred_offset`: default `33`; used in FASTQ import if using local FASTQs
@@ -145,11 +149,7 @@ Execution parameters (scope `process`):
 * `executor`: default `"local"`, resource manager to run workflow on; options include `"slurm"`, `"sge"`, `"awsbatch"`, and `"google-lifesciences"`
 * `withLabel:container_qiime2.container`: default `${params.qiime_container}`, but can be replaced with location of local container containing QIIME 2 core distribution
 
-### Parameters used for intermediate process skipping
-
-To skip SRA FASTQ retrieval, if using local FASTQs:
-* `fastq_manifest`: Path to TSV file mapping sample identifiers to FASTQ absolute file paths; manifest must adhere to [QIIME 2 FASTQ manifest formatting requirements](https://docs.qiime2.org/2022.2/tutorials/importing/#fastq-manifest-formats)
-* `phred_offset`: default `33`, should be either `33` or `64`; integer indicating quality score encoding scheme for FASTQs
+### Parameters used when launching workflow from intermediate steps
 
 To skip processes through DADA2, if using pre-denoised feature tables and sequences:
 * `denoised_table`: Path to QIIME 2 artifact containing a denoised feature table
@@ -157,7 +157,9 @@ To skip processes through DADA2, if using pre-denoised feature tables and sequen
 
 ## Outputs
 
-* `outDir/taxa/collapsed_table.qza`: Artifact containing frequencies for features collapsed to a given level (default genus).
+* `outDir/merged_taxonomy.qza`: Artifact containing frequencies for features collapsed to a given level (default genus).
+* `outDir/merged_taxonomy.qzv`: Visualization containing frequencies for features collapsed to a given level (default genus).
+* `outDir/merged_feature_table.qza`: Artifact containing table of represented features by sample.
 
 ## Process
 
@@ -168,6 +170,7 @@ To skip processes through DADA2, if using pre-denoised feature tables and sequen
 3. Initial quality control: `q2-dada2`
 4. Closed reference OTU clustering: `q2-vsearch` 
 5. Taxonomy classification: `q2-feature-classifier`
+6. Collapse to taxon of interest and merge final outputs
 
 ### Execution
 
