@@ -3,7 +3,6 @@ process CLASSIFY_TAXONOMY {
     label "process_local"
     label "error_retry"
     tag "${sample_id}"
-    publishDir "${params.outdir}/", pattern: "*.qzv"
 
     afterScript "rm -rf \${PWD}/tmp_taxa"
 
@@ -12,7 +11,7 @@ process CLASSIFY_TAXONOMY {
 
     output:
     tuple val(sample_id), path("${sample_id}_taxonomy.qza"), emit: taxonomy_qza
-    path "${sample_id}_taxonomy.qzv", emit: taxonomy_qzv
+    path "${sample_id}_taxonomy.qzv",                        emit: taxonomy_qzv
 
     script:
     if (params.classifier.method == "sklearn") {
@@ -105,7 +104,6 @@ process CLASSIFY_TAXONOMY {
 process COLLAPSE_TAXA {
     label "container_qiime2"
     tag "${sample_id}"
-    publishDir "${params.outdir}/"
 
     input:
     tuple val(sample_id), path(table), path(taxonomy)
@@ -126,27 +124,60 @@ process COLLAPSE_TAXA {
     """
 }
 
+process COMBINE_TAXONOMIES {
+    label "container_qiime2"
+    publishDir "${params.outdir}/"
+
+    input:
+    path(taxonomy_list)
+
+    output:
+    path "merged_taxonomy.qza"
+    path "merged_taxonomy.qzv"
+
+    script:
+    """
+    echo 'Combining taxonomies into a single output...'
+
+    full_taxonomy_list=""
+    for taxonomy in ${taxonomy_list}; do
+      full_taxonomy_list=\"\${full_taxonomy_list} \${taxonomy}\"
+    done
+
+    qiime feature-table merge-taxa \
+        --i-data \${full_taxonomy_list} \
+        --o-merged-data merged_taxonomy.qza \
+        --verbose
+
+    qiime metadata tabulate \
+        --m-input-file merged_taxonomy.qza \
+        --o-visualization merged_taxonomy.qzv
+    """
+}
+
 process COMBINE_FEATURE_TABLES {
     label "container_qiime2"
     publishDir "${params.outdir}/"
 
     input:
+    val(inp_type)
     path(table_list)
 
     output:
-
+    path "merged_${inp_type}_table.qza"
 
     script:
     """
-    echo 'Combining feature tables into a single output...'
+    echo 'Combining ${inp_type} feature tables into a single output...'
 
+    full_table_list=""
     for table in ${table_list}; do
-      full_table_list="${full_table_list} ${table}"
+      full_table_list=\"\${full_table_list} \${table}\"
     done
 
     qiime feature-table merge \
-        --i-tables ${full_table_list} \
-        --o-merged-table merged_feature_table.qza \
+        --i-tables \${full_table_list} \
+        --o-merged-table merged_${inp_type}_table.qza \
         --verbose
     """
 }

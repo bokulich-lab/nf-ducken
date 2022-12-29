@@ -46,7 +46,7 @@ Used for initial FASTQ processing.
 
 * `read_type`: FASTQ type, either `"paired"` or `"single"`
 
-Required if running q2_fondue:
+Required if running `q2_fondue`:
 * `inp_id_file`: path to TSV file containing NCBI accession IDs for FASTQs to download. File must adhere to [QIIME 2 metadata formatting requirements](https://docs.qiime2.org/2022.2/tutorials/metadata/#metadata-formatting-requirements)
   * **Note:** FASTQ file names starting with non-alphanumeric characters (particularly `#`) are NOT supported. These will throw an error in your workflow!
 * `email_address`: email address of user, required for SRA requests via `q2-fondue`
