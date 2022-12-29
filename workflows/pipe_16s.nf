@@ -239,9 +239,7 @@ workflow PIPE_16S {
 
     COLLAPSE_TAXA ( ch_table_to_collapse )
 
-    ch_collapsed_tables_to_combine = COLLAPSE_TAXA.out
-                                        .map { it[1] }
-                                        .collect()
+    ch_collapsed_tables_to_combine = COLLAPSE_TAXA.out.collect()
     COMBINE_COLLAPSED_TABLES ( "collapsed", ch_collapsed_tables_to_combine )
 }
 
