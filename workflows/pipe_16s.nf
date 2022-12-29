@@ -217,25 +217,31 @@ workflow PIPE_16S {
 
     CLASSIFY_TAXONOMY ( ch_to_classify )
 
+    // Merge feature tables
+    CLUSTER_CLOSED_OTU.out.table.tap { ch_tables_to_combine }
+    ch_tables_to_combine = ch_tables_to_combine
+                            .map { it[1] }
+                            .collect()
+    COMBINE_FEATURE_TABLES ( "feature", ch_tables_to_combine )
+
     // Split taxonomies off to merge
     CLASSIFY_TAXONOMY.out.taxonomy_qza.tap { ch_taxa_to_combine }
     ch_taxa_to_combine = ch_taxa_to_combine
                             .map { it[1] }
                             .collect()
-
-
     COMBINE_TAXONOMIES ( ch_taxa_to_combine )
 
+    // Collapse taxa and merge
     CLUSTER_CLOSED_OTU.out.table
         .join ( CLASSIFY_TAXONOMY.out.taxonomy_qza )
         .set { ch_table_to_collapse }
 
     COLLAPSE_TAXA ( ch_table_to_collapse )
 
-    ch_table_to_combine = COLLAPSE_TAXA.out
-                            .map { it[1] }
-                            .collect()
-    COMBINE_FEATURE_TABLES ( ch_table_to_combine )
+    ch_collapsed_tables_to_combine = COLLAPSE_TAXA.out
+                                        .map { it[1] }
+                                        .collect()
+    COMBINE_FEATURE_TABLES ( "collapsed", ch_collapsed_tables_to_combine )
 
 }
 

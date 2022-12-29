@@ -160,14 +160,15 @@ process COMBINE_FEATURE_TABLES {
     publishDir "${params.outdir}/"
 
     input:
+    val(inp_type)
     path(table_list)
 
     output:
-    path "merged_feature_table.qza"
+    path "merged_${inp_type}_table.qza"
 
     script:
     """
-    echo 'Combining feature tables into a single output...'
+    echo 'Combining ${inp_type} feature tables into a single output...'
 
     full_table_list=""
     for table in ${table_list}; do
