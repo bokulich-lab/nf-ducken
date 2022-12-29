@@ -116,7 +116,8 @@ include { CLASSIFY_TAXONOMY; COLLAPSE_TAXA;
           DOWNLOAD_CLASSIFIER;
           DOWNLOAD_REF_TAXONOMY;
           COMBINE_TAXONOMIES;
-          COMBINE_FEATURE_TABLES              } from '../modules/classify_taxonomy'
+          COMBINE_FEATURE_TABLES;
+          COMBINE_FEATURE_TABLES as COMBINE_COLLAPSED_TABLES } from '../modules/classify_taxonomy'
 
 /*
 ========================================================================================
@@ -241,8 +242,7 @@ workflow PIPE_16S {
     ch_collapsed_tables_to_combine = COLLAPSE_TAXA.out
                                         .map { it[1] }
                                         .collect()
-    COMBINE_FEATURE_TABLES ( "collapsed", ch_collapsed_tables_to_combine )
-
+    COMBINE_COLLAPSED_TABLES ( "collapsed", ch_collapsed_tables_to_combine )
 }
 
 /*
