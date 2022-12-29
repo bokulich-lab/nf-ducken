@@ -20,6 +20,7 @@ process DENOISE_DADA2 {
         echo 'Denoising single-end reads with DADA2...'
 
         export NXF_TEMP=\${PWD}/tmp_denoise
+        mkdir \${PWD}/tmp_denoise
 
         qiime dada2 denoise-${params.read_type} \
             --i-demultiplexed-seqs ${fastq_qza} \
@@ -44,6 +45,7 @@ process DENOISE_DADA2 {
         echo 'Denoising paired-end reads with DADA2...'
 
         export NXF_TEMP=\${PWD}/tmp_denoise
+        mkdir \${PWD}/tmp_denoise
 
         qiime dada2 denoise-${params.read_type} \
             --i-demultiplexed-seqs ${fastq_qza} \
