@@ -58,10 +58,10 @@ def get_sample_ids(inp_dir: str, read_type: str, suffix: str) -> pd.DataFrame:
                                                         suffix=suffix)
     nonmatch_fq = fname_df[fname_df["sample_id"].isnull()]["file_path"].tolist()
     nonmatch_fq = [str(fpath) for fpath in nonmatch_fq]
-
-    logging.info(f"The following FASTQ files were removed from further "
-                 f"analysis due to non-permitted characters in the file "
-                 f"names:{NEWLINE}{NEWLINE.join(nonmatch_fq)}")
+    if len(nonmatch_fq) > 0:
+        logging.info(f"The following FASTQ files were removed from further "
+                     f"analysis due to non-permitted characters in the file "
+                     f"names:{NEWLINE}{NEWLINE.join(nonmatch_fq)}")
 
     fname_df = fname_df[~fname_df["sample_id"].isnull()]
 
