@@ -19,6 +19,7 @@ process CLUSTER_CLOSED_OTU {
     echo 'Clustering features with VSEARCH...'
 
     export NXF_TEMP=\${PWD}/tmp_cluster
+    mkdir \${PWD}/tmp_cluster
 
     qiime vsearch cluster-features-closed-reference \
         --i-table ${table} \
@@ -55,6 +56,8 @@ process FIND_CHIMERAS {
     tag "${sample_id}"
     publishDir "${params.outdir}/stats/", pattern: "*_stats.qza"
 
+    afterScript "rm -rf \${PWD}/tmp_chimera"
+
     input:
     tuple val(sample_id), path(table), path(rep_seqs), path(ref_otus)
 
@@ -69,6 +72,9 @@ process FIND_CHIMERAS {
     script:
     """
     echo 'Using reference sequences to search for chimeras...'
+
+    export NXF_TEMP=\${PWD}/tmp_chimera
+    mkdir \${PWD}/tmp_chimera
 
     qiime vsearch uchime-ref \
         --i-sequences ${rep_seqs} \
@@ -92,6 +98,8 @@ process FILTER_CHIMERAS {
     tag "${sample_id}"
     publishDir "${params.outdir}/stats/", pattern: "*.qzv"
 
+    afterScript "rm -rf \${PWD}/tmp_filt"
+
     input:
     tuple val(sample_id), path(table), path(rep_seqs), path(nonchimera_qza)
 
@@ -105,6 +113,9 @@ process FILTER_CHIMERAS {
     script:
     """
     echo 'Filtering chimeras from feature table and sequences...'
+
+    export NXF_TEMP=\${PWD}/tmp_filt
+    mkdir \${PWD}/tmp_filt
 
     qiime feature-table filter-features \
         --i-table ${table} \
