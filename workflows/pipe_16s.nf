@@ -116,7 +116,8 @@ include { CLASSIFY_TAXONOMY; COLLAPSE_TAXA;
           DOWNLOAD_CLASSIFIER;
           DOWNLOAD_REF_TAXONOMY;
           COMBINE_TAXONOMIES;
-          COMBINE_FEATURE_TABLES              } from '../modules/classify_taxonomy'
+          COMBINE_FEATURE_TABLES;
+          COMBINE_FEATURE_TABLES as COMBINE_COLLAPSED_TABLES } from '../modules/classify_taxonomy'
 
 /*
 ========================================================================================
@@ -217,18 +218,29 @@ workflow PIPE_16S {
 
     CLASSIFY_TAXONOMY ( ch_to_classify )
 
-    // need to split off channel of taxonomies here to merge
-    // COMBINE_TAXONOMIES ( )
+    // Merge feature tables
+    CLUSTER_CLOSED_OTU.out.table.tap { ch_tables_to_combine }
+    ch_tables_to_combine = ch_tables_to_combine
+                            .map { it[1] }
+                            .collect()
+    COMBINE_FEATURE_TABLES ( "feature", ch_tables_to_combine )
 
+    // Split taxonomies off to merge
+    CLASSIFY_TAXONOMY.out.taxonomy_qza.tap { ch_taxa_to_combine }
+    ch_taxa_to_combine = ch_taxa_to_combine
+                            .map { it[1] }
+                            .collect()
+    COMBINE_TAXONOMIES ( ch_taxa_to_combine )
+
+    // Collapse taxa and merge
     CLUSTER_CLOSED_OTU.out.table
         .join ( CLASSIFY_TAXONOMY.out.taxonomy_qza )
-        .set { ch_qza_to_collapse }
+        .set { ch_table_to_collapse }
 
-    COLLAPSE_TAXA ( ch_qza_to_collapse )
+    COLLAPSE_TAXA ( ch_table_to_collapse )
 
-    ch_qza_to_combine = COLLAPSE_TAXA.out.collect()
-    COMBINE_FEATURE_TABLES ( ch_qza_to_combine )
-
+    ch_collapsed_tables_to_combine = COLLAPSE_TAXA.out.collect()
+    COMBINE_COLLAPSED_TABLES ( "collapsed", ch_collapsed_tables_to_combine )
 }
 
 /*
