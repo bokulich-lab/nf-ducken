@@ -30,11 +30,11 @@ qiime dev refresh-cache
 
 A Singularity container is available for all processes except for sequence downloads using `q2-fondue`. To customize in run, modify the `params.qiime_container` in the input configuration file.
 
-If running in closed systems, the QIIME 2 Docker container can be built and saved into an .sif file by running: `sudo singularity build qiime2-2022.2.sif docker://quay.io/qiime2/core:2022.2`.
+If running in closed systems, the QIIME 2 Docker container can be built and saved into an .sif file by running: `sudo singularity build qiime2-2023.2.sif docker://quay.io/qiime2/core:2023.2`.
 
 Internally, the latest QIIME 2 container can be found at the following locations:
 * On the SPHN container registry (accessible from Leonhard Med): container-registry.dcc.sib.swiss
-* As an .sif file on Leonhard Med: `/cluster/work/saga/containers/qiime2-2022.2.sif`
+* As an .sif file on Leonhard Med: `/cluster/work/saga/containers/qiime2-2023.2.sif`
 
 ## Inputs
 
