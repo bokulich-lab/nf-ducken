@@ -130,6 +130,7 @@ full-length sequences](https://data.qiime2.org/2022.2/common/silva-138-99-nb-cla
 * `qiime_container`: default `"quay.io/qiime2/core:${params.qiime_release}"`; location of QIIME container used for workflow; if running on platforms without Internet, point to a valid .sif file. **Note that local files must be prefixed with `file://`;** triple `/` denotes absolute filepaths.
 * `pandas_release`: default `"1.4.2"`, used to specify param `pandas_container` to particular `pandas` version
 * `pandas_container`: default `"docker://amancevice/pandas:${params.pandas_release}-slim"`; location of `pandas` container used for workflow
+* `fastqc_container`: default `"biocontainers:fastqc"`; location of Docker container used for FastQC processes
 
 ### Additional configurations
 
