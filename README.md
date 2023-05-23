@@ -129,7 +129,8 @@ full-length sequences](https://data.qiime2.org/2022.2/common/silva-138-99-nb-cla
 * `qiime_release`: default `"2022.2"`, used to specify param `qiime_container` to particular QIIME version
 * `qiime_container`: default `"quay.io/qiime2/core:${params.qiime_release}"`; location of QIIME container used for workflow; if running on platforms without Internet, point to a valid .sif file. **Note that local files must be prefixed with `file://`;** triple `/` denotes absolute filepaths.
 * `pandas_release`: default `"1.4.2"`, used to specify param `pandas_container` to particular `pandas` version
-* `pandas_container`: default `"docker://amancevice/pandas:${params.pandas_release}-slim"`; location of `pandas` container used for workflow
+* `pandas_container`: default `"amancevice/pandas:${params.pandas_release}-slim"`; location of `pandas` container used for workflow
+* `fastqc_release`: default `"v0.11.9_cv8"`, used to specify param `fastqc_container` to particular FastQC image version
 * `fastqc_container`: default `"biocontainers:fastqc"`; location of Docker container used for FastQC processes
 
 ### Additional configurations
@@ -155,6 +156,7 @@ To skip processes through DADA2, if using pre-denoised feature tables and sequen
 * `outDir/merged_taxonomy.qza`: Artifact containing frequencies for features collapsed to a given level (default genus).
 * `outDir/merged_taxonomy.qzv`: Visualization containing frequencies for features collapsed to a given level (default genus).
 * `outDir/merged_feature_table.qza`: Artifact containing table of represented features by sample.
+* `outDir/stats/`: Directory containing QC metrics, including FastQC, clustering statistics, denoising statistics, etc.
 
 ## Process
 

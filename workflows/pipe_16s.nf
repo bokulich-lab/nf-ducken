@@ -107,7 +107,7 @@ if (params.trained_classifier) {
 
 include { GENERATE_ID_ARTIFACT; GET_SRA_DATA;
           CHECK_FASTQ_TYPE; IMPORT_FASTQ;
-          SPLIT_FASTQ_MANIFEST                } from '../modules/get_sra_data'
+          SPLIT_FASTQ_MANIFEST; RUN_FASTQC    } from '../modules/get_sra_data'
 include { DENOISE_DADA2                       } from '../modules/denoise_dada2'
 include { CLUSTER_CLOSED_OTU;
           DOWNLOAD_REF_SEQS; FIND_CHIMERAS;
@@ -155,12 +155,13 @@ workflow PIPE_16S {
         ch_sra_artifact = IMPORT_FASTQ.out
     }
 
-    // FASTQ check
+    // FASTQ check and QC
     CHECK_FASTQ_TYPE ( ch_sra_artifact )
+    RUN_FASTQC ( CHECK_FASTQ_TYPE.out.fqs )
 
     // Feature generation: Denoising for cleanup
     if (start_process != "clustering") {
-        DENOISE_DADA2 ( CHECK_FASTQ_TYPE.out )
+        DENOISE_DADA2 ( CHECK_FASTQ_TYPE.out.qza )
         ch_denoised_qzas = DENOISE_DADA2.out.table_seqs
     }
 
