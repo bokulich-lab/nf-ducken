@@ -1,6 +1,8 @@
 # nf-16s-pipe
 Workflow to process amplicon meta-analysis data, from NCBI accession IDs to taxonomic diversity metrics.
 
+![Pipeline DAG](assets/pipeline_dag.png)
+
 ## Environment
 
 ### Singularity
