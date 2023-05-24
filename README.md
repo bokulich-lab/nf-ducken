@@ -3,32 +3,9 @@ Workflow to process amplicon meta-analysis data, from NCBI accession IDs to taxo
 
 ## Environment
 
-### Conda environments
-
-Create a new `conda` environment with dependencies for the latest QIIME 2 release:
-```
-conda create -y -n nf-16s-pipe \
-    -c qiime2 -c conda-forge -c bioconda -c defaults \
-    qiime2 q2cli q2-types "entrezpy>=2.1.2" "tqdm>=4.62.3" xmltodict pyzotero nextflow
-```
-
-Install `q2-fondue` and required dependencies:
-```
-curl -sLH 'Accept: application/vnd.github.v3.raw' https://api.github.com/repos/bokulich-lab/q2-fondue/contents/install-sra-tools.sh > install-sra-tools.sh
-
-chmod +x install-sra-tools.sh
-bash install-sra-tools.sh
-
-rm install-sra-tools.sh
-
-pip install git+https://github.com/bokulich-lab/q2-fondue.git
-
-qiime dev refresh-cache
-```
-
 ### Singularity
 
-A Singularity container is available for all processes except for sequence downloads using `q2-fondue`. To customize in run, modify the `params.qiime_container` in the input configuration file.
+A Singularity container is available for all processes except for sequence downloads using `q2-fondue`. To customize in run, modify the container parameters (`params.qiime_container`, `params.pandas_container`, and `params.fastqc_container`) in the input configuration file.
 
 ## Inputs
 
