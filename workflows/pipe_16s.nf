@@ -125,6 +125,19 @@ include { CLASSIFY_TAXONOMY; COLLAPSE_TAXA;
 ========================================================================================
 */
 
+log.info """\
+         ${params.mainfest.name} v${params.manifest.version}
+         ==================================
+
+         --
+         run as     : ${workflow.commandLine}
+         run by     : ${workflow.userName}
+         start time : ${workflow.start}
+         configs    : ${workflow.configFiles}
+         containers : ${workflow.containerEngine}:${workflow.container}
+         """
+         .stripIndent()
+
 workflow PIPE_16S {
     // Download
     GENERATE_ID_ARTIFACT ( ch_inp_ids )
