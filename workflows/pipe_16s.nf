@@ -126,15 +126,37 @@ include { CLASSIFY_TAXONOMY; COLLAPSE_TAXA;
 */
 
 log.info """\
-         ${params.mainfest.name} v${params.manifest.version}
+         ${workflow.manifest.name} v${workflow.manifest.version}
          ==================================
-
+         run name   : ${workflow.runName}
+         run dir    : ${workflow.launchDir}
+         session    : ${workflow.sessionId}
          --
          run as     : ${workflow.commandLine}
          run by     : ${workflow.userName}
          start time : ${workflow.start}
          configs    : ${workflow.configFiles}
          containers : ${workflow.containerEngine}:${workflow.container}
+         profile    : ${workflow.profile}
+         """
+         .stripIndent()
+
+log.info """\
+         TURDUCKEN - NF          ( params )
+         ==================================
+         read type        : ${params.read_type}
+         input ids        : ${params.inp_id_file}
+         fastq path       : ${params.fastq_manifest}
+         fastq split      : ${params.fastq_split.enabled} (by ${params.fastq_split.method})
+         classifier type  : ${params.classifier.method}
+         --
+         otu refs         : ${params.otu_ref_file}
+         local classifier : ${params.trained_classifier}
+         taxa ref file    : ${params.taxonomy_ref_file}
+         qiime release    : ${params.qiime_release}
+         --
+         nextflow version : ${nextflow.version}
+         nextflow build   : ${nextflow.build}
          """
          .stripIndent()
 
