@@ -106,7 +106,7 @@ if (params.trained_classifier) {
 */
 
 include { GENERATE_ID_ARTIFACT; GET_SRA_DATA;
-          IMPORT_FASTQ; SPLIT_FASTQ_MANIFEST  } from '../modules/get_sra_data'
+          IMPORT_FASTQ                        } from '../modules/get_sra_data'
 include { CHECK_FASTQ_TYPE; RUN_FASTQC;
           CUTADAPT_DEMUX; CUTADAPT_TRIM       } from '../modules/quality_control'
 include { DENOISE_DADA2                       } from '../modules/denoise_dada2'
@@ -148,7 +148,6 @@ log.info """\
          read type        : ${params.read_type}
          input ids        : ${params.inp_id_file}
          fastq path       : ${params.fastq_manifest}
-         fastq split      : ${params.fastq_split.enabled} (by ${params.fastq_split.method})
          classifier type  : ${params.classifier.method}
          --
          otu refs         : ${params.otu_ref_file}
@@ -162,7 +161,7 @@ log.info """\
          .stripIndent()
 
 workflow PIPE_16S {
-    // Download
+    // Download FASTQ files with q2-fondue
     GENERATE_ID_ARTIFACT ( ch_inp_ids )
     GET_SRA_DATA         ( GENERATE_ID_ARTIFACT.out )
 
@@ -172,20 +171,9 @@ workflow PIPE_16S {
         ch_sra_artifact = GET_SRA_DATA.out.paired
     }
 
-    if (params.fastq_split.enabled) {
-        SPLIT_FASTQ_MANIFEST ( ch_fastq_manifest )
-
-        manifest_suffix = ~/${params.fastq_split.suffix}/
-        ch_split_manifests = SPLIT_FASTQ_MANIFEST.out
-            .flatten()
-            .map { [(it.getName() - manifest_suffix), it] }
-
-        IMPORT_FASTQ ( ch_split_manifests )
-
-    } else {
-        ch_fastq_manifest = ch_fastq_manifest.map { ["all", it] }
-        IMPORT_FASTQ ( ch_fastq_manifest )
-    }
+    // Use local FASTQ files
+    ch_fastq_manifest = ch_fastq_manifest.map { ["all", it] }
+    IMPORT_FASTQ ( ch_fastq_manifest )
 
     if (ch_sra_artifact != null) {
         ch_sra_artifact = IMPORT_FASTQ.out
