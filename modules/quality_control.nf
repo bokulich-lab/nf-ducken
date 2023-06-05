@@ -39,3 +39,21 @@ process RUN_FASTQC {
     fastqc ${fqs} --outdir=fastqc/
     """
 }
+
+process CUTADAPT_DEMUX {
+    label "container_qiime2"
+
+    script:
+    """
+    echo 'Running Cutadapt to separate sequences by primer...'
+    """
+}
+
+process CUTADAPT_TRIM {
+    label "container_qiime2"
+
+    script:
+    """
+    echo 'Running Cutadapt to separate sequences by primer...'
+    """
+}

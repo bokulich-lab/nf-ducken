@@ -107,7 +107,8 @@ if (params.trained_classifier) {
 
 include { GENERATE_ID_ARTIFACT; GET_SRA_DATA;
           IMPORT_FASTQ; SPLIT_FASTQ_MANIFEST  } from '../modules/get_sra_data'
-include { CHECK_FASTQ_TYPE; RUN_FASTQC        } from '../modules/quality_control'
+include { CHECK_FASTQ_TYPE; RUN_FASTQC;
+          CUTADAPT_DEMUX; CUTADAPT_TRIM       } from '../modules/quality_control'
 include { DENOISE_DADA2                       } from '../modules/denoise_dada2'
 include { CLUSTER_CLOSED_OTU;
           DOWNLOAD_REF_SEQS; FIND_CHIMERAS;
