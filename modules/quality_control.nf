@@ -1,13 +1,12 @@
 process CHECK_FASTQ_TYPE {
     label "container_qiime2"
-    tag "${sample_id}"
 
     input:
-    tuple val(sample_id), path(fq_qza)
+    path fq_qza
 
     output:
-    tuple val(sample_id), path("${fq_qza}"),  emit: qza
-    tuple val(sample_id), path("*.fastq.gz"), emit: fqs
+    path "${fq_qza}",  emit: qza
+    path "*.fastq.gz", emit: fqs
 
     script:
     """
@@ -26,7 +25,7 @@ process RUN_FASTQC {
     publishDir "${params.outdir}/stats/fastqc/"
 
     input:
-    tuple val(sample_id), path(fqs)
+    path fqs
 
     output:
     path "fastqc/*"
@@ -43,17 +42,38 @@ process RUN_FASTQC {
 process CUTADAPT_DEMUX {
     label "container_qiime2"
 
+    input:
+    path fastq_qza
+
+    output:
+    tuple val(primer), path(demux_qza)
+
     script:
-    """
-    echo 'Running Cutadapt to separate sequences by primer...'
-    """
+    if (params.read_type == "single") {
+        """
+        echo 'Running Cutadapt to separate ${params.read_type}-end sequences by primer...'
+        """
+    } else if (params.read_type == "paired") {
+        """
+        echo 'Running Cutadapt to separate ${params.read_type}-end sequences by primer...'
+        """
+    }
 }
 
 process CUTADAPT_TRIM {
     label "container_qiime2"
 
+    input:
+    tuple val()
+
     script:
-    """
-    echo 'Running Cutadapt to separate sequences by primer...'
-    """
+    if (params.read_type == "single") {
+        """
+        echo 'Running Cutadapt to trim primers from ${params.read_type}-end sequences...'
+        """
+    } else if (params.read_type == "paired") {
+        """
+        echo 'Running Cutadapt to trim primers from ${params.read_type}-end sequences...'
+        """
+    }
 }

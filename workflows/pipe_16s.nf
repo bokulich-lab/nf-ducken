@@ -172,20 +172,21 @@ workflow PIPE_16S {
     }
 
     // Use local FASTQ files
-    ch_fastq_manifest = ch_fastq_manifest.map { ["all", it] }
     IMPORT_FASTQ ( ch_fastq_manifest )
 
     if (ch_sra_artifact != null) {
         ch_sra_artifact = IMPORT_FASTQ.out
     }
 
-    // FASTQ check and QC
+    // Quality control: FASTQ type check, trimming, QC
     CHECK_FASTQ_TYPE ( ch_sra_artifact )
     RUN_FASTQC ( CHECK_FASTQ_TYPE.out.fqs )
+    CUTADAPT_DEMUX ( CHECK_FASTQ_TYPE.out.qza )
+    CUTADAPT_TRIM ( CUTADAPT_DEMUX.out.qza )
 
     // Feature generation: Denoising for cleanup
     if (start_process != "clustering") {
-        DENOISE_DADA2 ( CHECK_FASTQ_TYPE.out.qza )
+        DENOISE_DADA2 ( CUTADAPT_TRIM.out.qza )
         ch_denoised_qzas = DENOISE_DADA2.out.table_seqs
     }
 
