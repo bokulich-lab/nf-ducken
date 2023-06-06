@@ -52,10 +52,37 @@ process CUTADAPT_DEMUX {
     if (params.read_type == "single") {
         """
         echo 'Running Cutadapt to separate ${params.read_type}-end sequences by primer...'
+
+        qiime cutadapt demux-single \
+            --i-seqs ${fastq_qza} \
+            --m-barcodes-file \
+            --m-barcodes-column \
+            --p-error-rate \
+            --p-batch-size \
+            --p-minimum-length \
+            --p-cores \
+            --o-per-sample-sequences \
+            --o-untrimmed-sequences \
+            --verbose
         """
     } else if (params.read_type == "paired") {
         """
         echo 'Running Cutadapt to separate ${params.read_type}-end sequences by primer...'
+
+        qiime cutadapt demux-paired \
+            --i-seqs ${fastq_qza} \
+            --m-forward-barcodes-file \
+            --m-forward-barcodes-column \
+            --m-reverse-barcodes-file \
+            --m-reverse-barcodes-column \
+            --p-error-rate \
+            --p-batch-size \
+            --p-minimum-length \
+            --p-mixed-orientation \
+            --p-cores \
+            --o-per-sample-sequences \
+            --o-untrimmed-sequences \
+            --verbose
         """
     }
 }
