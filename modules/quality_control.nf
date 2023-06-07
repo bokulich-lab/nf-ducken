@@ -51,7 +51,7 @@ process CUTADAPT_DEMUX {
     script:
     if (params.read_type == "single") {
         """
-        echo 'Running Cutadapt to separate ${params.read_type}-end sequences by primer...'
+        echo 'Running Cutadapt to separate single-end sequences by primer...'
 
         qiime cutadapt demux-single \
             --i-seqs ${fastq_qza} \
@@ -67,7 +67,7 @@ process CUTADAPT_DEMUX {
         """
     } else if (params.read_type == "paired") {
         """
-        echo 'Running Cutadapt to separate ${params.read_type}-end sequences by primer...'
+        echo 'Running Cutadapt to separate paired-end sequences by primer...'
 
         qiime cutadapt demux-paired \
             --i-seqs ${fastq_qza} \
@@ -91,16 +91,66 @@ process CUTADAPT_TRIM {
     label "container_qiime2"
 
     input:
-    tuple val()
+    tuple val(primer), path(demux_qza)
+
+    output:
+    tuple val(primer), path("seqs_${primer}.qza")
 
     script:
     if (params.read_type == "single") {
         """
-        echo 'Running Cutadapt to trim primers from ${params.read_type}-end sequences...'
+        echo 'Running Cutadapt to trim primers from single-end sequences...'
+
+        qiime cutadapt trim-single \
+            --i-demultiplexed-sequences ${demux_qza} \
+            --p-cores \
+            --p-adapter \
+            --p-front ${primer} \
+            --p-anywhere \
+            --p-error-rate \
+            --p-indels \
+            --p-times \
+            --p-overlap \
+            --p-match-read-wildcards \
+            --p-match-adapter-wildcards \
+            --p-minimum-length \
+            --p-discard-untrimmed \
+            --p-max-expected-errors \
+            --p-max-n \
+            --p-quality-cutoff-5end \
+            --p-quality-cutoff-3end \
+            --p-quality-base \
+            --o-trimmed-sequences seqs_${primer}.qza \
+            --verbose
         """
     } else if (params.read_type == "paired") {
         """
-        echo 'Running Cutadapt to trim primers from ${params.read_type}-end sequences...'
+        echo 'Running Cutadapt to trim primers from paired-end sequences...'
+
+        qiime cutadapt trim-paired \
+            --i-demultiplexed-sequences ${demux_qza} \
+            --p-cores \
+            --p-adapter-f \
+            --p-front-f \
+            --p-anywhere-f \
+            --p-adapter-r \
+            --p-front-r \
+            --p-anywhere-r \
+            --p-error-rate \
+            --p-indels \
+            --p-times \
+            --p-overlap \
+            --p-match-read-wildcards \
+            --p-match-adapter-wildcards \
+            --p-minimum-length \
+            --p-discard-untrimmed \
+            --p-max-expected-errors \
+            --p-max-n \
+            --p-quality-cutoff-5end \
+            --p-quality-cutoff-3end \
+            --p-quality-base \
+            --o-trimmed-sequences seqs_${primer}.qza \
+            --verbose
         """
     }
 }
