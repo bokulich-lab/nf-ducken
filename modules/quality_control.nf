@@ -46,7 +46,7 @@ process CUTADAPT_DEMUX {
     path fastq_qza
 
     output:
-    tuple val(primer), path(demux_qza)
+    tuple val(primer_id), val(primer_seq), path("demux_${primer_id}_seqs.qza")
 
     script:
     if (params.read_type == "single") {
@@ -61,8 +61,8 @@ process CUTADAPT_DEMUX {
             --p-batch-size ${params.cutadapt.demux.batch_size} \
             --p-minimum-length ${params.cutadapt.demux.minimum_length} \
             --p-cores ${params.cutadapt.demux.num_cores} \
-            --o-per-sample-sequences \
-            --o-untrimmed-sequences \
+            --o-per-sample-sequences demux_${primer_id}_seqs.qza \
+            --o-untrimmed-sequences unmatched_${primer_id}_seqs.qza \
             --verbose
         """
     } else if (params.read_type == "paired") {
@@ -80,8 +80,8 @@ process CUTADAPT_DEMUX {
             --p-minimum-length ${params.cutadapt.demux.minimum_length} \
             --p-mixed-orientation ${params.cutadapt.demux.mixed_orientation} \
             --p-cores ${params.cutadapt.demux.num_cores} \
-            --o-per-sample-sequences \
-            --o-untrimmed-sequences \
+            --o-per-sample-sequences demux_${primer_id}_seqs.qza \
+            --o-untrimmed-sequences unmatched_${primer_id}_seqs.qza \
             --verbose
         """
     }
@@ -91,10 +91,10 @@ process CUTADAPT_TRIM {
     label "container_qiime2"
 
     input:
-    tuple val(primer), path(demux_qza)
+    tuple val(primer_id), val(primer_seq), path(demux_qza)
 
     output:
-    tuple val(primer), path("seqs_${primer}.qza")
+    tuple val(primer_id), path("trimmed_${primer_id}_seqs.qza")
 
     script:
     if (params.read_type == "single") {
@@ -105,7 +105,7 @@ process CUTADAPT_TRIM {
             --i-demultiplexed-sequences ${demux_qza} \
             --p-cores ${params.cutadapt.trim.num_cores} \
             --p-adapter \
-            --p-front ${primer} \
+            --p-front \
             --p-anywhere \
             --p-error-rate ${params.cutadapt.trim.error_rate} \
             --p-indels ${params.cutadapt.trim.indels} \
@@ -120,7 +120,7 @@ process CUTADAPT_TRIM {
             --p-quality-cutoff-5end ${params.cutadapt.trim.quality_cutoff_5end} \
             --p-quality-cutoff-3end ${params.cutadapt.trim.quality_cutoff_3end} \
             --p-quality-base ${params.cutadapt.trim.quality_base} \
-            --o-trimmed-sequences seqs_${primer}.qza \
+            --o-trimmed-sequences trimmed_${primer_id}_seqs.qza \
             --verbose
         """
     } else if (params.read_type == "paired") {
@@ -129,14 +129,14 @@ process CUTADAPT_TRIM {
 
         qiime cutadapt trim-paired \
             --i-demultiplexed-sequences ${demux_qza} \
-            --p-cores \
+            --p-cores ${params.cutadapt.trim.num_cores} \
             --p-adapter-f \
             --p-front-f \
             --p-anywhere-f \
             --p-adapter-r \
             --p-front-r \
             --p-anywhere-r \
-            --p-error-rate \
+            --p-error-rate ${params.cutadapt.trim.error_rate} \
             --p-indels ${params.cutadapt.trim.indels}\
             --p-times ${params.cutadapt.trim.times} \
             --p-overlap ${params.cutadapt.trim.overlap} \
@@ -149,7 +149,7 @@ process CUTADAPT_TRIM {
             --p-quality-cutoff-5end ${params.cutadapt.trim.quality_cutoff_5end} \
             --p-quality-cutoff-3end ${params.cutadapt.trim.quality_cutoff_3end} \
             --p-quality-base ${params.cutadapt.trim.quality_base} \
-            --o-trimmed-sequences seqs_${primer}.qza \
+            --o-trimmed-sequences trimmed_${primer_id}_seqs.qza \
             --verbose
         """
     }
