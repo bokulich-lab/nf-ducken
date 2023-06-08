@@ -57,10 +57,10 @@ process CUTADAPT_DEMUX {
             --i-seqs ${fastq_qza} \
             --m-barcodes-file \
             --m-barcodes-column \
-            --p-error-rate \
-            --p-batch-size \
-            --p-minimum-length \
-            --p-cores \
+            --p-error-rate ${params.cutadapt.demux.error_rate} \
+            --p-batch-size ${params.cutadapt.demux.batch_size} \
+            --p-minimum-length ${params.cutadapt.demux.minimum_length} \
+            --p-cores ${params.cutadapt.demux.num_cores} \
             --o-per-sample-sequences \
             --o-untrimmed-sequences \
             --verbose
@@ -75,11 +75,11 @@ process CUTADAPT_DEMUX {
             --m-forward-barcodes-column \
             --m-reverse-barcodes-file \
             --m-reverse-barcodes-column \
-            --p-error-rate \
-            --p-batch-size \
-            --p-minimum-length \
-            --p-mixed-orientation \
-            --p-cores \
+            --p-error-rate ${params.cutadapt.demux.error_rate} \
+            --p-batch-size ${params.cutadapt.demux.batch_size} \
+            --p-minimum-length ${params.cutadapt.demux.minimum_length} \
+            --p-mixed-orientation ${params.cutadapt.demux.mixed_orientation} \
+            --p-cores ${params.cutadapt.demux.num_cores} \
             --o-per-sample-sequences \
             --o-untrimmed-sequences \
             --verbose
@@ -103,23 +103,23 @@ process CUTADAPT_TRIM {
 
         qiime cutadapt trim-single \
             --i-demultiplexed-sequences ${demux_qza} \
-            --p-cores \
+            --p-cores ${params.cutadapt.trim.num_cores} \
             --p-adapter \
             --p-front ${primer} \
             --p-anywhere \
-            --p-error-rate \
-            --p-indels \
-            --p-times \
-            --p-overlap \
-            --p-match-read-wildcards \
-            --p-match-adapter-wildcards \
-            --p-minimum-length \
-            --p-discard-untrimmed \
+            --p-error-rate ${params.cutadapt.trim.error_rate} \
+            --p-indels ${params.cutadapt.trim.indels} \
+            --p-times ${params.cutadapt.trim.times} \
+            --p-overlap ${params.cutadapt.trim.overlap} \
+            --p-match-read-wildcards ${params.cutadapt.trim.match_read_wildcards} \
+            --p-match-adapter-wildcards ${params.cutadapt.trim.match_adapter_wildcards} \
+            --p-minimum-length ${params.cutadapt.trim.minimum_length} \
+            --p-discard-untrimmed ${params.cutadapt.trim.discard_umtrimmed} \
             --p-max-expected-errors \
             --p-max-n \
-            --p-quality-cutoff-5end \
-            --p-quality-cutoff-3end \
-            --p-quality-base \
+            --p-quality-cutoff-5end ${params.cutadapt.trim.quality_cutoff_5end} \
+            --p-quality-cutoff-3end ${params.cutadapt.trim.quality_cutoff_3end} \
+            --p-quality-base ${params.cutadapt.trim.quality_base} \
             --o-trimmed-sequences seqs_${primer}.qza \
             --verbose
         """
@@ -137,18 +137,18 @@ process CUTADAPT_TRIM {
             --p-front-r \
             --p-anywhere-r \
             --p-error-rate \
-            --p-indels \
-            --p-times \
-            --p-overlap \
-            --p-match-read-wildcards \
-            --p-match-adapter-wildcards \
-            --p-minimum-length \
-            --p-discard-untrimmed \
+            --p-indels ${params.cutadapt.trim.indels}\
+            --p-times ${params.cutadapt.trim.times} \
+            --p-overlap ${params.cutadapt.trim.overlap} \
+            --p-match-read-wildcards ${params.cutadapt.trim.match_read_wildcards} \
+            --p-match-adapter-wildcards ${params.cutadapt.trim.match_adapter_wildcards} \
+            --p-minimum-length ${params.cutadapt.minimum_length} \
+            --p-discard-untrimmed ${params.cutadapt.discard_untrimmed} \
             --p-max-expected-errors \
             --p-max-n \
-            --p-quality-cutoff-5end \
-            --p-quality-cutoff-3end \
-            --p-quality-base \
+            --p-quality-cutoff-5end ${params.cutadapt.trim.quality_cutoff_5end} \
+            --p-quality-cutoff-3end ${params.cutadapt.trim.quality_cutoff_3end} \
+            --p-quality-base ${params.cutadapt.trim.quality_base} \
             --o-trimmed-sequences seqs_${primer}.qza \
             --verbose
         """
