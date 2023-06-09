@@ -39,7 +39,7 @@ process RUN_FASTQC {
     """
 }
 
-process CUTADAPT_DEMUX {
+process SEPARATE_PRIMERS_VSEARCH {
     label "container_qiime2"
 
     input:
@@ -51,38 +51,15 @@ process CUTADAPT_DEMUX {
     script:
     if (params.read_type == "single") {
         """
-        echo 'Running Cutadapt to separate single-end sequences by primer...'
+        echo 'Running VSEARCH to separate single-end sequences by primer...'
 
-        qiime cutadapt demux-single \
-            --i-seqs ${fastq_qza} \
-            --m-barcodes-file \
-            --m-barcodes-column \
-            --p-error-rate ${params.cutadapt.demux.error_rate} \
-            --p-batch-size ${params.cutadapt.demux.batch_size} \
-            --p-minimum-length ${params.cutadapt.demux.minimum_length} \
-            --p-cores ${params.cutadapt.demux.num_cores} \
-            --o-per-sample-sequences demux_${primer_id}_seqs.qza \
-            --o-untrimmed-sequences unmatched_${primer_id}_seqs.qza \
-            --verbose
+
         """
     } else if (params.read_type == "paired") {
         """
-        echo 'Running Cutadapt to separate paired-end sequences by primer...'
+        echo 'Running VSEARCH to separate paired-end sequences by primer...'
 
-        qiime cutadapt demux-paired \
-            --i-seqs ${fastq_qza} \
-            --m-forward-barcodes-file \
-            --m-forward-barcodes-column \
-            --m-reverse-barcodes-file \
-            --m-reverse-barcodes-column \
-            --p-error-rate ${params.cutadapt.demux.error_rate} \
-            --p-batch-size ${params.cutadapt.demux.batch_size} \
-            --p-minimum-length ${params.cutadapt.demux.minimum_length} \
-            --p-mixed-orientation ${params.cutadapt.demux.mixed_orientation} \
-            --p-cores ${params.cutadapt.demux.num_cores} \
-            --o-per-sample-sequences demux_${primer_id}_seqs.qza \
-            --o-untrimmed-sequences unmatched_${primer_id}_seqs.qza \
-            --verbose
+
         """
     }
 }
