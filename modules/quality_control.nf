@@ -97,6 +97,20 @@ process CUTADAPT_TRIM {
     tuple val(primer_id), path("trimmed_${primer_id}_seqs.qza")
 
     script:
+    // Optional flags
+    if (params.cutadapt.trim.max_expected_errors) {
+        max_error_flag = "--p-max-expected-errors ${params.cutadapt.trim.max_expected_errors}"
+    } else {
+        max_error_flag = ""
+    }
+
+    if (params.cutadapt.trim.max_n) {
+        max_n_flag = "--p-max-n ${params.cutadapt.trim.max_n}"
+    } else {
+        max_n_flag = ""
+    }
+
+    // Command
     if (params.read_type == "single") {
         """
         echo 'Running Cutadapt to trim primers from single-end sequences...'
@@ -115,8 +129,8 @@ process CUTADAPT_TRIM {
             --p-match-adapter-wildcards ${params.cutadapt.trim.match_adapter_wildcards} \
             --p-minimum-length ${params.cutadapt.trim.minimum_length} \
             --p-discard-untrimmed ${params.cutadapt.trim.discard_umtrimmed} \
-            --p-max-expected-errors \
-            --p-max-n \
+            ${max_error_flag} \
+            ${max_n_flag} \
             --p-quality-cutoff-5end ${params.cutadapt.trim.quality_cutoff_5end} \
             --p-quality-cutoff-3end ${params.cutadapt.trim.quality_cutoff_3end} \
             --p-quality-base ${params.cutadapt.trim.quality_base} \
@@ -144,8 +158,8 @@ process CUTADAPT_TRIM {
             --p-match-adapter-wildcards ${params.cutadapt.trim.match_adapter_wildcards} \
             --p-minimum-length ${params.cutadapt.minimum_length} \
             --p-discard-untrimmed ${params.cutadapt.discard_untrimmed} \
-            --p-max-expected-errors \
-            --p-max-n \
+            ${max_error_flag} \
+            ${max_n_flag} \
             --p-quality-cutoff-5end ${params.cutadapt.trim.quality_cutoff_5end} \
             --p-quality-cutoff-3end ${params.cutadapt.trim.quality_cutoff_3end} \
             --p-quality-base ${params.cutadapt.trim.quality_base} \
