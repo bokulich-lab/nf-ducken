@@ -34,6 +34,22 @@ Used for initial FASTQ processing in scope `params.fastq_split`:
 * `method`: default `"sample"`, represents method by which to split input FASTQ file manifest; either `"sample"` or an integer representing the number of split artifacts for processing 
 * `suffix`: default `"_split.tsv"`, suffix for split FASTQ manifest files used as intermediates
   
+Cutadapt process parameters in scope `params.cutadapt`:
+* `num_cores`: default `1`
+* `error_rate`: default `0.1`
+* `indels`: default `True`
+* `times`: default `1`
+* `overlap`: default `3`, used for paired-end reads
+* `match_read_wildcards`: default `False`
+* `match_adapter_wildcards`: default `True`
+* `minimum_length`: default `1`,
+* `discard_untrimmed`: default `False`
+* `max_error_flag`: default `null`
+* `max_n_flag`: default `null`
+* `quality_cutoff_5end`: default `0`
+* `quality_cutoff_3end`: default `0`
+* `quality_base`: default `33`
+
 DADA2 process parameters in scope `params.dada2`:
 * `trunc_q`: default `2`
 * `pooling_method`: default `"independent"`
