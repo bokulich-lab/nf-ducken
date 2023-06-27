@@ -52,15 +52,11 @@ process CUTADAPT_TRIM {
     // Optional flags
     if (params.cutadapt.max_expected_errors) {
         max_error_flag = "--p-max-expected-errors ${params.cutadapt.max_expected_errors}"
-    } else {
-        max_error_flag = ""
-    }
+    } else { max_error_flag = "" }
 
     if (params.cutadapt.max_n) {
         max_n_flag = "--p-max-n ${params.cutadapt.max_n}"
-    } else {
-        max_n_flag = ""
-    }
+    } else { max_n_flag = "" }
 
     // Command
     if (params.read_type == "single") {

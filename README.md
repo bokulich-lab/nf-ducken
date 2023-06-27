@@ -49,6 +49,17 @@ Cutadapt process parameters in scope `params.cutadapt`:
 * `quality_cutoff_5end`: default `0`
 * `quality_cutoff_3end`: default `0`
 * `quality_base`: default `33`
+* Parameters for **single-end runs**:
+  * `adapter`: default `null`
+  * `front`: default `null`
+  * `anywhere`: default `null`
+* Parameters for **paired-end runs**:
+  * `adapter_f`: default `null`
+  * `front_f`: default `null`
+  * `anywhere_f`: default `null`
+  * `adapter_r`: default `null`
+  * `front_r`: default `null`
+  * `anywhere_r`: default `null`
 
 DADA2 process parameters in scope `params.dada2`:
 * `trunc_q`: default `2`
