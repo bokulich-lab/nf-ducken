@@ -83,7 +83,8 @@ process CUTADAPT_TRIM {
             --p-quality-cutoff-3end ${params.cutadapt.quality_cutoff_3end} \
             --p-quality-base ${params.cutadapt.quality_base} \
             --o-trimmed-sequences trimmed_${primer_id}_seqs.qza \
-            --verbose
+            --verbose \
+             2>&1 | tee trimmed_${primer_id}.log
         """
     } else if (params.read_type == "paired") {
         """
@@ -112,7 +113,8 @@ process CUTADAPT_TRIM {
             --p-quality-cutoff-3end ${params.cutadapt.quality_cutoff_3end} \
             --p-quality-base ${params.cutadapt.quality_base} \
             --o-trimmed-sequences trimmed_${primer_id}_seqs.qza \
-            --verbose
+            --verbose \
+            2>&1 | tee trimmed_${primer_id}.log
         """
     }
 }

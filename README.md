@@ -18,7 +18,10 @@ Unless otherwise noted, these parameters should be under the scope `params` in t
 Used for initial FASTQ processing.
 
 * `read_type`: FASTQ type, either `"paired"` or `"single"`
-
+* For Cutadapt primer removal:
+  * If single-end, one of the following `cutadapt.adapter`, `cutadapt.front`, and `cutadapt.anywhere`: Primer sequence to remove; `cutadapt.front` is recommended for most amplicon sequence runs.
+  * If paired-end, one of the following pairs `cutadapt.adapter_f`/`cutadapt.adapter_r`, `cutadapt.front_f`/`cutadapt.front_r`, or `cutadapt.anywhere_f`/`cutadapt.anywhere_r`: Primer sequences to remove; `cutadapt.front_f`/`cutadapt.front_r` are recommended for most amplicon sequence runs.
+q
 Required if running `q2_fondue`:
 * `inp_id_file`: path to TSV file containing NCBI accession IDs for FASTQs to download. File must adhere to [QIIME 2 metadata formatting requirements](https://docs.qiime2.org/2022.2/tutorials/metadata/#metadata-formatting-requirements)
   * **Note:** FASTQ file names starting with non-alphanumeric characters (particularly `#`) are NOT supported. These will throw an error in your workflow!
@@ -40,10 +43,10 @@ Cutadapt process parameters in scope `params.cutadapt`:
 * `indels`: default `True`
 * `times`: default `1`
 * `overlap`: default `3`, used for paired-end reads
-* `match_read_wildcards`: default `False`
-* `match_adapter_wildcards`: default `True`
+* `match_read_wildcards`: default `"False"`
+* `match_adapter_wildcards`: default `"True"`
 * `minimum_length`: default `1`,
-* `discard_untrimmed`: default `False`
+* `discard_untrimmed`: default `"True"`
 * `max_error_flag`: default `null`
 * `max_n_flag`: default `null`
 * `quality_cutoff_5end`: default `0`
