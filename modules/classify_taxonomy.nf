@@ -183,26 +183,26 @@ process COMBINE_FEATURE_TABLES {
 }
 
 process DOWNLOAD_CLASSIFIER {
+    input:
+    val(flag)
+
     output:
     path "classifier.qza"
-
-    when:
-    flag_get_classifier
 
     script:
     """
     echo 'Downloading default taxonomy feature classifier...'
 
-    wget -O classifier.qza ${params.classifier_url}
+    wget -O classifier.qza ${params.trained_classifier_url}
     """
 }
 
 process DOWNLOAD_REF_TAXONOMY {
+    input:
+    val(flag)
+
     output:
     path "ref_taxonomy.qza"
-
-    when:
-    flag_get_ref_taxa
 
     script:
     """

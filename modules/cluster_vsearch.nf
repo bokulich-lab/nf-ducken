@@ -36,11 +36,11 @@ process CLUSTER_CLOSED_OTU {
 }
 
 process DOWNLOAD_REF_SEQS {
+    input:
+    val(flag)
+
     output:
     path "ref_seqs.qza"
-
-    when:
-    flag_get_ref
 
     script:
     """
