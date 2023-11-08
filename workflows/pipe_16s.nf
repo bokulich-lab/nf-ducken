@@ -108,7 +108,7 @@ if (params.trained_classifier) {
 include { GENERATE_ID_ARTIFACT; GET_SRA_DATA;
           IMPORT_FASTQ                        } from '../modules/get_sra_data'
 include { CHECK_FASTQ_TYPE; RUN_FASTQC;
-          CUTADAPT_DEMUX; CUTADAPT_TRIM       } from '../modules/quality_control'
+          CUTADAPT_TRIM                       } from '../modules/quality_control'
 include { DENOISE_DADA2                       } from '../modules/denoise_dada2'
 include { CLUSTER_CLOSED_OTU;
           DOWNLOAD_REF_SEQS; FIND_CHIMERAS;
@@ -181,7 +181,6 @@ workflow PIPE_16S {
     // Quality control: FASTQ type check, trimming, QC
     CHECK_FASTQ_TYPE ( ch_sra_artifact )
     RUN_FASTQC ( CHECK_FASTQ_TYPE.out.fqs )
-    CUTADAPT_DEMUX ( CHECK_FASTQ_TYPE.out.qza )
     CUTADAPT_TRIM ( CUTADAPT_DEMUX.out.qza )
 
     // Feature generation: Denoising for cleanup
