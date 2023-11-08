@@ -192,7 +192,7 @@ workflow PIPE_16S {
 
     // Feature generation: Clustering
     if (flag_get_ref) {
-        DOWNLOAD_REF_SEQS ()
+        DOWNLOAD_REF_SEQS ( flag_get_ref )
         ch_otu_ref_qza = DOWNLOAD_REF_SEQS.out
     }
 
@@ -228,12 +228,12 @@ workflow PIPE_16S {
 
     // Classification
     if (flag_get_classifier) {
-        DOWNLOAD_CLASSIFIER ()
+        DOWNLOAD_CLASSIFIER ( flag_get_classifier )
         ch_trained_classifier = DOWNLOAD_CLASSIFIER.out
     }
 
     if (flag_get_ref_taxa) {
-        DOWNLOAD_REF_TAXONOMY ()
+        DOWNLOAD_REF_TAXONOMY ( flag_get_ref_taxa )
         ch_taxa_ref_qza = DOWNLOAD_REF_TAXONOMY.out
     }
 
