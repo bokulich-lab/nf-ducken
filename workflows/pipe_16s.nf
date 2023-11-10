@@ -49,7 +49,7 @@ if (params.denoised_table && params.denoised_seqs) {
 if (params.primer_file) {
     Channel.fromPath ( "${params.primer_file}", checkIfExists: true )
         .splitCsv( sep: '\t', skip: 1 )
-        .view { row -> "${row[0]} - ${row[1]} - ${row[2]} - ${row[3]}" }
+        .view { row -> "${row[0]} - ${row[1]} - ${row[2]}" }
         .set { ch_primer_seqs }
 }
 
@@ -193,7 +193,6 @@ workflow PIPE_16S {
     if (params.primer_file) {
         ch_to_trim = CHECK_FASTQ_TYPE.out.qza
                         .combine ( ch_primer_seqs )
-        ch_to_trim.view()
         CUTADAPT_TRIM ( ch_to_trim )
         ch_to_denoise = CUTADAPT_TRIM.out.qza
     } else {

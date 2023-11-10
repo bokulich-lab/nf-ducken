@@ -41,14 +41,14 @@ process RUN_FASTQC {
 
 process CUTADAPT_TRIM {
     label "container_qiime2"
-    publishDir "${params.outdir}/stats/", pattern: ".log"
+    publishDir "${params.outdir}/stats/", pattern: "*.log"
 
     input:
     tuple path(demux_qza), val(primer_id), val(primer_seq_fwd), val(primer_seq_rev)
 
     output:
     tuple val(primer_id), path("trimmed_${primer_id}_seqs.qza"), emit: qza
-    path("*.log"), optional: true, emit: stats
+    path "*.log",                                                emit: stats
 
     script:
     // Optional flags
@@ -83,8 +83,7 @@ process CUTADAPT_TRIM {
             --p-quality-cutoff-3end ${params.cutadapt.quality_cutoff_3end} \
             --p-quality-base ${params.cutadapt.quality_base} \
             --o-trimmed-sequences trimmed_${primer_id}_seqs.qza \
-            --verbose \
-             2>&1 | tee trimmed_${primer_id}.log
+            --verbose | tee trimmed_${primer_id}_stats.log
         """
     } else if (params.read_type == "paired") {
         """
@@ -109,8 +108,7 @@ process CUTADAPT_TRIM {
             --p-quality-cutoff-3end ${params.cutadapt.quality_cutoff_3end} \
             --p-quality-base ${params.cutadapt.quality_base} \
             --o-trimmed-sequences trimmed_${primer_id}_seqs.qza \
-            --verbose \
-            2>&1 | tee trimmed_${primer_id}.log
+            --verbose | tee trimmed_${primer_id}_stats.log
         """
     }
 }
