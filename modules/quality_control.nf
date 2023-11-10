@@ -41,12 +41,14 @@ process RUN_FASTQC {
 
 process CUTADAPT_TRIM {
     label "container_qiime2"
+    publishDir "${params.outdir}/stats/", pattern: ".log"
 
     input:
-    tuple val(primer_id), val(primer_seq), path(demux_qza)
+    tuple path(demux_qza), val(primer_id), val(primer_seq_fwd), val(primer_seq_rev)
 
     output:
-    tuple val(primer_id), path("trimmed_${primer_id}_seqs.qza")
+    tuple val(primer_id), path("trimmed_${primer_id}_seqs.qza"), emit: qza
+    path("*.log"), optional: true, emit: stats
 
     script:
     // Optional flags
@@ -66,9 +68,7 @@ process CUTADAPT_TRIM {
         qiime cutadapt trim-single \
             --i-demultiplexed-sequences ${demux_qza} \
             --p-cores ${params.cutadapt.num_cores} \
-            --p-adapter \
-            --p-front \
-            --p-anywhere \
+            --p-front ${primer_seq_fwd} \
             --p-error-rate ${params.cutadapt.error_rate} \
             --p-indels ${params.cutadapt.indels} \
             --p-times ${params.cutadapt.times} \
@@ -93,12 +93,8 @@ process CUTADAPT_TRIM {
         qiime cutadapt trim-paired \
             --i-demultiplexed-sequences ${demux_qza} \
             --p-cores ${params.cutadapt.num_cores} \
-            --p-adapter-f \
-            --p-front-f \
-            --p-anywhere-f \
-            --p-adapter-r \
-            --p-front-r \
-            --p-anywhere-r \
+            --p-front-f ${primer_seq_fwd} \
+            --p-front-r ${primer_seq_rev} \
             --p-error-rate ${params.cutadapt.error_rate} \
             --p-indels ${params.cutadapt.indels}\
             --p-times ${params.cutadapt.times} \

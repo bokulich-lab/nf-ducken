@@ -46,10 +46,12 @@ if (params.denoised_table && params.denoised_seqs) {
 }
 
 // Determine whether Cutadapt will be run
-Channel.fromPath ( "${params.primer_file}", checkIfExists: true )
-    .splitCsv( sep: '\t', skip: 1 )
-    .view { row -> "${row[0]} - ${row[1]} - ${row[2]} - ${row[3]}" }
-    .set { ch_primer_seqs }
+if (params.primer_file) {
+    Channel.fromPath ( "${params.primer_file}", checkIfExists: true )
+        .splitCsv( sep: '\t', skip: 1 )
+        .view { row -> "${row[0]} - ${row[1]} - ${row[2]} - ${row[3]}" }
+        .set { ch_primer_seqs }
+}
 
 // Required user inputs
 switch (start_process) {
@@ -188,10 +190,20 @@ workflow PIPE_16S {
     CHECK_FASTQ_TYPE ( ch_sra_artifact )
     RUN_FASTQC ( CHECK_FASTQ_TYPE.out.fqs )
 
+    if (params.primer_file) {
+        ch_to_trim = CHECK_FASTQ_TYPE.out.qza
+                        .combine ( ch_primer_seqs )
+        ch_to_trim.view()
+        CUTADAPT_TRIM ( ch_to_trim )
+        ch_to_denoise = CUTADAPT_TRIM.out.qza
+    } else {
+        ch_to_denoise = CHECK_FASTQ_TYPE.out.qza
+                            .map { qza -> ["all", qza] }
+    }
+
     // Feature generation: Denoising for cleanup
     if (start_process != "clustering") {
-        DENOISE_DADA2 ( CHECK_FASTQ_TYPE.out.qza )
-        //DENOISE_DADA2 ( CUTADAPT_TRIM.out.qza )
+        DENOISE_DADA2 ( ch_to_denoise )
         ch_denoised_qzas = DENOISE_DADA2.out.table_seqs
     }
 

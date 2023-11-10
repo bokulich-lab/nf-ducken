@@ -58,12 +58,17 @@ process IMPORT_FASTQ {
 
     script:
     read_type_upper = params.read_type.capitalize()
+    if (params.read_type == "paired") {
+        semantic_type = "SampleData[PairedEndSequencesWithQuality]"
+    } else {
+        semantic_type = "SampleData[SequencesWithQuality]"
+    }
 
     """
     echo 'Local FASTQs detected. Converting to QIIME artifact...'
 
     qiime tools import \
-        --type 'SampleData[${read_type_upper}EndSequencesWithQuality]' \
+        --type '${semantic_type}' \
         --input-path ${fq_manifest} \
         --input-format ${read_type_upper}EndFastqManifestPhred${params.phred_offset}V2 \
         --output-path sequences.qza
