@@ -45,6 +45,14 @@ if (params.denoised_table && params.denoised_seqs) {
     start_process = "id_import"
 }
 
+// Determine whether Cutadapt will be run
+if (params.primer_file) {
+    Channel.fromPath ( "${params.primer_file}", checkIfExists: true )
+        .splitCsv( sep: '\t', skip: 1 )
+        .view { row -> "${row[0]} - ${row[1]} - ${row[2]}" }
+        .set { ch_primer_seqs }
+}
+
 // Required user inputs
 switch (start_process) {
     case "id_import":
@@ -68,13 +76,13 @@ switch (start_process) {
         break
 }
 
-// Navigate user-input parameters necessary for pre-clustering steps
 if (start_process != "clustering") {
     if (!(params.read_type)) {
         exit 1, 'Read type parameter is required!'
     }
 }
 
+// Determine whether reference downloads are necessary
 if (params.otu_ref_file) {
     flag_get_ref    = false
     ch_otu_ref_qza  = Channel.fromPath ( "${params.otu_ref_file}",
@@ -106,8 +114,9 @@ if (params.trained_classifier) {
 */
 
 include { GENERATE_ID_ARTIFACT; GET_SRA_DATA;
-          CHECK_FASTQ_TYPE; IMPORT_FASTQ;
-          SPLIT_FASTQ_MANIFEST; RUN_FASTQC    } from '../modules/get_sra_data'
+          IMPORT_FASTQ                        } from '../modules/get_sra_data'
+include { CHECK_FASTQ_TYPE; RUN_FASTQC;
+          CUTADAPT_TRIM                       } from '../modules/quality_control'
 include { DENOISE_DADA2                       } from '../modules/denoise_dada2'
 include { CLUSTER_CLOSED_OTU;
           DOWNLOAD_REF_SEQS; FIND_CHIMERAS;
@@ -147,7 +156,6 @@ log.info """\
          read type        : ${params.read_type}
          input ids        : ${params.inp_id_file}
          fastq path       : ${params.fastq_manifest}
-         fastq split      : ${params.fastq_split.enabled} (by ${params.fastq_split.method})
          classifier type  : ${params.classifier.method}
          --
          otu refs         : ${params.otu_ref_file}
@@ -161,7 +169,7 @@ log.info """\
          .stripIndent()
 
 workflow PIPE_16S {
-    // Download
+    // Download FASTQ files with q2-fondue
     GENERATE_ID_ARTIFACT ( ch_inp_ids )
     GET_SRA_DATA         ( GENERATE_ID_ARTIFACT.out )
 
@@ -171,32 +179,30 @@ workflow PIPE_16S {
         ch_sra_artifact = GET_SRA_DATA.out.paired
     }
 
-    if (params.fastq_split.enabled) {
-        SPLIT_FASTQ_MANIFEST ( ch_fastq_manifest )
-
-        manifest_suffix = ~/${params.fastq_split.suffix}/
-        ch_split_manifests = SPLIT_FASTQ_MANIFEST.out
-            .flatten()
-            .map { [(it.getName() - manifest_suffix), it] }
-
-        IMPORT_FASTQ ( ch_split_manifests )
-
-    } else {
-        ch_fastq_manifest = ch_fastq_manifest.map { ["all", it] }
-        IMPORT_FASTQ ( ch_fastq_manifest )
-    }
+    // Use local FASTQ files
+    IMPORT_FASTQ ( ch_fastq_manifest )
 
     if (ch_sra_artifact != null) {
         ch_sra_artifact = IMPORT_FASTQ.out
     }
 
-    // FASTQ check and QC
+    // Quality control: FASTQ type check, trimming, QC
     CHECK_FASTQ_TYPE ( ch_sra_artifact )
     RUN_FASTQC ( CHECK_FASTQ_TYPE.out.fqs )
 
+    if (params.primer_file) {
+        ch_to_trim = CHECK_FASTQ_TYPE.out.qza
+                        .combine ( ch_primer_seqs )
+        CUTADAPT_TRIM ( ch_to_trim )
+        ch_to_denoise = CUTADAPT_TRIM.out.qza
+    } else {
+        ch_to_denoise = CHECK_FASTQ_TYPE.out.qza
+                            .map { qza -> ["all", qza] }
+    }
+
     // Feature generation: Denoising for cleanup
     if (start_process != "clustering") {
-        DENOISE_DADA2 ( CHECK_FASTQ_TYPE.out.qza )
+        DENOISE_DADA2 ( ch_to_denoise )
         ch_denoised_qzas = DENOISE_DADA2.out.table_seqs
     }
 

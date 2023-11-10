@@ -46,94 +46,31 @@ process GET_SRA_DATA {
     """
 }
 
-process CHECK_FASTQ_TYPE {
-    label "container_qiime2"
-    tag "${sample_id}"
-
-    input:
-    tuple val(sample_id), path(fq_qza)
-
-    output:
-    tuple val(sample_id), path("${fq_qza}"),  emit: qza
-    tuple val(sample_id), path("*.fastq.gz"), emit: fqs
-
-    script:
-    """
-    echo 'Checking whether downloaded FASTQs consist of read type ${params.read_type}...'
-
-    qiime tools export \
-        --input-path ${fq_qza} \
-        --output-path .
-
-    bash ${workflow.projectDir}/bin/check_fastq_type.sh ${params.read_type} .
-    """
-}
-
 process IMPORT_FASTQ {
     label "container_qiime2"
-    tag "${sample_id}"
-
     errorStrategy "ignore"
-
-    input:
-    tuple val(sample_id), path(fq_manifest)
-
-    output:
-    tuple val(sample_id), path("sequences.qza")
-
-    script:
-    read_type_upper = params.read_type.capitalize()
-
-    """
-    echo 'Local FASTQs detected. Converting to QIIME artifact...'
-
-    qiime tools import \
-        --type 'SampleData[${read_type_upper}EndSequencesWithQuality]' \
-        --input-path ${fq_manifest} \
-        --input-format ${read_type_upper}EndFastqManifestPhred${params.phred_offset}V2 \
-        --output-path sequences.qza
-    """
-}
-
-process SPLIT_FASTQ_MANIFEST {
-    label "container_pandas"
 
     input:
     path fq_manifest
 
     output:
-    path "*${params.fastq_split.suffix}"
-
-    when:
-    params.fastq_split.enabled
+    path "sequences.qza"
 
     script:
+    read_type_upper = params.read_type.capitalize()
+    if (params.read_type == "paired") {
+        semantic_type = "SampleData[PairedEndSequencesWithQuality]"
+    } else {
+        semantic_type = "SampleData[SequencesWithQuality]"
+    }
+
     """
-    echo 'Splitting FASTQ manifest to process FASTQ files individually...'
+    echo 'Local FASTQs detected. Converting to QIIME artifact...'
 
-    python ${workflow.projectDir}/bin/split_manifest.py \
-        --input_manifest ${fq_manifest} \
-        --output_dir . \
-        --suffix ${params.fastq_split.suffix} \
-        --split_method ${params.fastq_split.method}
-    """
-}
-
-process RUN_FASTQC {
-    label "container_fastqc"
-    publishDir "${params.outdir}/stats/fastqc/"
-
-    input:
-    tuple val(sample_id), path(fqs)
-
-    output:
-    path "fastqc/*"
-
-    script:
-    """
-    echo 'Running FastQC on FASTQ files for quality control...'
-
-    mkdir fastqc
-    fastqc ${fqs} --outdir=fastqc/
+    qiime tools import \
+        --type '${semantic_type}' \
+        --input-path ${fq_manifest} \
+        --input-format ${read_type_upper}EndFastqManifestPhred${params.phred_offset}V2 \
+        --output-path sequences.qza
     """
 }

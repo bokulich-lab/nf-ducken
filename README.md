@@ -16,16 +16,22 @@ Unless otherwise noted, these parameters should be under the scope `params` in t
 ### Process parameters
 
 Used for initial FASTQ processing.
-
 * `read_type`: FASTQ type, either `"paired"` or `"single"`
 
 Required if running `q2_fondue`:
-* `inp_id_file`: path to TSV file containing NCBI accession IDs for FASTQs to download. File must adhere to [QIIME 2 metadata formatting requirements](https://docs.qiime2.org/2022.2/tutorials/metadata/#metadata-formatting-requirements)
+* `inp_id_file`: Path to TSV file containing NCBI accession IDs for FASTQs to download. File must adhere to [QIIME 2 metadata formatting requirements](https://docs.qiime2.org/2022.2/tutorials/metadata/#metadata-formatting-requirements)
   * **Note:** FASTQ file names starting with non-alphanumeric characters (particularly `#`) are NOT supported. These will throw an error in your workflow!
 * `email_address`: email address of user, required for SRA requests via `q2-fondue`
 
 Required if running from local FASTQ files:
 * `fastq_manifest`: Path to TSV file mapping sample identifiers to FASTQ absolute file paths; manifest must adhere to [QIIME 2 FASTQ manifest formatting requirements](https://docs.qiime2.org/2022.2/tutorials/importing/#fastq-manifest-formats)
+
+Required if running Cutadapt:
+* `primer_file`: Path to TSV file containing forward (and, if applicable, reverse) primers. Each row represents a different primer pair.
+* For primer removal:
+  * If single-end, one of the following `cutadapt.adapter`, `cutadapt.front`, and `cutadapt.anywhere`: Primer sequence to remove; `cutadapt.front` is recommended for most amplicon sequence runs.
+  * If paired-end, one of the following pairs `cutadapt.adapter_f`/`cutadapt.adapter_r`, `cutadapt.front_f`/`cutadapt.front_r`, or `cutadapt.anywhere_f`/`cutadapt.anywhere_r`: Primer sequences to remove; `cutadapt.front_f`/`cutadapt.front_r` are recommended for most amplicon sequence runs.
+  * The workflow does not at the moment support linked primers. Additionally, the workflow currently only takes a collection of single-end or paired-end primers, but not a combination of both.
 
 ### Optional user-input parameters
 
@@ -34,6 +40,33 @@ Used for initial FASTQ processing in scope `params.fastq_split`:
 * `method`: default `"sample"`, represents method by which to split input FASTQ file manifest; either `"sample"` or an integer representing the number of split artifacts for processing 
 * `suffix`: default `"_split.tsv"`, suffix for split FASTQ manifest files used as intermediates
   
+Cutadapt process parameters in scope `params.cutadapt`:
+* `num_cores`: default `1`
+* `error_rate`: default `0.1`
+* `indels`: default `True`
+* `times`: default `1`
+* `overlap`: default `3`, used for paired-end reads
+* `match_read_wildcards`: default `"False"`
+* `match_adapter_wildcards`: default `"True"`
+* `minimum_length`: default `1`,
+* `discard_untrimmed`: default `"True"`; we highly recommend keeping this parameter `"True"` as the Cutadapt process also separates reads by primer sequence!
+* `max_error_flag`: default `null`
+* `max_n_flag`: default `null`
+* `quality_cutoff_5end`: default `0`
+* `quality_cutoff_3end`: default `0`
+* `quality_base`: default `33`
+* Parameters for **single-end runs**:
+  * `adapter`: default `null`
+  * `front`: default `null`
+  * `anywhere`: default `null`
+* Parameters for **paired-end runs**:
+  * `adapter_f`: default `null`
+  * `front_f`: default `null`
+  * `anywhere_f`: default `null`
+  * `adapter_r`: default `null`
+  * `front_r`: default `null`
+  * `anywhere_r`: default `null`
+
 DADA2 process parameters in scope `params.dada2`:
 * `trunc_q`: default `2`
 * `pooling_method`: default `"independent"`
