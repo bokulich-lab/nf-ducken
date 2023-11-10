@@ -45,6 +45,12 @@ if (params.denoised_table && params.denoised_seqs) {
     start_process = "id_import"
 }
 
+// Determine whether Cutadapt will be run
+Channel.fromPath ( "${params.primer_file}", checkIfExists: true )
+    .splitCsv( sep: '\t', skip: 1 )
+    .view { row -> "${row[0]} - ${row[1]} - ${row[2]} - ${row[3]}" }
+    .set { ch_primer_seqs }
+
 // Required user inputs
 switch (start_process) {
     case "id_import":
@@ -68,13 +74,13 @@ switch (start_process) {
         break
 }
 
-// Navigate user-input parameters necessary for pre-clustering steps
 if (start_process != "clustering") {
     if (!(params.read_type)) {
         exit 1, 'Read type parameter is required!'
     }
 }
 
+// Determine whether reference downloads are necessary
 if (params.otu_ref_file) {
     flag_get_ref    = false
     ch_otu_ref_qza  = Channel.fromPath ( "${params.otu_ref_file}",
@@ -181,11 +187,11 @@ workflow PIPE_16S {
     // Quality control: FASTQ type check, trimming, QC
     CHECK_FASTQ_TYPE ( ch_sra_artifact )
     RUN_FASTQC ( CHECK_FASTQ_TYPE.out.fqs )
-    CUTADAPT_TRIM ( CUTADAPT_DEMUX.out.qza )
 
     // Feature generation: Denoising for cleanup
     if (start_process != "clustering") {
-        DENOISE_DADA2 ( CUTADAPT_TRIM.out.qza )
+        DENOISE_DADA2 ( CHECK_FASTQ_TYPE.out.qza )
+        //DENOISE_DADA2 ( CUTADAPT_TRIM.out.qza )
         ch_denoised_qzas = DENOISE_DADA2.out.table_seqs
     }
 
