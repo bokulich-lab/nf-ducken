@@ -1,4 +1,6 @@
 process GENERATE_ID_ARTIFACT {
+    conda "${params.fondue_conda_env}"
+
     input:
     path inp_id_file
 
@@ -21,6 +23,7 @@ process GENERATE_ID_ARTIFACT {
 }
 
 process GET_SRA_DATA {
+    conda "${params.fondue_conda_env}"
     input:
     path id_qza
 
@@ -39,7 +42,7 @@ process GET_SRA_DATA {
 
     qiime fondue get-all \
         --i-accession-ids ${id_qza} \
-        --p-email ${params.email} \
+        --p-email ${params.email_address} \
         --p-n-jobs 4 \
         --output-dir sra_download \
         --verbose
