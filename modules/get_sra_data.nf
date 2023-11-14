@@ -29,7 +29,6 @@ process GET_SRA_DATA {
 
     output:
     path "sra_download/failed_runs.qza",  emit: failed
-    path "sra_download/metadata.qza",     emit: metadata
     path "sra_download/paired_reads.qza", emit: paired
     path "sra_download/single_reads.qza", emit: single
 
@@ -40,10 +39,9 @@ process GET_SRA_DATA {
     """
     echo 'Retrieving data from SRA using q2-fondue...'
 
-    qiime fondue get-all \
+    qiime fondue get-sequences \
         --i-accession-ids ${id_qza} \
         --p-email ${params.email_address} \
-        --p-n-jobs 4 \
         --output-dir sra_download \
         --verbose
     """

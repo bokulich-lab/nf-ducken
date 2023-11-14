@@ -58,7 +58,7 @@ switch (start_process) {
     case "id_import":
         if (params.inp_id_file) {       // TODO shift to input validation module
             ch_inp_ids        = Channel.fromPath ( "${params.inp_id_file}", checkIfExists: true )
-            ch_fastq_manifest = Channel.empty()
+            //ch_fastq_manifest = Channel.empty()
         } else {
             exit 1, 'Input file with sample accession numbers does not exist or is not specified!'
         }
@@ -71,7 +71,7 @@ switch (start_process) {
 
     case "clustering":
         ch_inp_ids        = Channel.empty()
-        ch_fastq_manifest = Channel.empty()
+        //ch_fastq_manifest = Channel.empty()
         println "Skipping DADA2..."
         break
 }
@@ -180,10 +180,13 @@ workflow PIPE_16S {
     }
 
     // Use local FASTQ files
-    IMPORT_FASTQ ( ch_fastq_manifest )
 
-    if (ch_sra_artifact != null) {
-        ch_sra_artifact = IMPORT_FASTQ.out
+    if (params.fastq_manifest) {
+        IMPORT_FASTQ ( ch_fastq_manifest )
+
+        if (ch_sra_artifact != null) {
+            ch_sra_artifact = IMPORT_FASTQ.out
+        }
     }
 
     // Quality control: FASTQ type check, trimming, QC
