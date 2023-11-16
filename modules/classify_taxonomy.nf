@@ -1,6 +1,6 @@
 process CLASSIFY_TAXONOMY {
     label "container_qiime2"
-    label "process_local"
+    label "process_high"
     label "error_retry"
     tag "${sample_id}"
 
@@ -43,7 +43,7 @@ process CLASSIFY_TAXONOMY {
         echo 'Generating taxonomic assignments with a BLAST+ based feature classifier...'
 
         export NXF_TEMP=\${PWD}/tmp_taxa
-        export JOBLIB_TEMP_FOLDER=\$PWD/tmp_taxa
+        export JOBLIB_TEMP_FOLDER=\${PWD}/tmp_taxa
         mkdir \${PWD}/tmp_taxa
         export TMPDIR=\${PWD}/tmp_taxa
 
@@ -70,7 +70,7 @@ process CLASSIFY_TAXONOMY {
         echo 'Generating taxonomic assignments with the VSEARCH fitted feature classifier...'
 
         export NXF_TEMP=\${PWD}/tmp_taxa
-        export JOBLIB_TEMP_FOLDER=\$PWD/tmp_taxa
+        export JOBLIB_TEMP_FOLDER=\${PWD}/tmp_taxa
         mkdir \${PWD}/tmp_taxa
         export TMPDIR=\${PWD}/tmp_taxa
 
@@ -206,7 +206,7 @@ process DOWNLOAD_REF_TAXONOMY {
 
     script:
     """
-    echo 'Download default reference taxonomy...'
+    echo 'Downloading default reference taxonomy...'
 
     wget -O ref_taxonomy.qza ${params.taxonomy_ref_url}
     """

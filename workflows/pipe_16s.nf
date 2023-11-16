@@ -49,7 +49,6 @@ if (params.denoised_table && params.denoised_seqs) {
 if (params.primer_file) {
     Channel.fromPath ( "${params.primer_file}", checkIfExists: true )
         .splitCsv( sep: '\t', skip: 1 )
-        .view { row -> "${row[0]} - ${row[1]} - ${row[2]}" }
         .set { ch_primer_seqs }
 }
 
@@ -58,7 +57,6 @@ switch (start_process) {
     case "id_import":
         if (params.inp_id_file) {       // TODO shift to input validation module
             ch_inp_ids        = Channel.fromPath ( "${params.inp_id_file}", checkIfExists: true )
-            //ch_fastq_manifest = Channel.empty()
         } else {
             exit 1, 'Input file with sample accession numbers does not exist or is not specified!'
         }
