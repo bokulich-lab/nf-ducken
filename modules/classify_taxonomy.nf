@@ -19,7 +19,7 @@ process CLASSIFY_TAXONOMY {
         echo 'Generating taxonomic assignments with the sklearn fitted feature classifier...'
 
         export NXF_TEMP=\${PWD}/tmp_taxa
-        export JOBLIB_TEMP_FOLDER=\$PWD/tmp_taxa
+        export JOBLIB_TEMP_FOLDER=\${PWD}/tmp_taxa
         mkdir \${PWD}/tmp_taxa
         export TMPDIR=\${PWD}/tmp_taxa
 
