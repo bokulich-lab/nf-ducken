@@ -1,10 +1,8 @@
 process CLASSIFY_TAXONOMY {
     label "container_qiime2"
-    label "process_local"
+    label "process_high"
     label "error_retry"
     tag "${sample_id}"
-
-    afterScript "rm -rf \${PWD}/tmp_taxa"
 
     input:
     tuple val(sample_id), path(rep_seqs), path(classifier), path(ref_seqs), path(ref_taxonomy)
@@ -19,7 +17,7 @@ process CLASSIFY_TAXONOMY {
         echo 'Generating taxonomic assignments with the sklearn fitted feature classifier...'
 
         export NXF_TEMP=\${PWD}/tmp_taxa
-        export JOBLIB_TEMP_FOLDER=\$PWD/tmp_taxa
+        export JOBLIB_TEMP_FOLDER=\${PWD}/tmp_taxa
         mkdir \${PWD}/tmp_taxa
         export TMPDIR=\${PWD}/tmp_taxa
 
@@ -31,19 +29,22 @@ process CLASSIFY_TAXONOMY {
             --p-pre-dispatch ${params.classifier.pre_dispatch} \
             --p-confidence ${params.classifier.confidence} \
             --p-read-orientation ${params.classifier.read_orientation} \
-            --o-classification ${sample_id}_taxonomy.qza \
-            --verbose
+            --o-classification ${sample_id}_taxonomy.qza
+
+        echo 'Feature classification complete.'
 
         qiime metadata tabulate \
             --m-input-file ${sample_id}_taxonomy.qza \
             --o-visualization ${sample_id}_taxonomy.qzv
+
+        echo 'Taxonomy generated as QIIME 2 visualization.'
         """
     } else if (params.classifier.method == "blast") {
         """
         echo 'Generating taxonomic assignments with a BLAST+ based feature classifier...'
 
         export NXF_TEMP=\${PWD}/tmp_taxa
-        export JOBLIB_TEMP_FOLDER=\$PWD/tmp_taxa
+        export JOBLIB_TEMP_FOLDER=\${PWD}/tmp_taxa
         mkdir \${PWD}/tmp_taxa
         export TMPDIR=\${PWD}/tmp_taxa
 
@@ -70,7 +71,7 @@ process CLASSIFY_TAXONOMY {
         echo 'Generating taxonomic assignments with the VSEARCH fitted feature classifier...'
 
         export NXF_TEMP=\${PWD}/tmp_taxa
-        export JOBLIB_TEMP_FOLDER=\$PWD/tmp_taxa
+        export JOBLIB_TEMP_FOLDER=\${PWD}/tmp_taxa
         mkdir \${PWD}/tmp_taxa
         export TMPDIR=\${PWD}/tmp_taxa
 
@@ -206,7 +207,7 @@ process DOWNLOAD_REF_TAXONOMY {
 
     script:
     """
-    echo 'Download default reference taxonomy...'
+    echo 'Downloading default reference taxonomy...'
 
     wget -O ref_taxonomy.qza ${params.taxonomy_ref_url}
     """
