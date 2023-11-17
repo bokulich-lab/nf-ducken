@@ -4,8 +4,6 @@ process CLASSIFY_TAXONOMY {
     label "error_retry"
     tag "${sample_id}"
 
-    afterScript "rm -rf \${PWD}/tmp_taxa"
-
     input:
     tuple val(sample_id), path(rep_seqs), path(classifier), path(ref_seqs), path(ref_taxonomy)
 
@@ -31,12 +29,15 @@ process CLASSIFY_TAXONOMY {
             --p-pre-dispatch ${params.classifier.pre_dispatch} \
             --p-confidence ${params.classifier.confidence} \
             --p-read-orientation ${params.classifier.read_orientation} \
-            --o-classification ${sample_id}_taxonomy.qza \
-            --verbose
+            --o-classification ${sample_id}_taxonomy.qza
+
+        echo 'Feature classification complete.'
 
         qiime metadata tabulate \
             --m-input-file ${sample_id}_taxonomy.qza \
             --o-visualization ${sample_id}_taxonomy.qzv
+
+        echo 'Taxonomy generated as QIIME 2 visualization.'
         """
     } else if (params.classifier.method == "blast") {
         """
