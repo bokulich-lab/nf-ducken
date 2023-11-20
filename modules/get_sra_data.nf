@@ -1,5 +1,5 @@
 process GENERATE_ID_ARTIFACT {
-    conda "${params.fondue_conda_env}"
+    conda "assets/env_fondue.yml"
 
     input:
     path inp_id_file
@@ -23,7 +23,8 @@ process GENERATE_ID_ARTIFACT {
 }
 
 process GET_SRA_DATA {
-    conda "${params.fondue_conda_env}"
+    conda "assets/env_fondue.yml"
+
     input:
     path id_qza
 
@@ -48,6 +49,7 @@ process GET_SRA_DATA {
 }
 
 process IMPORT_FASTQ {
+    conda "${params.qiime_env_file}"
     label "container_qiime2"
     errorStrategy "ignore"
 

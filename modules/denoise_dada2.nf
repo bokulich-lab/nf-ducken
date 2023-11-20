@@ -1,4 +1,5 @@
 process DENOISE_DADA2 {
+    conda "${params.qiime_env_file}"
     label "container_qiime2"
     label "process_local"
     label "error_retry"
