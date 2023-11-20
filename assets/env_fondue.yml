@@ -1,9 +1,0 @@
-name: fondue
-channels:
-  - https://packages.qiime2.org/qiime2/2023.2/tested/
-  - bioconda
-  - conda-forge
-  - defaults
-dependencies:
-  - q2cli
-  - q2-fondue

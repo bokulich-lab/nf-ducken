@@ -1,5 +1,5 @@
 process GENERATE_ID_ARTIFACT {
-    conda "${baseDir}/assets/env_fondue.yml"
+    conda "${baseDir}/assets/q2-fondue-2023.2-osx.yml"
 
     input:
     path inp_id_file
@@ -23,7 +23,7 @@ process GENERATE_ID_ARTIFACT {
 }
 
 process GET_SRA_DATA {
-    conda "${baseDir}/assets/env_fondue.yml"
+    conda "${baseDir}/assets/q2-fondue-2023.2-osx.yml"
 
     input:
     path id_qza
