@@ -1,5 +1,5 @@
 process GENERATE_ID_ARTIFACT {
-    conda "assets/env_fondue.yml"
+    conda "${baseDir}/assets/env_fondue.yml"
 
     input:
     path inp_id_file
@@ -23,7 +23,7 @@ process GENERATE_ID_ARTIFACT {
 }
 
 process GET_SRA_DATA {
-    conda "assets/env_fondue.yml"
+    conda "${baseDir}/assets/env_fondue.yml"
 
     input:
     path id_qza
