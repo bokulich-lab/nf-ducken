@@ -22,7 +22,7 @@ process CHECK_FASTQ_TYPE {
 }
 
 process RUN_FASTQC {
-    conda "fastqc"
+    conda "bioconda::fastqc"
     label "container_fastqc"
     publishDir "${params.outdir}/stats/fastqc/"
 
