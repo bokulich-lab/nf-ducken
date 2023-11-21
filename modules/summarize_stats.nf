@@ -7,7 +7,7 @@ process MULTIQC_STATS {
     path cutadapt
 
     output:
-    path "multiqc_out/*"
+    path "multiqc/*"
 
     script:
     """
