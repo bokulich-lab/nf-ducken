@@ -1,5 +1,4 @@
 process CLUSTER_CLOSED_OTU {
-    conda "${params.qiime_env_file}"
     label "container_qiime2"
     label "process_local"
     label "error_retry"
@@ -52,7 +51,6 @@ process DOWNLOAD_REF_SEQS {
 }
 
 process FIND_CHIMERAS {
-    conda "${params.qiime_env_file}"
     label "container_qiime2"
     label "process_local"
     tag "${sample_id}"
@@ -96,7 +94,6 @@ process FIND_CHIMERAS {
 }
 
 process FILTER_CHIMERAS {
-    conda "${params.qiime_env_file}"
     label "container_qiime2"
     tag "${sample_id}"
     publishDir "${params.outdir}/stats/", pattern: "*.qzv"

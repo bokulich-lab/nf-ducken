@@ -1,5 +1,4 @@
 process CHECK_FASTQ_TYPE {
-    conda "${params.qiime_env_file}"
     label "container_qiime2"
 
     input:
@@ -22,7 +21,6 @@ process CHECK_FASTQ_TYPE {
 }
 
 process RUN_FASTQC {
-    conda "bioconda::fastqc"
     label "container_fastqc"
     publishDir "${params.outdir}/stats/fastqc/"
 
@@ -42,7 +40,6 @@ process RUN_FASTQC {
 }
 
 process CUTADAPT_TRIM {
-    conda "${params.qiime_env_file}"
     label "container_qiime2"
     publishDir "${params.outdir}/stats/", pattern: "*.log"
 

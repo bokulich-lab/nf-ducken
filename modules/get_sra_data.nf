@@ -1,5 +1,5 @@
 process GENERATE_ID_ARTIFACT {
-    conda "${baseDir}/assets/q2-fondue-2023.2-osx.yml"
+    label "fondue_env_file"
 
     input:
     path inp_id_file
@@ -23,7 +23,7 @@ process GENERATE_ID_ARTIFACT {
 }
 
 process GET_SRA_DATA {
-    conda "${baseDir}/assets/q2-fondue-2023.2-osx.yml"
+    label "fondue_env_file"
 
     input:
     path id_qza
@@ -49,7 +49,6 @@ process GET_SRA_DATA {
 }
 
 process IMPORT_FASTQ {
-    conda "${params.qiime_env_file}"
     label "container_qiime2"
     errorStrategy "ignore"
 

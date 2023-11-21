@@ -1,5 +1,4 @@
 process CLASSIFY_TAXONOMY {
-    conda "${params.qiime_env_file}"
     label "container_qiime2"
     label "process_high"
     label "error_retry"
@@ -104,7 +103,6 @@ process CLASSIFY_TAXONOMY {
 }
 
 process COLLAPSE_TAXA {
-    conda "${params.qiime_env_file}"
     label "container_qiime2"
     tag "${sample_id}"
 
@@ -128,7 +126,6 @@ process COLLAPSE_TAXA {
 }
 
 process COMBINE_TAXONOMIES {
-    conda "${params.qiime_env_file}"
     label "container_qiime2"
     publishDir "${params.outdir}/"
 
@@ -160,7 +157,6 @@ process COMBINE_TAXONOMIES {
 }
 
 process COMBINE_FEATURE_TABLES {
-    conda "${params.qiime_env_file}"
     label "container_qiime2"
     publishDir "${params.outdir}/"
 
