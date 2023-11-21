@@ -1,5 +1,5 @@
 process GENERATE_ID_ARTIFACT {
-    label "fondue_env_file"
+    label "container_fondue"
 
     input:
     path inp_id_file
@@ -23,7 +23,7 @@ process GENERATE_ID_ARTIFACT {
 }
 
 process GET_SRA_DATA {
-    label "fondue_env_file"
+    label "container_fondue"
 
     input:
     path id_qza
