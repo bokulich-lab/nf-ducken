@@ -122,6 +122,7 @@ include { CLASSIFY_TAXONOMY; COLLAPSE_TAXA;
           COMBINE_TAXONOMIES;
           COMBINE_FEATURE_TABLES;
           COMBINE_FEATURE_TABLES as COMBINE_COLLAPSED_TABLES } from '../modules/classify_taxonomy'
+include { MULTIQC_STATS                       } from '../modules/summarize_stats'
 
 /*
 ========================================================================================
@@ -189,9 +190,11 @@ workflow PIPE_16S {
                         .combine ( ch_primer_seqs )
         CUTADAPT_TRIM ( ch_to_trim )
         ch_to_denoise = CUTADAPT_TRIM.out.qza
+        ch_to_multiqc = CUTADAPT_TRIM.out.stats
     } else {
         ch_to_denoise = CHECK_FASTQ_TYPE.out.qza
                             .map { qza -> ["all", qza] }
+        ch_to_multiqc = "${projectDir}/assets/NO_FILE"
     }
 
     // Feature generation: Denoising for cleanup
@@ -199,6 +202,9 @@ workflow PIPE_16S {
         DENOISE_DADA2 ( ch_to_denoise )
         ch_denoised_qzas = DENOISE_DADA2.out.table_seqs
     }
+
+    // Create multiqc reports
+    MULTIQC_STATS ( RUN_FASTQC.out, ch_to_multiqc )
 
     // Feature generation: Clustering
     if (flag_get_ref) {
