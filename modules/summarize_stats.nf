@@ -1,11 +1,10 @@
-// Process to generate MultiQC statistics
-process MULTIQC_STATS{
+process MULTIQC_STATS {
     label "container_multiqc"
     publishDir "${params.outdir}/stats/", mode: 'copy'
 
     input:
-    path fastqc_dep
-    path cutadapt_dep
+    path fastqc
+    path cutadapt
 
     output:
     path "multiqc_out/*"
@@ -17,5 +16,3 @@ process MULTIQC_STATS{
     """
 
 }
-
-

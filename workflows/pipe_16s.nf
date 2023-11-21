@@ -102,8 +102,6 @@ if (params.trained_classifier) {
     flag_get_classifier        = true
 }
 
-params.filter = "$projectDir/assets/NO_CUTADAPT_OUTPUT"
-
 /*
 ========================================================================================
     IMPORT LOCAL MODULES/SUBWORKFLOWS
@@ -193,10 +191,11 @@ workflow PIPE_16S {
                         .combine ( ch_primer_seqs )
         CUTADAPT_TRIM ( ch_to_trim )
         ch_to_denoise = CUTADAPT_TRIM.out.qza
-
+        ch_to_multiqc = CUTADAPT_TRIM.out.stats
     } else {
         ch_to_denoise = CHECK_FASTQ_TYPE.out.qza
                             .map { qza -> ["all", qza] }
+        ch_to_multiqc = "${projectDir}/assets/NO_FILE"
     }
 
     // Feature generation: Denoising for cleanup
@@ -204,14 +203,9 @@ workflow PIPE_16S {
         DENOISE_DADA2 ( ch_to_denoise )
         ch_denoised_qzas = DENOISE_DADA2.out.table_seqs
     }
-    
+
     // Create multiqc reports
-    if (params.primer_file) {
-        MULTIQC_STATS ( RUN_FASTQC.out, CUTADAPT_TRIM.out.stats)
-    } else{
-        filterFileChannel = Channel.fromPath(params.filter)
-        MULTIQC_STATS ( RUN_FASTQC.out, filterFileChannel)
-    }
+    MULTIQC_STATS ( RUN_FASTQC.out, ch_to_multiqc )
 
     // Feature generation: Clustering
     if (flag_get_ref) {
