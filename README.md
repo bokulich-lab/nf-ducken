@@ -7,15 +7,15 @@ Workflow to process amplicon meta-analysis data, from NCBI accession IDs to taxo
 
 ### Conda
 
-Conda environments are available for all processes. To customize in run, modify the environment parameters (`params.qiime_conda_env`, `params.fastqc_conda_env` and `params.fondue_conda_env`) in the input configuration file.
+Conda environments are available for all processes. To customize in run, modify the environment parameters (`params.qiime_conda_env`, `params.fastqc_conda_env`, `params.multiqc_conda_env`, and `params.fondue_conda_env`) in the input configuration file.
 
 Launch a Conda environment-based run using `-profile conda` when running the workflow script.
 
 ### Singularity and Docker
 
-Containers are available for all processes except for sequence downloads using `q2-fondue`. To customize in run, modify the container parameters (`params.qiime_container` and `params.fastqc_container`) in the input configuration file.
+Containers are available for all processes except for sequence downloads using `q2-fondue`. To customize in run, modify the container parameters (`params.qiime_container`, `params.multc_container`, and `params.fastqc_container`) in the input configuration file.
 
-Launch a container-based run with Singularity or Docker using `-profile docker` or `-profile singularity` when running the workflow script..
+Launch a container-based run with Singularity or Docker using `-profile docker` or `-profile singularity` when running the workflow script.
 
 ## Inputs
 
