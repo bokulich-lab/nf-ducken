@@ -167,10 +167,7 @@ workflow PIPE_16S {
     if (params.fastq_manifest) {
         // Use local FASTQ files
         IMPORT_FASTQ ( ch_fastq_manifest )
-
-        if (ch_sra_artifact != null) {
-            ch_sra_artifact = IMPORT_FASTQ.out
-        }
+        ch_sra_artifact = IMPORT_FASTQ.out
     } else {
         // Download FASTQ files with q2-fondue
         GENERATE_ID_ARTIFACT ( ch_inp_ids )
@@ -184,6 +181,7 @@ workflow PIPE_16S {
     }
 
     // Quality control: FASTQ type check, trimming, QC
+    // FASTQ check and QC
     CHECK_FASTQ_TYPE ( ch_sra_artifact )
     RUN_FASTQC ( CHECK_FASTQ_TYPE.out.fqs )
 
