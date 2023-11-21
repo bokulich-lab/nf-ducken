@@ -140,7 +140,6 @@ log.info """\
          run by     : ${workflow.userName}
          start time : ${workflow.start}
          configs    : ${workflow.configFiles}
-         containers : ${workflow.containerEngine}:${workflow.container}
          profile    : ${workflow.profile}
          """
          .stripIndent()
