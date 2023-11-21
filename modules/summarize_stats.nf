@@ -12,7 +12,7 @@ process MULTIQC_STATS {
     script:
     """
     echo 'Create statistics using MultiQC...'
-    multiqc . --outdir multiqc_out
+    multiqc . --outdir multiqc
     """
 
 }
