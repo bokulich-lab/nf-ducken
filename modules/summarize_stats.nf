@@ -1,7 +1,7 @@
 // Process to generate MultiQC statistics
 process MULTIQC_STATS{
     label "container_multiqc"
-    publishDir "${baseDir}/${params.outdir}/stats/", mode: 'copy'
+    publishDir "${params.outdir}/stats/", mode: 'copy'
 
     input:
     path fastqc_dep
@@ -13,7 +13,9 @@ process MULTIQC_STATS{
     script:
     """
     echo 'Create statistics using MultiQC...'
-    multiqc ${baseDir}/${params.outdir}/stats --outdir multiqc_out
+    multiqc . --outdir multiqc_out
     """
 
 }
+
+
