@@ -17,7 +17,7 @@ nextflow.enable.dsl = 2
 
 include { PIPE_16S_IMPORT_INPUT } from './workflows/pipe_16s_import'
 include { PIPE_16S_DOWNLOAD_INPUT } from './workflows/pipe_16s_download'
-include { PIPE_16S} from './workflows/pipe_16s'
+include { PIPE_16S } from './workflows/pipe_16s'
 
 /*
 ========================================================================================
@@ -31,15 +31,15 @@ workflow NF_PIPE_16S {
         exit 1, 'pipeline_type parameter is required!'
     }
 
-    if (params.pipeline_type == 'import' ) {
+    if (params.pipeline_type == 'import') {
         PIPE_16S_IMPORT_INPUT ()
 
-    } else if ((params.pipeline_type == 'download' )){
+    } else if (params.pipeline_type == 'download') {
         PIPE_16S_DOWNLOAD_INPUT ()
 
     } else {
-        println('pipeline_type parameter values can only be either \"import\" or \"download\". The general pipeline will be executed...')
-        PIPE_16S ()
+        exit 1, 'pipeline_type parameter values can only be either \"import\" or \"download\"!'
+        
     }
      
 }

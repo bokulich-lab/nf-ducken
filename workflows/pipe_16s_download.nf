@@ -18,86 +18,10 @@
 
 /*
 ========================================================================================
-    INPUT AND VARIABLES
-========================================================================================
-*/
-
-// Intermediate process skipping
-// Executed in reverse chronology
-if (params.denoised_table && params.denoised_seqs) {
-    ch_denoised_table = Channel.fromPath ( "${params.denoised_table}", checkIfExists: true )
-    ch_denoised_seqs  = Channel.fromPath ( "${params.denoised_seqs}",  checkIfExists: true )
-    ch_denoised_table.concat(ch_denoised_seqs)
-        .map { ["all", it[0], it[1]] }
-        .set { ch_denoised_qzas }
-    start_process  = "clustering"
-
-} else {
-    start_process = "id_import"
-}
-
-// Determine whether Cutadapt will be run
-if (params.primer_file) {
-    Channel.fromPath ( "${params.primer_file}", checkIfExists: true )
-        .splitCsv( sep: '\t', skip: 1 )
-        .set { ch_primer_seqs }
-}
-
-// Required user inputs
-switch (start_process) {
-    case "id_import":
-        if (params.inp_id_file) {       // TODO shift to input validation module
-            ch_inp_ids        = Channel.fromPath ( "${params.inp_id_file}", checkIfExists: true )
-        } else {
-            exit 1, 'Input file with sample accession numbers does not exist or is not specified!'
-        }
-        if (!(params.email_address)) {
-            exit 1, 'email_address parameter is required!'
-        }
-        
-        break
-
-    case "clustering":
-        println "Skipping DADA2..."
-        break
-}
-
-if (start_process != "clustering") {
-    if (!(params.read_type)) {
-        exit 1, 'Read type parameter is required!'
-    }
-}
-
-// Determine whether reference downloads are necessary
-if (params.otu_ref_file) {
-    flag_get_ref    = false
-    ch_otu_ref_qza  = Channel.fromPath ( "${params.otu_ref_file}",
-                                         checkIfExists: true )
-} else {
-    flag_get_ref    = true
-}
-
-if (params.taxonomy_ref_file) {
-    flag_get_ref_taxa = false
-    ch_taxa_ref_qza   = Channel.fromPath ( "${params.taxonomy_ref_file}",
-                                           checkIfExists: true )
-} else {
-    flag_get_ref_taxa = true
-}
-
-if (params.trained_classifier) {
-    flag_get_classifier        = false
-    ch_trained_classifier      = Channel.fromPath ( "${params.trained_classifier}",
-                                                    checkIfExists: true )
-} else {
-    flag_get_classifier        = true
-}
-
-/*
-========================================================================================
     IMPORT LOCAL MODULES/SUBWORKFLOWS
 ========================================================================================
 */
+
 
 include { GENERATE_ID_ARTIFACT; GET_SRA_DATA; } from '../modules/get_sra_data'
 include { CHECK_FASTQ_TYPE; RUN_FASTQC;
@@ -120,7 +44,9 @@ include { MULTIQC_STATS                       } from '../modules/summarize_stats
 ========================================================================================
 */
 
-log.info """\
+workflow PIPE_16S_DOWNLOAD_INPUT {
+    // Log information
+    log.info """\
          ${workflow.manifest.name} v${workflow.manifest.version}
          ==================================
          run name   : ${workflow.runName}
@@ -136,25 +62,86 @@ log.info """\
          """
          .stripIndent()
 
-log.info """\
-         TURDUCKEN - NF          ( params )
-         ==================================
-         read type        : ${params.read_type}
-         input ids        : ${params.inp_id_file}
-         fastq path       : ${params.fastq_manifest}
-         classifier type  : ${params.classifier.method}
-         --
-         otu refs         : ${params.otu_ref_file}
-         local classifier : ${params.trained_classifier}
-         taxa ref file    : ${params.taxonomy_ref_file}
-         qiime release    : ${params.qiime_release}
-         --
-         nextflow version : ${nextflow.version}
-         nextflow build   : ${nextflow.build}
-         """
-         .stripIndent()
+    log.info """\
+            TURDUCKEN - NF          ( params )
+            ==================================
+            read type                : ${params.read_type}
+            input ids                : ${params.inp_id_file}
+            fastq path               : ${params.fastq_manifest}
+            classifier type          : ${params.classifier.method}
+            input acquisition method : ${params.pipeline_type}
+            --
+            otu refs         : ${params.otu_ref_file}
+            local classifier : ${params.trained_classifier}
+            taxa ref file    : ${params.taxonomy_ref_file}
+            qiime release    : ${params.qiime_release}
+            --
+            nextflow version : ${nextflow.version}
+            nextflow build   : ${nextflow.build}
+            """
+            .stripIndent()
 
-workflow PIPE_16S_DOWNLOAD_INPUT {
+    // INPUT AND VARIABLES
+    start_process = "id_import"
+
+    // Determine whether Cutadapt will be run
+    if (params.primer_file) {
+        Channel.fromPath ( "${params.primer_file}", checkIfExists: true )
+            .splitCsv( sep: '\t', skip: 1 )
+            .set { ch_primer_seqs }
+    }
+
+    // Required user inputs
+    switch (start_process) {
+        case "id_import":
+            if (params.inp_id_file) {       // TODO shift to input validation module
+                ch_inp_ids        = Channel.fromPath ( "${params.inp_id_file}", checkIfExists: true )
+            } else {
+                exit 1, 'Input file with sample accession numbers does not exist or is not specified!'
+            }
+            if (!(params.email_address)) {
+                exit 1, 'email_address parameter is required!'
+            }
+            
+            break
+
+        case "clustering":
+            println "Skipping DADA2..."
+            break
+    }
+
+    if (start_process != "clustering") {
+        if (!(params.read_type)) {
+            exit 1, 'Read type parameter is required!'
+        }
+    }
+
+    // Determine whether reference downloads are necessary
+    if (params.otu_ref_file) {
+        flag_get_ref    = false
+        ch_otu_ref_qza  = Channel.fromPath ( "${params.otu_ref_file}",
+                                            checkIfExists: true )
+    } else {
+        flag_get_ref    = true
+    }
+
+    if (params.taxonomy_ref_file) {
+        flag_get_ref_taxa = false
+        ch_taxa_ref_qza   = Channel.fromPath ( "${params.taxonomy_ref_file}",
+                                            checkIfExists: true )
+    } else {
+        flag_get_ref_taxa = true
+    }
+
+    if (params.trained_classifier) {
+        flag_get_classifier        = false
+        ch_trained_classifier      = Channel.fromPath ( "${params.trained_classifier}",
+                                                        checkIfExists: true )
+    } else {
+        flag_get_classifier        = true
+    }
+
+    // Start of the  Pipeline
     // Download FASTQ files with q2-fondue
     GENERATE_ID_ARTIFACT ( ch_inp_ids )
     GET_SRA_DATA         ( GENERATE_ID_ARTIFACT.out )
