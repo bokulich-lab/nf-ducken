@@ -13,7 +13,7 @@ Launch a Conda environment-based run using `-profile conda` when running the wor
 
 ### Singularity and Docker
 
-Containers are available for all processes except for sequence downloads using `q2-fondue`. To customize in run, modify the container parameters (`params.qiime_container`, `params.multc_container`, and `params.fastqc_container`) in the input configuration file.
+Containers are available for all processes. To customize in run, modify the container parameters (`params.qiime_container`, `params.fastqc_container`, `params.multiqc_container`, and `params.fondue_container`) in the input configuration file.
 
 Launch a container-based run with Singularity or Docker using `-profile docker` or `-profile singularity` when running the workflow script.
 
@@ -146,15 +146,20 @@ Reference files if available locally; otherwise, defaults will be downloaded fro
 * `trained_classifier`: default `null`, downloading [naive Bayes taxonomic classifiers trained on SILVA 138 99% OTUs 
 full-length sequences](https://data.qiime2.org/2022.2/common/silva-138-99-nb-classifier.qza); used in taxonomy classification
 * `taxonomy_ref_file`: default `null`, downloading pre-formatted file from the [SILVA 138 SSURef NR99 full-length taxonomy](https://data.qiime2.org/2022.2/common/silva-138-99-tax.qza); used in `q2-feature-classifier` if running with BLAST+
+
+For containerization:
 * `qiime_release`: default `"2023.2"`, used to specify param `qiime_container` to particular QIIME version
 * `qiime_container`: default `"quay.io/qiime2/core:${params.qiime_release}"`; location of QIIME container used for workflow; if running on platforms without Internet, point to a valid .sif file. **Note that local files must be prefixed with `file://`;** triple `/` denotes absolute filepaths.
 * `qiime_conda_env`: default `"${baseDir}/assets/qiime2-2023.2-py38-${sys_abbreviation}.yml"`
 * `fastqc_release`: default `"v0.11.9_cv8"`, used to specify param `fastqc_container` to particular FastQC image version
 * `fastqc_container`: default `"biocontainers:fastqc"`; location of Docker container used for FastQC processes
 * `fastqc_conda_env`: default `"bioconda::fastqc"`
-* `multiqc_container`: default `"ewels/multiqc:latest"`
-* `multiqc_conda_env`: default `"bioconda::multiqc"`
+* `fondue_release`: default `"2023.2"`, used to specify param `fondue_container` to particular q2-fondue image version
+* `fondue_container`: default `"linathekim/q2-fondue:${fondue_release}"`
 * `fondue_conda_env`: default `"${baseDir}/assets/q2-fondue-2023.2-${sys-abbreviation}.yml"`
+* `multiqc_release`: default `"v1.18"`
+* `multiqc_container`: default `"ewels/multiqc:${multiqc_release}"`
+* `multiqc_conda_env`: default `"bioconda::multiqc"`
 
 ### Additional configurations
 
