@@ -87,7 +87,6 @@ workflow PIPE_16S_IMPORT_INPUT {
 
     ch_fastq_manifest = Channel.fromPath ( "${params.fastq_manifest}",
                                         checkIfExists: true )
-    start_process = "fastq_import"
 
     if (!(params.phred_offset == 64 || params.phred_offset == 33)) {
         exit 1, 'The only valid PHRED offset values are 33 or 64!'
@@ -100,21 +99,8 @@ workflow PIPE_16S_IMPORT_INPUT {
             .set { ch_primer_seqs }
     }
 
-    // Required user inputs
-    switch (start_process) {
-        case "fastq_import":
-            println "Skipping FASTQ download..."
-            break
-
-        case "clustering":
-            println "Skipping DADA2..."
-            break
-    }
-
-    if (start_process != "clustering") {
-        if (!(params.read_type)) {
-            exit 1, 'Read type parameter is required!'
-        }
+    if (!(params.read_type)) {
+        exit 1, 'Read type parameter is required!'
     }
 
     // Determine whether reference downloads are necessary
@@ -164,11 +150,8 @@ workflow PIPE_16S_IMPORT_INPUT {
         ch_to_multiqc = "${projectDir}/assets/NO_FILE"
     }
     
-    // Feature generation: Denoising for cleanup
-    if (start_process != "clustering") {
-        DENOISE_DADA2 ( ch_to_denoise )
-        ch_denoised_qzas = DENOISE_DADA2.out.table_seqs
-    }
+    DENOISE_DADA2 ( ch_to_denoise )
+    ch_denoised_qzas = DENOISE_DADA2.out.table_seqs
 
     // Create multiqc reports
     MULTIQC_STATS ( RUN_FASTQC.out, ch_to_multiqc )

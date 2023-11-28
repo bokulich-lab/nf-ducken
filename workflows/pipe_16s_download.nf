@@ -82,8 +82,6 @@ workflow PIPE_16S_DOWNLOAD_INPUT {
             .stripIndent()
 
     // INPUT AND VARIABLES
-    start_process = "id_import"
-
     // Determine whether Cutadapt will be run
     if (params.primer_file) {
         Channel.fromPath ( "${params.primer_file}", checkIfExists: true )
@@ -91,31 +89,19 @@ workflow PIPE_16S_DOWNLOAD_INPUT {
             .set { ch_primer_seqs }
     }
 
-    // Required user inputs
-    switch (start_process) {
-        case "id_import":
-            if (params.inp_id_file) {       // TODO shift to input validation module
-                ch_inp_ids        = Channel.fromPath ( "${params.inp_id_file}", checkIfExists: true )
-            } else {
-                exit 1, 'Input file with sample accession numbers does not exist or is not specified!'
-            }
-            if (!(params.email_address)) {
-                exit 1, 'email_address parameter is required!'
-            }
-            
-            break
-
-        case "clustering":
-            println "Skipping DADA2..."
-            break
+    if (params.inp_id_file) {       // TODO shift to input validation module
+        ch_inp_ids        = Channel.fromPath ( "${params.inp_id_file}", checkIfExists: true )
+    } else {
+        exit 1, 'Input file with sample accession numbers does not exist or is not specified!'
     }
-
-    if (start_process != "clustering") {
-        if (!(params.read_type)) {
-            exit 1, 'Read type parameter is required!'
-        }
+    if (!(params.email_address)) {
+        exit 1, 'email_address parameter is required!'
     }
-
+  
+    if (!(params.read_type)) {
+        exit 1, 'Read type parameter is required!'
+    }
+    
     // Determine whether reference downloads are necessary
     if (params.otu_ref_file) {
         flag_get_ref    = false
@@ -170,10 +156,8 @@ workflow PIPE_16S_DOWNLOAD_INPUT {
     }
     
     // Feature generation: Denoising for cleanup
-    if (start_process != "clustering") {
-        DENOISE_DADA2 ( ch_to_denoise )
-        ch_denoised_qzas = DENOISE_DADA2.out.table_seqs
-    }
+    DENOISE_DADA2 ( ch_to_denoise )
+    ch_denoised_qzas = DENOISE_DADA2.out.table_seqs
 
     // Create multiqc reports
     MULTIQC_STATS ( RUN_FASTQC.out, ch_to_multiqc )
@@ -255,6 +239,7 @@ workflow PIPE_16S_DOWNLOAD_INPUT {
 
     ch_collapsed_tables_to_combine = COLLAPSE_TAXA.out.collect()
     //COMBINE_COLLAPSED_TABLES ( "collapsed", ch_collapsed_tables_to_combine )
+
 }
 
 /*
