@@ -154,7 +154,7 @@ For containerization:
 * `fastqc_release`: default `"v0.11.9_cv8"`, used to specify param `fastqc_container` to particular FastQC image version
 * `fastqc_container`: default `"biocontainers:fastqc"`; location of Docker container used for FastQC processes
 * `fastqc_conda_env`: default `"bioconda::fastqc"`
-* `fondue_release`: default `"2023.2"`, used to specify param `fondue_container` to particular q2-fondue image version
+* `fondue_release`: default `"2023.2-ps"`, used to specify param `fondue_container` to particular q2-fondue image version
 * `fondue_container`: default `"linathekim/q2-fondue:${fondue_release}"`
 * `fondue_conda_env`: default `"${baseDir}/assets/q2-fondue-2023.2-${sys-abbreviation}.yml"`
 * `multiqc_release`: default `"v1.18"`
