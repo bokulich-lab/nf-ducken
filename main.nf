@@ -17,7 +17,6 @@ nextflow.enable.dsl = 2
 
 include { PIPE_16S_IMPORT_INPUT } from './workflows/pipe_16s_import'
 include { PIPE_16S_DOWNLOAD_INPUT } from './workflows/pipe_16s_download'
-include { PIPE_16S } from './workflows/pipe_16s'
 
 /*
 ========================================================================================
