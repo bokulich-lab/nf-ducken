@@ -7,6 +7,8 @@ Workflow to process amplicon meta-analysis data, from NCBI accession IDs to taxo
 
 ### Conda
 
+**Note for users with newer Apple processors (M1/M2):** Conda environments require emulation using Rosetta, due to the lack of certain packages for the ARM64 architecture otherwise available with Intel processors. Please follow the [installation and setup instructions here](https://support.apple.com/en-us/HT211861) for details.
+
 Conda environments are available for all processes. To customize in run, modify the environment parameters (`params.qiime_conda_env`, `params.fastqc_conda_env`, `params.multiqc_conda_env`, and `params.fondue_conda_env`) in the input configuration file.
 
 Launch a Conda environment-based run using `-profile conda` when running the workflow script.
