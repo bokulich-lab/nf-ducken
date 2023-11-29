@@ -22,8 +22,8 @@
 ========================================================================================
 */
 
-include { GENERATE_ID_ARTIFACT; GET_SRA_DATA;
-          IMPORT_FASTQ                        } from '../modules/get_sra_data'
+
+include { GENERATE_ID_ARTIFACT; GET_SRA_DATA; } from '../modules/get_sra_data'
 include { CHECK_FASTQ_TYPE; RUN_FASTQC;
           CUTADAPT_TRIM                       } from '../modules/quality_control'
 include { DENOISE_DADA2                       } from '../modules/denoise_dada2'
@@ -44,9 +44,7 @@ include { MULTIQC_STATS                       } from '../modules/summarize_stats
 ========================================================================================
 */
 
-
-
-workflow PIPE_16S {
+workflow PIPE_16S_DOWNLOAD_INPUT {
     // Log information
     log.info """\
          ${workflow.manifest.name} v${workflow.manifest.version}
@@ -59,6 +57,7 @@ workflow PIPE_16S {
          run by     : ${workflow.userName}
          start time : ${workflow.start}
          configs    : ${workflow.configFiles}
+         containers : ${workflow.containerEngine}:${workflow.container}
          profile    : ${workflow.profile}
          """
          .stripIndent()
@@ -83,29 +82,6 @@ workflow PIPE_16S {
             .stripIndent()
 
     // INPUT AND VARIABLES
-    // Intermediate process skipping
-    // Executed in reverse chronology
-    if (params.denoised_table && params.denoised_seqs) {
-        ch_denoised_table = Channel.fromPath ( "${params.denoised_table}", checkIfExists: true )
-        ch_denoised_seqs  = Channel.fromPath ( "${params.denoised_seqs}",  checkIfExists: true )
-        ch_denoised_table.concat(ch_denoised_seqs)
-            .map { ["all", it[0], it[1]] }
-            .set { ch_denoised_qzas }
-        start_process  = "clustering"
-
-    } else if (params.fastq_manifest) {
-        ch_fastq_manifest = Channel.fromPath ( "${params.fastq_manifest}",
-                                            checkIfExists: true )
-        start_process = "fastq_import"
-
-        if (!(params.phred_offset == 64 || params.phred_offset == 33)) {
-            exit 1, 'The only valid PHRED offset values are 33 or 64!'
-        }
-
-    } else {
-        start_process = "id_import"
-    }
-
     // Determine whether Cutadapt will be run
     if (params.primer_file) {
         Channel.fromPath ( "${params.primer_file}", checkIfExists: true )
@@ -113,31 +89,19 @@ workflow PIPE_16S {
             .set { ch_primer_seqs }
     }
 
-    // Required user inputs
-    switch (start_process) {
-        case "id_import":
-            if (params.inp_id_file) {       // TODO shift to input validation module
-                ch_inp_ids        = Channel.fromPath ( "${params.inp_id_file}", checkIfExists: true )
-            } else {
-                exit 1, 'Input file with sample accession numbers does not exist or is not specified!'
-            }
-            break
-
-        case "fastq_import":
-            println "Skipping FASTQ download..."
-            break
-
-        case "clustering":
-            println "Skipping DADA2..."
-            break
+    if (params.inp_id_file) {       // TODO shift to input validation module
+        ch_inp_ids        = Channel.fromPath ( "${params.inp_id_file}", checkIfExists: true )
+    } else {
+        exit 1, 'Input file with sample accession numbers does not exist or is not specified!'
     }
-
-    if (start_process != "clustering") {
-        if (!(params.read_type)) {
-            exit 1, 'Read type parameter is required!'
-        }
+    if (!(params.email_address)) {
+        exit 1, 'email_address parameter is required!'
     }
-
+  
+    if (!(params.read_type)) {
+        exit 1, 'Read type parameter is required!'
+    }
+    
     // Determine whether reference downloads are necessary
     if (params.otu_ref_file) {
         flag_get_ref    = false
@@ -163,23 +127,17 @@ workflow PIPE_16S {
         flag_get_classifier        = true
     }
 
-    // Start of the Pipeline
-    if (params.fastq_manifest) {
-        // Use local FASTQ files
-        IMPORT_FASTQ ( ch_fastq_manifest )
-        ch_sra_artifact = IMPORT_FASTQ.out
-    } else {
-        // Download FASTQ files with q2-fondue
-        GENERATE_ID_ARTIFACT ( ch_inp_ids )
-        GET_SRA_DATA         ( GENERATE_ID_ARTIFACT.out )
-
-        if (params.read_type == "single") {
-            ch_sra_artifact = GET_SRA_DATA.out.single
-        } else if (params.read_type == "paired") {
-            ch_sra_artifact = GET_SRA_DATA.out.paired
-        }
+    // Start of the  Pipeline
+    // Download FASTQ files with q2-fondue
+    GENERATE_ID_ARTIFACT ( ch_inp_ids )
+    GET_SRA_DATA         ( GENERATE_ID_ARTIFACT.out )
+    
+    if (params.read_type == "single") {
+        ch_sra_artifact = GET_SRA_DATA.out.single
+    } else if (params.read_type == "paired") {
+        ch_sra_artifact = GET_SRA_DATA.out.paired
     }
-
+   
     // Quality control: FASTQ type check, trimming, QC
     // FASTQ check and QC
     CHECK_FASTQ_TYPE ( ch_sra_artifact )
@@ -196,12 +154,10 @@ workflow PIPE_16S {
                             .map { qza -> ["all", qza] }
         ch_to_multiqc = "${projectDir}/assets/NO_FILE"
     }
-
+    
     // Feature generation: Denoising for cleanup
-    if (start_process != "clustering") {
-        DENOISE_DADA2 ( ch_to_denoise )
-        ch_denoised_qzas = DENOISE_DADA2.out.table_seqs
-    }
+    DENOISE_DADA2 ( ch_to_denoise )
+    ch_denoised_qzas = DENOISE_DADA2.out.table_seqs
 
     // Create multiqc reports
     MULTIQC_STATS ( RUN_FASTQC.out, ch_to_multiqc )
@@ -283,6 +239,7 @@ workflow PIPE_16S {
 
     ch_collapsed_tables_to_combine = COLLAPSE_TAXA.out.collect()
     //COMBINE_COLLAPSED_TABLES ( "collapsed", ch_collapsed_tables_to_combine )
+
 }
 
 /*
