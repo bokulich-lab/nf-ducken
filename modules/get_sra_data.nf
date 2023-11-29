@@ -1,5 +1,5 @@
 process GENERATE_ID_ARTIFACT {
-    conda "${params.fondue_conda_env}"
+    label "container_fondue"
 
     input:
     path inp_id_file
@@ -23,7 +23,8 @@ process GENERATE_ID_ARTIFACT {
 }
 
 process GET_SRA_DATA {
-    conda "${params.fondue_conda_env}"
+    label "container_fondue"
+
     input:
     path id_qza
 
