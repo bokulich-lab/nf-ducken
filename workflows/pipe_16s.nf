@@ -4,7 +4,8 @@
 ========================================================================================
 */
 
-// Validate input parameters
+// Import validation module
+include { validateParams } from '../validate_inputs/paramsValidator'
 
 // Check input path parameters to see if they exist
 
@@ -47,6 +48,9 @@ include { MULTIQC_STATS                       } from '../modules/summarize_stats
 
 
 workflow PIPE_16S {
+    // Validate input parameters
+    validateParams(params)
+
     // Log information
     log.info """\
          ${workflow.manifest.name} v${workflow.manifest.version}
