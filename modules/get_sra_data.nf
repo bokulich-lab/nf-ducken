@@ -7,9 +7,6 @@ process GENERATE_ID_ARTIFACT {
     output:
     path "accession_id.qza"
 
-    when:
-    start_process = "id_import"
-
     script:
     """
     echo '${inp_id_file} has been detected.'
@@ -32,9 +29,6 @@ process GET_SRA_DATA {
     path "sra_download/failed_runs.qza",  emit: failed
     path "sra_download/paired_reads.qza", emit: paired
     path "sra_download/single_reads.qza", emit: single
-
-    when:
-    start_process = "id_import"
 
     script:
     """
