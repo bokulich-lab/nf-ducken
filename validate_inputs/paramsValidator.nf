@@ -7,6 +7,28 @@ def validateParams(params) {
     assert params.outdir instanceof String : "outdir must be a String, but it is of type ${params.outdir.getClass().getName()}"
     assert params.tracedir.startsWith("${params.outdir}") : "tracedir must be inside outdir, but it is of type ${params.tracedir.getClass().getName()}"
 
+   // Validate tsv files
+   try {
+      if (params.fastq_manifest) {
+         validateTsvFile(params.fastq_manifest)
+         validateTsvContents(params.fastq_manifest, 3) // Replace 5 with your expected column count
+      }
+
+      if (params.primer_file) {
+         validateTsvFile(params.primer_file)
+         validateTsvContents(params.primer_file, 3)
+      }
+
+      if (params.inp_id_file) {
+         validateTsvFile(params.inp_id_file)
+         validateTsvContents(params.inp_id_file, 1)
+      }
+
+      println "TSV file content validation successful."
+   } catch (AssertionError e) {
+      println "TSV file content validation failed: ${e.message}"
+      System.exit(1)
+   }
 
     ////////////////////////////////////////
     // Validation for cutadapt parameters //
@@ -236,3 +258,19 @@ try {
     System.exit(1)
 }
 
+// Function to validate the contents of a TSV file
+def validateTsvContents(String filePath, int expectedColumns) {
+    if (filePath != null) {
+        File file = new File(filePath)
+        assert file.exists() : "File does not exist: $filePath"
+
+        file.eachLine { line ->
+            def columns = line.split('\t')
+            assert columns.size() == expectedColumns : "Expected $expectedColumns columns, but found ${columns.size()} in $filePath"
+        }
+    }
+}
+
+def validateTsvFile(filePath) {
+   assert filePath.toLowerCase().endsWith(".tsv") : "File must be a TSV file, but it has the wrong extension: ${filePath}"  
+}
