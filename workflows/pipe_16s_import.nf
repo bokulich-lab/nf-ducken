@@ -85,10 +85,6 @@ workflow PIPE_16S_IMPORT_INPUT {
             .stripIndent()
 
     // INPUT AND VARIABLES
-    if (!(params.fastq_manifest)) {
-        exit 1, 'fastq_manifest parameter is required!'
-    }
-
     ch_fastq_manifest = Channel.fromPath ( "${params.fastq_manifest}",
                                         checkIfExists: true )
 

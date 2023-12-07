@@ -58,31 +58,44 @@ def validateParams(params) {
   assertParam(params.outdir, [String], null, "outdir must be a String")
   assertParam(params.tracedir, [String], [{ it.startsWith("${params.outdir}") }], "tracedir must be inside outdir")
   assertParam(params.read_type, [String], ["paired", "single"], "read_type must be either 'paired' or 'single'")
+  assertParam(params.pipeline_type, [String], ["import", "download"], "pipeline_type must be either 'import' or 'download'")
 
-	// Valid ID column names
-List<String> validIdColumnNames = [
+  // Valid ID column names
+  List<String> validIdColumnNames = [
     "id", "sampleid", "sample-id", "featureid", "feature-id", "#SampleID", "#OTUID", "sample_name"].collect { it.toLowerCase().replaceAll(" ", "") }
 
-  // Validate tsv files
   try {
-		if (params.fastq_manifest) {
-			validateTsvFile(params.fastq_manifest)
-			validateTsvContents(params.fastq_manifest, params.read_type == "paired" ? 3 : 2, validIdColumnNames)
-		}
+    // Check if the pipeline types and then specific parameters to them
+    if (params.pipeline_type == 'import') {
+      if (params.fastq_manifest) {
+        validateTsvFile(params.fastq_manifest)
+        validateTsvContents(params.fastq_manifest, params.read_type == "paired" ? 3 : 2, validIdColumnNames)
+      } else {
+        exit 1, 'fastq_manifest parameter is required!'
+      }
 
-	if (params.primer_file) {
-			validateTsvFile(params.primer_file)
-			validateTsvContents(params.primer_file, params.read_type == "paired" ? 3 : 2, validIdColumnNames)
-	}
+    } else {
+      if (params.inp_id_file) {
+        validateTsvFile(params.inp_id_file)
+        validateTsvContents(params.inp_id_file, 1, validIdColumnNames)
+      } else {
+        exit 1, 'inp_id_file parameter is required!'
+      }
 
-	if (params.inp_id_file) {
-		validateTsvFile(params.inp_id_file)
-		validateTsvContents(params.inp_id_file, 1, validIdColumnNames)
-	}
+      if (!(params.email_address)) {
+        exit 1, 'email_address parameter is required!'
+      }
+
+    }
+
+    if (params.primer_file) {
+        validateTsvFile(params.primer_file)
+        validateTsvContents(params.primer_file, params.read_type == "paired" ? 3 : 2, validIdColumnNames)
+    }
 
 	} catch (AssertionError e) {
-		println "TSV file content validation failed: ${e.message}"
-		System.exit(1)
+    println "TSV file content validation failed: ${e.message}"
+    System.exit(1)
 	}
 
 	////////////////////////////////////////
@@ -91,7 +104,7 @@ List<String> validIdColumnNames = [
 	def cutadapt = params.cutadapt
 
 	assertParam(cutadapt.num_cores, [Integer], null, "cutadapt.num_cores must be an Integer")
-	assertParam(cutadapt.error_rate, [BigDecimal, Integer], [{ it >= 0 && it <= 1 }], "/cutadapt.error_rate must be a Float or Integer with a value between 0 and 1")
+	assertParam(cutadapt.error_rate, [BigDecimal, Integer], [{ it >= 0 && it <= 1 }], "cutadapt.error_rate must be a Float or Integer with a value between 0 and 1")
 	assertParam(cutadapt.times, [Integer], [{ it >= 1 }], "cutadapt.times must be an Integer with a value of 1 or above")
 	assertParam(cutadapt.overlap, [Integer], [{ it >= 1 }], "cutadapt.overlap must be an Integer with a value of 1 or above")
 	assertParam(cutadapt.minimum_length, [Integer], [{ it >= 1 }], "cutadapt.minimum_length must be an Integer with a value of 1 or above")
@@ -122,13 +135,13 @@ List<String> validIdColumnNames = [
 	assertParam(dada2.trunc_len_r, [Integer], [{ it >= 0 }], "dada2.trunc_len_r must be a non-negative Integer")
 	assertParam(dada2.trim_left_f, [Integer], [{ it >= 0 }], "dada2.trim_left_f must be a non-negative Integer")
 	assertParam(dada2.trim_left_r, [Integer], [{ it >= 0 }], "dada2.trim_left_r must be a non-negative Integer")
-	assertParam(dada2.max_ee_f, [BigDecimal], [{ it >= 0.0 }], "dada2.max_ee_f must be a Float representing a non-negative number")
-	assertParam(dada2.max_ee_r, [BigDecimal], [{ it >= 0.0 }], "dada2.max_ee_r must be a Float representing a non-negative number")
+	assertParam(dada2.max_ee_f, [BigDecimal, Integer], [{ it >= 0.0 }], "dada2.max_ee_f must be a Float or Integer representing a non-negative number")
+	assertParam(dada2.max_ee_r, [BigDecimal, Integer], [{ it >= 0.0 }], "dada2.max_ee_r must be a Float or Integer representing a non-negative number")
 	assertParam(dada2.min_overlap, [Integer], [{ it >= 4 }], "dada2.min_overlap must be an Integer with a value of 4 or above")
 	assertParam(dada2.trunc_q, [Integer], [{ it >= 0 }], "dada2.trunc_q must be a non-negative Integer")
 	assertParam(dada2.pooling_method, [String], ["independent", "pseudo"], "dada2.pooling_method must be one of ['independent', 'pseudo']")
 	assertParam(dada2.chimera_method, [String], ["consensus", "none", "pooled"], "dada2.chimera_method must be one of ['consensus', 'none', 'pooled']")
-	assertParam(dada2.min_fold_parent_over_abundance, [BigDecimal], [{ it >= 1.0 }], "dada2.min_fold_parent_over_abundance must be a Float with a value of 1.0 or greater")
+	assertParam(dada2.min_fold_parent_over_abundance, [BigDecimal, Integer], [{ it >= 1.0 }], "dada2.min_fold_parent_over_abundance must be a Float or Integer with a value of 1.0 or greater")
 	assertParam(dada2.num_threads, [Integer], [{ it >= 0 }], "dada2.num_threads must be a non-negative Integer")
 	assertParam(dada2.num_reads_learn, [Integer], [{ it >= 0 }], "dada2.num_reads_learn must be a non-negative Integer")
 	assertParam(dada2.hashed_feature_ids, [String], ["True", "False"], "dada2.hashed_feature_ids must be either 'True' or 'False'")
@@ -157,11 +170,11 @@ List<String> validIdColumnNames = [
 	// Validation for uchime_ref parameters //
 	//////////////////////////////////////////
 	def uchime_ref = params.uchime_ref
-	assertParam(uchime_ref.dn, [BigDecimal], [{ it >= 0.0 }], "uchime_ref.dn must be a Float with a value of 0.0 or above")
+	assertParam(uchime_ref.dn, [BigDecimal, Integer], [{ it >= 0.0 }], "uchime_ref.dn must be a Float or Integer with a value of 0.0 or above")
 	assertParam(uchime_ref.min_diffs, [Integer], [{ it >= 1 }], "uchime_ref.min_diffs must be an Integer with a value of 1 or above")
-	assertParam(uchime_ref.min_div, [BigDecimal], [{ it >= 0.0 }], "uchime_ref.min_div must be a Float with a value of 0.0 or above")
-	assertParam(uchime_ref.min_h, [BigDecimal], [{ it >= 0.0 && it <= 1.0 }], "uchime_ref.min_h must be a Float with a value between 0.0 and 1.0 inclusive")
-	assertParam(uchime_ref.xn, [BigDecimal], [{ it > 1.0 }], "uchime_ref.xn must be a Float with a value greater than 1.0")
+	assertParam(uchime_ref.min_div, [BigDecimal, Integer], [{ it >= 0.0 }], "uchime_ref.min_div must be a Float or Integer with a value of 0.0 or above")
+	assertParam(uchime_ref.min_h, [BigDecimal, Integer], [{ it >= 0.0 && it <= 1.0 }], "uchime_ref.min_h must be a Float or Integer with a value between 0.0 and 1.0 inclusive")
+	assertParam(uchime_ref.xn, [BigDecimal, Integer], [{ it > 1.0 }], "uchime_ref.xn must be a Float or Integer with a value greater than 1.0")
 	assertParam(uchime_ref.num_threads, [Integer], [{ it >= 0 && it <= 256 }], "uchime_ref.num_threads must be an Integer with a value between 0 and 256 inclusive")
 
 	///////////////////////////////////////////////
