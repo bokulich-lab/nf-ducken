@@ -2,21 +2,32 @@
 
 // Function to validate the contents of a TSV file including column names
 def validateTsvContents(String filePath, int expectedColumns, List<String> validIdColumnNames = null) {
-    if (filePath != null) {
-        File file = new File(filePath)
-        assert file.exists() : "File does not exist: $filePath"
+    File file = new File(filePath)
+    if (!file.exists()) {
+        throw new FileNotFoundException("File does not exist: $filePath")
+    }
 
-        file.withReader { reader ->
-            def lineNumber = 0
-            reader.eachLine { line ->
-                def columns = line.split('\t')
-                if (lineNumber == 0 && validIdColumnNames != null) {
-                    assert validIdColumnNames.contains(columns[0].toLowerCase().replaceAll(" ", "")) : "First column name in $filePath is not valid. It must be one of ${validIdColumnNames}"
+    file.withReader { reader ->
+        def lineNumber = 0
+        reader.eachLine { line ->
+            def columns = line.split('\t')
+            if (lineNumber == 0 && validIdColumnNames != null) {
+                if (!validIdColumnNames.any { it.equalsIgnoreCase(columns[0].replaceAll(" ", "")) }) {
+                    throw new IllegalArgumentException("First column name in $filePath is not valid. It must be one of ${validIdColumnNames.join(', ')}")
                 }
-                assert columns.size() == expectedColumns : "Expected $expectedColumns columns, but found ${columns.size()} in $filePath on line $lineNumber"
-                lineNumber++
             }
+            if (columns.size() != expectedColumns) {
+                throw new IllegalArgumentException("Expected $expectedColumns columns, but found ${columns.size()} in $filePath")
+            }
+            lineNumber++
         }
+    }
+}
+
+// Custom exception class
+class ParameterValidationException extends RuntimeException {
+    ParameterValidationException(String message) {
+        super(message)
     }
 }
 
@@ -35,7 +46,9 @@ def assertParam(value, typeConstraints, rangeConstraints = null, errorMessage = 
         }
     }
 
-    assert typeCheckPassed && rangeCheckPassed : errorMessage
+    if (!typeCheckPassed || !rangeCheckPassed) {
+        throw new ParameterValidationException(errorMessage)
+    }
 }
 
 // Define a method to validate parameters
@@ -48,10 +61,7 @@ def validateParams(params) {
 
 	// Valid ID column names
 List<String> validIdColumnNames = [
-    "id", "sampleid", "sampleid", "sample-id", "featureid", 
-    "featureid", "feature-id", "#SampleID", "#SampleID", 
-    "#OTUID", "#OTUID", "sample_name"].collect { it.toLowerCase().replaceAll(" ", "") }
-
+    "id", "sampleid", "sample-id", "featureid", "feature-id", "#SampleID", "#OTUID", "sample_name"].collect { it.toLowerCase().replaceAll(" ", "") }
 
   // Validate tsv files
   try {
@@ -62,12 +72,12 @@ List<String> validIdColumnNames = [
 
 	if (params.primer_file) {
 			validateTsvFile(params.primer_file)
-			validateTsvContents(params.primer_file, 3)
+			validateTsvContents(params.primer_file, params.read_type == "paired" ? 3 : 2, validIdColumnNames)
 	}
 
 	if (params.inp_id_file) {
 		validateTsvFile(params.inp_id_file)
-		validateTsvContents(params.inp_id_file, 1)
+		validateTsvContents(params.inp_id_file, 1, validIdColumnNames)
 	}
 
 	} catch (AssertionError e) {
@@ -107,7 +117,7 @@ List<String> validIdColumnNames = [
 	def dada2 = params.dada2
 	assertParam(dada2.trunc_len, [Integer], [{ it >= 0 }], "dada2.trunc_len must be a non-negative Integer")
 	assertParam(dada2.trim_left, [Integer], [{ it >= 0 }], "dada2.trim_left must be a non-negative Integer")
-	assertParam(dada2.max_ee, [BigDecimal], [{ it >= 0.0 }], "dada2.max_ee must be a Float representing a non-negative number")
+	assertParam(dada2.max_ee, [BigDecimal, Integer], [{ it >= 0.0 }], "dada2.max_ee must be a Float or Integer representing a non-negative number")
 	assertParam(dada2.trunc_len_f, [Integer], [{ it >= 0 }], "dada2.trunc_len_f must be a non-negative Integer")
 	assertParam(dada2.trunc_len_r, [Integer], [{ it >= 0 }], "dada2.trunc_len_r must be a non-negative Integer")
 	assertParam(dada2.trim_left_f, [Integer], [{ it >= 0 }], "dada2.trim_left_f must be a non-negative Integer")

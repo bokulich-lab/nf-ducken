@@ -98,12 +98,9 @@ workflow PIPE_16S_DOWNLOAD_INPUT {
     } else {
         exit 1, 'Input file with sample accession numbers does not exist or is not specified!'
     }
+
     if (!(params.email_address)) {
         exit 1, 'email_address parameter is required!'
-    }
-  
-    if (!(params.read_type)) {
-        exit 1, 'Read type parameter is required!'
     }
     
     // Determine whether reference downloads are necessary
