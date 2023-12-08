@@ -1,7 +1,7 @@
 # nf-16s-pipe
 Workflow to process amplicon meta-analysis data, from NCBI accession IDs to taxonomic diversity metrics.
 
-![Pipeline DAG](assets/pipeline_dag.png)
+![Pipeline DAG](assets/images/pipeline_dag.png)
 
 ## Environment
 
@@ -192,12 +192,13 @@ To skip processes through DADA2, if using pre-denoised feature tables and sequen
 
 ### Steps
 
-1. Metadata pre-processing: `qiime tools import`
-2. FASTQ retrieval: `q2-fondue`
-3. Initial quality control: `q2-dada2`
-4. Closed reference OTU clustering: `q2-vsearch` 
-5. Taxonomy classification: `q2-feature-classifier`
-6. Collapse to taxon of interest and merge final outputs
+1. Data import (`qiime tools import`) or FASTQ download (`q2-fondue`)
+2. Optional adapter trimming: `q2-cutadapt`
+3. Initial quality control and denoising: `q2-dada2`
+4. Optional chimera filtering: `q2-vsearch`
+5. Closed reference OTU clustering: `q2-vsearch` 
+6. Taxonomy classification: `q2-feature-classifier`
+7. Collapse to taxon of interest and merge final outputs
 
 ### Execution
 
