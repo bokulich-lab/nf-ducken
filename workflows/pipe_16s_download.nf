@@ -4,7 +4,8 @@
 ========================================================================================
 */
 
-// Validate input parameters
+// Import validation module
+include { validateParams } from '../validate_inputs/paramsValidator'
 
 // Check input path parameters to see if they exist
 
@@ -45,6 +46,9 @@ include { MULTIQC_STATS                       } from '../modules/summarize_stats
 */
 
 workflow PIPE_16S_DOWNLOAD_INPUT {
+    // Validate input parameters
+    validateParams(params)
+
     // Log information
     log.info """\
          ${workflow.manifest.name} v${workflow.manifest.version}
@@ -88,20 +92,9 @@ workflow PIPE_16S_DOWNLOAD_INPUT {
             .splitCsv( sep: '\t', skip: 1 )
             .set { ch_primer_seqs }
     }
-
-    if (params.inp_id_file) {       // TODO shift to input validation module
-        ch_inp_ids        = Channel.fromPath ( "${params.inp_id_file}", checkIfExists: true )
-    } else {
-        exit 1, 'Input file with sample accession numbers does not exist or is not specified!'
-    }
-    if (!(params.email_address)) {
-        exit 1, 'email_address parameter is required!'
-    }
-  
-    if (!(params.read_type)) {
-        exit 1, 'Read type parameter is required!'
-    }
     
+    ch_inp_ids = Channel.fromPath ( "${params.inp_id_file}", checkIfExists: true )
+
     // Determine whether reference downloads are necessary
     if (params.otu_ref_file) {
         flag_get_ref    = false

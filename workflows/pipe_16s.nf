@@ -4,7 +4,8 @@
 ========================================================================================
 */
 
-// Validate input parameters
+// Import validation module
+include { validateParams } from '../validate_inputs/paramsValidator'
 
 // Check input path parameters to see if they exist
 
@@ -47,6 +48,9 @@ include { MULTIQC_STATS                       } from '../modules/summarize_stats
 
 
 workflow PIPE_16S {
+    // Validate input parameters
+    validateParams(params)
+
     // Log information
     log.info """\
          ${workflow.manifest.name} v${workflow.manifest.version}
@@ -113,31 +117,6 @@ workflow PIPE_16S {
             .set { ch_primer_seqs }
     }
 
-    // Required user inputs
-    switch (start_process) {
-        case "id_import":
-            if (params.inp_id_file) {       // TODO shift to input validation module
-                ch_inp_ids        = Channel.fromPath ( "${params.inp_id_file}", checkIfExists: true )
-            } else {
-                exit 1, 'Input file with sample accession numbers does not exist or is not specified!'
-            }
-            break
-
-        case "fastq_import":
-            println "Skipping FASTQ download..."
-            break
-
-        case "clustering":
-            println "Skipping DADA2..."
-            break
-    }
-
-    if (start_process != "clustering") {
-        if (!(params.read_type)) {
-            exit 1, 'Read type parameter is required!'
-        }
-    }
-
     // Determine whether reference downloads are necessary
     if (params.otu_ref_file) {
         flag_get_ref    = false
@@ -169,6 +148,17 @@ workflow PIPE_16S {
         IMPORT_FASTQ ( ch_fastq_manifest )
         ch_sra_artifact = IMPORT_FASTQ.out
     } else {
+        if (params.inp_id_file) {       // TODO shift to input validation module
+                ch_inp_ids        = Channel.fromPath ( "${params.inp_id_file}", checkIfExists: true )
+            } else {
+                exit 1, 'Input file with sample accession numbers does not exist or is not specified!'
+            }
+        }
+
+        if (!(params.email_address)) {
+            exit 1, 'email_address parameter is required!'
+        }
+
         // Download FASTQ files with q2-fondue
         GENERATE_ID_ARTIFACT ( ch_inp_ids )
         GET_SRA_DATA         ( GENERATE_ID_ARTIFACT.out )

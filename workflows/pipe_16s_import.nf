@@ -4,7 +4,8 @@
 ========================================================================================
 */
 
-// Validate input parameters
+// Import validation module
+include { validateParams } from '../validate_inputs/paramsValidator'
 
 // Check input path parameters to see if they exist
 
@@ -44,6 +45,9 @@ include { MULTIQC_STATS                       } from '../modules/summarize_stats
 */
 
 workflow PIPE_16S_IMPORT_INPUT {
+    // Validate input parameters
+    validateParams(params)
+
     // Log information
     log.info """\
          ${workflow.manifest.name} v${workflow.manifest.version}
@@ -81,16 +85,8 @@ workflow PIPE_16S_IMPORT_INPUT {
             .stripIndent()
 
     // INPUT AND VARIABLES
-    if (!(params.fastq_manifest)) {
-        exit 1, 'fastq_manifest parameter is required!'
-    }
-
     ch_fastq_manifest = Channel.fromPath ( "${params.fastq_manifest}",
                                         checkIfExists: true )
-
-    if (!(params.phred_offset == 64 || params.phred_offset == 33)) {
-        exit 1, 'The only valid PHRED offset values are 33 or 64!'
-    }
 
     // Determine whether Cutadapt will be run
     if (params.primer_file) {
@@ -98,11 +94,7 @@ workflow PIPE_16S_IMPORT_INPUT {
             .splitCsv( sep: '\t', skip: 1 )
             .set { ch_primer_seqs }
     }
-
-    if (!(params.read_type)) {
-        exit 1, 'Read type parameter is required!'
-    }
-
+    
     // Determine whether reference downloads are necessary
     if (params.otu_ref_file) {
         flag_get_ref    = false
