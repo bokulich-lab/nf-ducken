@@ -1,5 +1,5 @@
 # nf-16s-pipe
-Workflow to process amplicon meta-analysis data, from NCBI accession IDs to taxonomic diversity metrics.
+Workflow to process amplicon meta-analysis data, from either local FASTQs or NCBI accession IDs to taxonomic classification.
 
 ![Pipeline DAG](assets/images/pipeline_dag.png)
 
@@ -158,6 +158,7 @@ For containerization:
 * `fastqc_conda_env`: default `"bioconda::fastqc"`
 * `fondue_release`: default `"2023.2-ps"`, used to specify param `fondue_container` to particular q2-fondue image version
 * `fondue_container`: default `"linathekim/q2-fondue:${fondue_release}"`
+  * **Note:** The standard environment for `q2-fondue` will not work with Nextflow out of the box. The image requires installation of `procps` (available with `apt-get`) for interactions with Nextflow. These are denoted with the suffix `-ps` on DockerHub.
 * `fondue_conda_env`: default `"${baseDir}/assets/q2-fondue-2023.2-${sys-abbreviation}.yml"`
 * `multiqc_release`: default `"v1.18"`
 * `multiqc_container`: default `"ewels/multiqc:${multiqc_release}"`
@@ -183,10 +184,11 @@ To skip processes through DADA2, if using pre-denoised feature tables and sequen
 
 ## Outputs
 
-* `outDir/merged_taxonomy.qza`: Artifact containing frequencies for features collapsed to a given level (default genus).
-* `outDir/merged_taxonomy.qzv`: Visualization containing frequencies for features collapsed to a given level (default genus).
-* `outDir/merged_feature_table.qza`: Artifact containing table of represented features by sample.
+* `outDir/taxonomy.qza`: Artifact containing frequencies for features collapsed to a given level (default genus).
+* `outDir/taxonomy.qzv`: Visualization containing frequencies for features collapsed to a given level (default genus).
+* `outDir/feature_table.qza`: Artifact containing table of represented features by sample.
 * `outDir/stats/`: Directory containing QC metrics, including FastQC, clustering statistics, denoising statistics, etc.
+* `outDir/trace/`: Directory containing runtime metrics with an execution report and a pipeline DAG.
 
 ## Process
 
