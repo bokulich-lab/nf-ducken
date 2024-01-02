@@ -56,7 +56,6 @@ def validateParams(params) {
 
   // Validation for general parameters
   assertParam(params.outdir, [String], null, "outdir must be a String")
-  assertParam(params.tracedir, [String], [{ it.startsWith("${params.outdir}") }], "tracedir must be inside outdir")
   assertParam(params.read_type, [String], ["paired", "single"], "read_type must be either 'paired' or 'single'")
   assertParam(params.pipeline_type, [String], ["import", "download"], "pipeline_type must be either 'import' or 'download'")
 
