@@ -4,7 +4,7 @@ process DENOISE_DADA2 {
     label "error_retry"
     tag "${sample_id}"
 
-    publishDir "${params.outdir}/stats/", pattern: "*_stats.qza"
+    publishDir "${params.outdir}/stats/denoising_stats/", pattern: "*_stats.qza"
     afterScript "rm -rf \${PWD}/tmp_denoise"
 
     input:

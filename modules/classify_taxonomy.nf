@@ -105,13 +105,13 @@ process CLASSIFY_TAXONOMY {
 process COLLAPSE_TAXA {
     label "container_qiime2"
     tag "${sample_id}"
-    publishDir "${params.outdir}/stats/collapsed_taxa_tables/", pattern: "*_collapsed_table.qza"
+    publishDir "${params.outdir}/stats/collapsed_taxa_tables/", pattern: "*_collapsed_${params.taxa_level}_table.qza"
     
     input:
     tuple val(sample_id), path(table), path(taxonomy)
 
     output:
-    path "${sample_id}_collapsed_table.qza"
+    path "${sample_id}_collapsed_${params.taxa_level}_table.qza"
 
     script:
     """
@@ -121,7 +121,7 @@ process COLLAPSE_TAXA {
         --i-table ${table} \
         --i-taxonomy ${taxonomy} \
         --p-level ${params.taxa_level} \
-        --o-collapsed-table ${sample_id}_collapsed_table.qza \
+        --o-collapsed-table ${sample_id}_collapsed_${params.taxa_level}_table.qza \
         --verbose
     """
 }
