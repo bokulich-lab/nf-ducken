@@ -52,3 +52,15 @@ workflow NF_PIPE_16S {
 workflow {
     NF_PIPE_16S ()
 }
+
+workflow.onComplete {
+    if (workflow.profile == 'conda') {
+        println("Workflow completed. Cleaning up Conda environments...")
+
+        def cleanupCommand = "rm -rf work/conda/"
+        def proc = cleanupCommand.execute()
+        proc.waitForProcessOutput()
+
+        println("Cleanup completed.")
+    }
+}
