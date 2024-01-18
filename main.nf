@@ -54,10 +54,11 @@ workflow {
 }
 
 workflow.onComplete {
-    if (workflow.profile == 'conda') {
+    print(workflow.profile )
+    if (workflow.profile.contains('conda')) {
         println("Workflow completed. Cleaning up Conda environments...")
 
-        def cleanupCommand = "rm -rf work/conda/"
+        def cleanupCommand = "rm -rf $workflow.workDir/conda/"
         def proc = cleanupCommand.execute()
         proc.waitForProcessOutput()
 
