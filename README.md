@@ -39,8 +39,8 @@ Required if running from local FASTQ files:
 Required if running Cutadapt:
 * `primer_file`: Path to TSV file containing forward (and, if applicable, reverse) primers. Each row represents a different primer pair.
 * For primer removal:
-  * If single-end, one of the following `cutadapt.adapter`, `cutadapt.front`, and `cutadapt.anywhere`: Primer sequence to remove; `cutadapt.front` is recommended for most amplicon sequence runs.
-  * If paired-end, one of the following pairs `cutadapt.adapter_f`/`cutadapt.adapter_r`, `cutadapt.front_f`/`cutadapt.front_r`, or `cutadapt.anywhere_f`/`cutadapt.anywhere_r`: Primer sequences to remove; `cutadapt.front_f`/`cutadapt.front_r` are recommended for most amplicon sequence runs.
+  * If single-end, `cutadapt.front`: Primer sequence to remove; `cutadapt.front` is recommended for most amplicon sequence runs, and `cutadapt.adapter` and `cutadapt.anywhere` are not supported in this workflow.
+  * If paired-end, `cutadapt.front_f`/`cutadapt.front_r`: Primer sequences to remove; `cutadapt.front_f`/`cutadapt.front_r` are recommended for most amplicon sequence runs, and the `adapter` and `anywhere` counterparts are not supported in this workflow.
   * The workflow does not at the moment support linked primers. Additionally, the workflow currently only takes a collection of single-end or paired-end primers, but not a combination of both.
 
 ### Optional user-input parameters
