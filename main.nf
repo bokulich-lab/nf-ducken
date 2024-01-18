@@ -54,7 +54,6 @@ workflow {
 }
 
 workflow.onComplete {
-    print(workflow.profile )
     if (workflow.profile.contains('conda')) {
         println("Workflow completed. Cleaning up Conda environments...")
 
