@@ -6,11 +6,11 @@ Parses Cutadapt file to determine optimal sample-primer pairs.
 from pathlib import Path
 import argparse
 import re
+import pandas as pd
 
 
 def read_log(log_file: str, read_type: str):
     # Note: Each log represents a single primer (pair)
-    # Split log by sample
     # Extract summary
 
     count_samples = 0
@@ -20,6 +20,8 @@ def read_log(log_file: str, read_type: str):
 
     read_dict = {"single" : 1,
                  "paired" : 2}
+
+    pct_list = []
 
     with open(log_file) as f:
         # Find start log sample split based on header text:
@@ -65,7 +67,6 @@ def read_log(log_file: str, read_type: str):
                             r"\-[o|p] [\S]+\.fast[\S]+|[\S]+\.fast[\S]+",
                             cli_line)
 
-
                     # Search for adapter summary stats
                     if re.match(r"Total read pairs processed:", line):
                         r1_line = f.readline()
@@ -78,10 +79,32 @@ def read_log(log_file: str, read_type: str):
                             "The text 'Read 1/2 with adapter' could not be " \
                             "found in the Cutadapt log for this sample!"
 
-                        break   # Look for next sample
+                        if read_type == "single":
+                            # sample, primer, trim_pct
+                            pct_list.append([Path(fastq_list[0]).name,
+                                             primer_dict["R1"],
+                                             rstats_list[0]])
+                        else:
+                            # sample, primer_r1, pct_r1, primer_r2, pct_r2
+                            pct_list.append([Path(fastq_list[0]).name,
+                                             primer_dict["R1"],
+                                             rstats_list[0],
+                                             primer_dict["R2"],
+                                             rstats_list[1]])
+                        break   # Finish looking after one sample
+            continue
 
-                pass
-        pass
+    # After processing the entire set
+    assert len(pct_list) > 0, "There were no results found!"
+    if read_type == "single":
+        pct_df = pd.DataFrame(pct_list, columns=["sample", "primer",
+                                                 "trim_pct"])
+    else:
+        pct_df = pd.DataFrame(pct_list, columns=["sample", "primer_r1",
+                                                 "trim_pct_r1", "primer_r2",
+                                                 "trim_pct_r2"])
+
+    return pct_df
 
 
 def arg_parse():
@@ -103,6 +126,13 @@ def arg_parse():
         choices=["single", "paired"],
         required=True
     )
+    parser.add_argument(
+        "-s",
+        "--sample_name",
+        help="Sample name of the FASTQ file whose Cutadapt log we parse.",
+        type=str,
+        required=True
+    )
 
     # Add sample/FASTQ names for an added layer of cross-reference?
 
@@ -114,14 +144,6 @@ def arg_parse():
         type=str,
         default=Path.cwd(),
     )
-    parser.add_argument(
-        "-f",
-        "--fastq_suffix",
-        help="Sample FASTQ file name suffix to remove in sample assignment; "
-             "comma-delimited.",
-        type=str,
-        default="*_00_L001_R[1-2]_001.fastq.gz,*.fastq.gz",
-    )
 
     args = parser.parse_args()
     return args
@@ -131,7 +153,9 @@ def main(args):
     assert Path(args.input_log).is_file()
     assert Path(args.output_dir).is_dir()
 
-    read_log(args.input_log, args.read_type)
+    result_df = read_log(args.input_log, args.read_type)
+    result_df.to_csv(f"cutadapt_parse_{args.sample_name}.csv",
+                     index=None)
 
 
 if __name__ == "__main__":
