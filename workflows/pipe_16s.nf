@@ -141,14 +141,15 @@ workflow PIPE_16S {
     } else {
         flag_get_classifier        = true
     }
-
+    
     // Start of the Pipeline
-    if (params.fastq_manifest) {
-        // Use local FASTQ files
-        IMPORT_FASTQ ( ch_fastq_manifest )
-        ch_sra_artifact = IMPORT_FASTQ.out
-    } else {
-        if (params.inp_id_file) {       // TODO shift to input validation module
+    if (params.generate_input) {
+        if (params.fastq_manifest) {
+            // Use local FASTQ files
+            IMPORT_FASTQ ( ch_fastq_manifest )
+            ch_sra_artifact = IMPORT_FASTQ.out
+        } else {
+            if (params.inp_id_file) {       // TODO shift to input validation module
                 ch_inp_ids        = Channel.fromPath ( "${params.inp_id_file}", checkIfExists: true )
             } else {
                 exit 1, 'Input file with sample accession numbers does not exist or is not specified!'
@@ -168,6 +169,10 @@ workflow PIPE_16S {
         } else if (params.read_type == "paired") {
             ch_sra_artifact = GET_SRA_DATA.out.paired
         }
+
+    } else {
+        Channel.fromPath ( "${params.input_artifact}", checkIfExists: true )
+        .set { ch_sra_artifact }
     }
 
     // Quality control: FASTQ type check, trimming, QC

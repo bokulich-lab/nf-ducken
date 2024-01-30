@@ -121,16 +121,22 @@ workflow PIPE_16S_DOWNLOAD_INPUT {
     }
 
     // Start of the  Pipeline
-    // Download FASTQ files with q2-fondue
-    GENERATE_ID_ARTIFACT ( ch_inp_ids )
-    GET_SRA_DATA         ( GENERATE_ID_ARTIFACT.out )
+    if (params.generate_input) {
+        // Download FASTQ files with q2-fondue
+        GENERATE_ID_ARTIFACT ( ch_inp_ids )
+        GET_SRA_DATA         ( GENERATE_ID_ARTIFACT.out )
+        
+        if (params.read_type == "single") {
+            ch_sra_artifact = GET_SRA_DATA.out.single
+        } else if (params.read_type == "paired") {
+            ch_sra_artifact = GET_SRA_DATA.out.paired
+        }
     
-    if (params.read_type == "single") {
-        ch_sra_artifact = GET_SRA_DATA.out.single
-    } else if (params.read_type == "paired") {
-        ch_sra_artifact = GET_SRA_DATA.out.paired
+    } else {
+        Channel.fromPath ( "${params.input_artifact}", checkIfExists: true )
+        .set { ch_sra_artifact }
     }
-   
+
     // Quality control: FASTQ type check, trimming, QC
     // FASTQ check and QC
     CHECK_FASTQ_TYPE ( ch_sra_artifact )
@@ -232,7 +238,6 @@ workflow PIPE_16S_DOWNLOAD_INPUT {
 
     ch_collapsed_tables_to_combine = COLLAPSE_TAXA.out.collect()
     //COMBINE_COLLAPSED_TABLES ( "collapsed", ch_collapsed_tables_to_combine )
-
 }
 
 /*

@@ -119,12 +119,19 @@ workflow PIPE_16S_IMPORT_INPUT {
     } else {
         flag_get_classifier        = true
     }
-
-    // Start of the  Pipeline
-    // Use local FASTQ files
-    IMPORT_FASTQ ( ch_fastq_manifest )
-    ch_sra_artifact = IMPORT_FASTQ.out
     
+    // Start of the  Pipeline
+    
+    if (params.generate_input) {
+        // Use local FASTQ files
+        IMPORT_FASTQ ( ch_fastq_manifest )
+        ch_sra_artifact = IMPORT_FASTQ.out
+    
+    } else {
+        Channel.fromPath ( "${params.input_artifact}", checkIfExists: true )
+        .set { ch_sra_artifact }
+    }
+
     // Quality control: FASTQ type check, trimming, QC
     // FASTQ check and QC
     CHECK_FASTQ_TYPE ( ch_sra_artifact )
