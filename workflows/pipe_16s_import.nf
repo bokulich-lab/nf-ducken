@@ -85,8 +85,6 @@ workflow PIPE_16S_IMPORT_INPUT {
             .stripIndent()
 
     // INPUT AND VARIABLES
-    ch_fastq_manifest = Channel.fromPath ( "${params.fastq_manifest}",
-                                        checkIfExists: true )
 
     // Determine whether Cutadapt will be run
     if (params.primer_file) {
@@ -123,6 +121,9 @@ workflow PIPE_16S_IMPORT_INPUT {
     // Start of the  Pipeline
     
     if (params.generate_input) {
+        ch_fastq_manifest = Channel.fromPath ( "${params.fastq_manifest}",
+                                        checkIfExists: true )
+                                        
         // Use local FASTQ files
         IMPORT_FASTQ ( ch_fastq_manifest )
         ch_sra_artifact = IMPORT_FASTQ.out

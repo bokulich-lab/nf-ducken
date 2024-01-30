@@ -92,8 +92,6 @@ workflow PIPE_16S_DOWNLOAD_INPUT {
             .splitCsv( sep: '\t', skip: 1 )
             .set { ch_primer_seqs }
     }
-    
-    ch_inp_ids = Channel.fromPath ( "${params.inp_id_file}", checkIfExists: true )
 
     // Determine whether reference downloads are necessary
     if (params.otu_ref_file) {
@@ -122,6 +120,8 @@ workflow PIPE_16S_DOWNLOAD_INPUT {
 
     // Start of the  Pipeline
     if (params.generate_input) {
+        ch_inp_ids = Channel.fromPath ( "${params.inp_id_file}", checkIfExists: true )
+        
         // Download FASTQ files with q2-fondue
         GENERATE_ID_ARTIFACT ( ch_inp_ids )
         GET_SRA_DATA         ( GENERATE_ID_ARTIFACT.out )
