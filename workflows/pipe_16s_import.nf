@@ -23,7 +23,7 @@ include { validateParams } from '../validate_inputs/paramsValidator'
 ========================================================================================
 */
 
-include { IMPORT_FASTQ                        } from '../modules/get_sra_data'
+include { IMPORT_FASTQ; SPLIT_FASTQ_MANIFEST  } from '../modules/get_sra_data'
 include { CHECK_FASTQ_TYPE; RUN_FASTQC;
           CUTADAPT_TRIM                       } from '../modules/quality_control'
 include { DENOISE_DADA2                       } from '../modules/denoise_dada2'
@@ -122,7 +122,12 @@ workflow PIPE_16S_IMPORT_INPUT {
 
     // Start of the  Pipeline
     // Use local FASTQ files
-    IMPORT_FASTQ ( ch_fastq_manifest )
+    SPLIT_FASTQ_MANIFEST ( ch_fastq_manifest )
+    ch_split_ids = SPLIT_FASTQ_MANIFEST.out
+                        .flatten()
+                        .map { [(it.getName() - manifest_suffix), it] }
+                        .view()
+    IMPORT_FASTQ ( ch_split_ids )
     ch_sra_artifact = IMPORT_FASTQ.out
     
     // Quality control: FASTQ type check, trimming, QC

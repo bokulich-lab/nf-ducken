@@ -24,7 +24,8 @@ include { validateParams } from '../validate_inputs/paramsValidator'
 */
 
 
-include { GENERATE_ID_ARTIFACT; GET_SRA_DATA; } from '../modules/get_sra_data'
+include { GENERATE_ID_ARTIFACT; GET_SRA_DATA;
+          SPLIT_FASTQ_MANIFEST                } from '../modules/get_sra_data'
 include { CHECK_FASTQ_TYPE; RUN_FASTQC;
           CUTADAPT_TRIM                       } from '../modules/quality_control'
 include { DENOISE_DADA2                       } from '../modules/denoise_dada2'
@@ -120,9 +121,15 @@ workflow PIPE_16S_DOWNLOAD_INPUT {
         flag_get_classifier        = true
     }
 
-    // Start of the  Pipeline
+    // Start of the pipeline
     // Download FASTQ files with q2-fondue
-    GENERATE_ID_ARTIFACT ( ch_inp_ids )
+    SPLIT_FASTQ_MANIFEST ( ch_inp_ids )
+    manifest_suffix = ~/${params.fastq_split.suffix}/
+    ch_split_ids = SPLIT_FASTQ_MANIFEST.out
+                        .flatten()
+                        .map { [(it.getName() - manifest_suffix), it] }
+                        .view()
+    GENERATE_ID_ARTIFACT ( ch_split_ids )
     GET_SRA_DATA         ( GENERATE_ID_ARTIFACT.out )
     
     if (params.read_type == "single") {
