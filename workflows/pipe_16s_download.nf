@@ -167,7 +167,7 @@ workflow PIPE_16S_DOWNLOAD_INPUT {
     DENOISE_DADA2 ( ch_to_denoise )
     ch_denoised_qzas = DENOISE_DADA2.out.table_seqs
 
-    // Create multiqc reports
+    // Create Multiqc reports
     MULTIQC_STATS ( RUN_FASTQC.out, ch_to_multiqc )
 
     // Feature generation: Clustering

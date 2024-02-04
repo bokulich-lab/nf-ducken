@@ -148,9 +148,8 @@ workflow PIPE_16S_IMPORT_INPUT {
     CHECK_FASTQ_TYPE ( ch_sra_artifact )
     RUN_FASTQC ( CHECK_FASTQ_TYPE.out.fqs )
     
-    if (params.primer_file) {
+    if (is_cutadapt_run) {
         ch_to_trim = CHECK_FASTQ_TYPE.out.qza
-                        .combine ( ch_primer_seqs )
         CUTADAPT_TRIM ( ch_to_trim )
         ch_to_denoise = CUTADAPT_TRIM.out.qza
         ch_to_multiqc = CUTADAPT_TRIM.out.stats
@@ -158,11 +157,12 @@ workflow PIPE_16S_IMPORT_INPUT {
         ch_to_denoise = CHECK_FASTQ_TYPE.out.qza
         ch_to_multiqc = "${projectDir}/assets/NO_FILE"
     }
-    
+
+    // Feature generation: Denoising for cleanup
     DENOISE_DADA2 ( ch_to_denoise )
     ch_denoised_qzas = DENOISE_DADA2.out.table_seqs
 
-    // Create multiqc reports
+    // Create Multiqc reports
     MULTIQC_STATS ( RUN_FASTQC.out, ch_to_multiqc )
 
     // Feature generation: Clustering
