@@ -2,17 +2,16 @@ process DENOISE_DADA2 {
     label "container_qiime2"
     label "process_local"
     label "error_retry"
-    tag "${sample_id}"
 
     publishDir "${params.outdir}/stats/", pattern: "*_stats.qza"
     afterScript "rm -rf \${PWD}/tmp_denoise"
 
     input:
-    tuple val(sample_id), path(fastq_qza)
+    tuple val(set_id), path(fastq_qza)
 
     output:
-    tuple val(sample_id), path("${sample_id}_table.qza"), path("${sample_id}_representative_sequences.qza"), emit: table_seqs
-    path "${sample_id}_denoising_stats.qza",    emit: stats
+    tuple val(set_id), path("denoised_table.qza"), path("denoised__representative_sequences.qza"), emit: table_seqs
+    path "denoising_stats.qza",    emit: stats
 
     script:
     if (params.read_type == "single")

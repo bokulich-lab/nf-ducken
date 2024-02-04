@@ -88,13 +88,20 @@ workflow PIPE_16S_DOWNLOAD_INPUT {
 
     // INPUT AND VARIABLES
     // Determine whether Cutadapt will be run
-    if (params.primer_file) {
-        Channel.fromPath ( "${params.primer_file}", checkIfExists: true )
-            .splitCsv( sep: '\t', skip: 1 )
-            .set { ch_primer_seqs }
+    if (params.cutadapt.front) {
+        is_cutadapt_run = true
+    } else if (params.cutadapt.front_f) {
+        if (params.cutadapt.front_r) {
+            is_cutadapt_run = true
+        } else {
+            is_cutadapt_run = null
+        }
+    } else {
+        is_cutadapt_run = null
     }
-    
+
     ch_inp_ids = Channel.fromPath ( "${params.inp_id_file}", checkIfExists: true )
+                    .map { [0, it] }
 
     // Determine whether reference downloads are necessary
     if (params.otu_ref_file) {
@@ -108,7 +115,7 @@ workflow PIPE_16S_DOWNLOAD_INPUT {
     if (params.taxonomy_ref_file) {
         flag_get_ref_taxa = false
         ch_taxa_ref_qza   = Channel.fromPath ( "${params.taxonomy_ref_file}",
-                                            checkIfExists: true )
+                                                checkIfExists: true )
     } else {
         flag_get_ref_taxa = true
     }
@@ -123,13 +130,16 @@ workflow PIPE_16S_DOWNLOAD_INPUT {
 
     // Start of the pipeline
     // Download FASTQ files with q2-fondue
-    SPLIT_FASTQ_MANIFEST ( ch_inp_ids )
-    manifest_suffix = ~/${params.fastq_split.suffix}/
-    ch_split_ids = SPLIT_FASTQ_MANIFEST.out
-                        .flatten()
-                        .map { [(it.getName() - manifest_suffix), it] }
-                        .view()
-    GENERATE_ID_ARTIFACT ( ch_split_ids )
+    if (params.fastq_split.enabled == "True") {
+        SPLIT_FASTQ_MANIFEST ( ch_inp_ids )
+        manifest_suffix = ~/${params.fastq_split.suffix}/
+        ch_acc_ids = SPLIT_FASTQ_MANIFEST.out
+                            .flatten()
+                            .map { [(it.getName() - manifest_suffix), it] }
+    } else {
+        ch_acc_ids = ch_inp_ids
+    }
+    GENERATE_ID_ARTIFACT ( ch_acc_ids )
     GET_SRA_DATA         ( GENERATE_ID_ARTIFACT.out )
     
     if (params.read_type == "single") {
@@ -143,15 +153,13 @@ workflow PIPE_16S_DOWNLOAD_INPUT {
     CHECK_FASTQ_TYPE ( ch_sra_artifact )
     RUN_FASTQC ( CHECK_FASTQ_TYPE.out.fqs )
 
-    if (params.primer_file) {
+    if (is_cutadapt_run) {
         ch_to_trim = CHECK_FASTQ_TYPE.out.qza
-                        .combine ( ch_primer_seqs )
         CUTADAPT_TRIM ( ch_to_trim )
         ch_to_denoise = CUTADAPT_TRIM.out.qza
         ch_to_multiqc = CUTADAPT_TRIM.out.stats
     } else {
         ch_to_denoise = CHECK_FASTQ_TYPE.out.qza
-                            .map { qza -> ["all", qza] }
         ch_to_multiqc = "${projectDir}/assets/NO_FILE"
     }
     

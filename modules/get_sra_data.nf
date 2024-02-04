@@ -2,10 +2,10 @@ process GENERATE_ID_ARTIFACT {
     label "container_fondue"
 
     input:
-    tuple val(sample_id), path(inp_id_file)
+    tuple val(set_id), path(inp_id_file)
 
     output:
-    tuple val(sample_id), path("${sample_id}_id.qza")
+    tuple val(set_id), path("id.qza")
 
     script:
     """
@@ -14,7 +14,7 @@ process GENERATE_ID_ARTIFACT {
 
     qiime tools import \
         --input-path ${inp_id_file} \
-        --output-path ${sample_id}_id.qza \
+        --output-path id.qza \
         --type 'NCBIAccessionIDs'
     """
 }
@@ -23,13 +23,12 @@ process GET_SRA_DATA {
     label "container_fondue"
 
     input:
-    tuple val(sample_id), path(id_qza)
+    tuple val(set_id), path(id_qza)
 
     output:
-    val(sample_id),                       emit: sample
-    path "sra_download/failed_runs.qza",  emit: failed
-    path "sra_download/paired_reads.qza", emit: paired
-    path "sra_download/single_reads.qza", emit: single
+    tuple val(set_id), path("sra_download/failed_runs.qza"),  emit: failed
+    tuple val(set_id), path("sra_download/paired_reads.qza"), emit: paired
+    tuple val(set_id), path("sra_download/single_reads.qza"), emit: single
 
     script:
     """
@@ -48,10 +47,10 @@ process IMPORT_FASTQ {
     errorStrategy "ignore"
 
     input:
-    tuple val(sample_id), path(fq_manifest)
+    tuple val(set_id), path(fq_manifest)
 
     output:
-    tuple val(sample_id), path("sequences.qza")
+    tuple val(set_id), path("sequences.qza")
 
     script:
     read_type_upper = params.read_type.capitalize()
@@ -76,7 +75,7 @@ process SPLIT_FASTQ_MANIFEST {
     label "container_pandas"
 
     input:
-    path fq_manifest
+    tuple val(set_id), path(fq_manifest)
 
     output:
     path "*${params.fastq_split.suffix}"

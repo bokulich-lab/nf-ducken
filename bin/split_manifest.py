@@ -56,7 +56,8 @@ def filter_special_char(path_df: pd.DataFrame) -> dict:
     sample_dict = dict(
         zip(
             path_df.iloc[:, 0].values.tolist(),  # sample ID
-            path_df.drop(path_df.columns[0], axis=1).values.tolist(),  # [path1, path2]
+            path_df.drop(path_df.columns[0], axis=1).values.tolist(),
+            # [path1, path2]
         )
     )
 

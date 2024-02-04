@@ -88,10 +88,10 @@ def validateParams(params) {
 
     }
 
-    if (params.primer_file) {
-        validateTsvFile(params.primer_file)
-        validateTsvContents(params.primer_file, params.read_type == "paired" ? 3 : 2, validIdColumnNames)
-    }
+//     if (params.primer_file) {
+//         validateTsvFile(params.primer_file)
+//         validateTsvContents(params.primer_file, params.read_type == "paired" ? 3 : 2, validIdColumnNames)
+//     }
 
 	} catch (AssertionError e) {
     println "TSV file content validation failed: ${e.message}"

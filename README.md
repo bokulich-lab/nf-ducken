@@ -37,10 +37,10 @@ Required if running from local FASTQ files:
 * `fastq_manifest`: Path to TSV file mapping sample identifiers to FASTQ absolute file paths; manifest must adhere to [QIIME 2 FASTQ manifest formatting requirements](https://docs.qiime2.org/2022.2/tutorials/importing/#fastq-manifest-formats)
 
 Required if running Cutadapt:
-* `primer_file`: Path to TSV file containing forward (and, if applicable, reverse) primers. Each row represents a different primer pair.
 * For primer removal:
-  * If single-end, `cutadapt.front`: Primer sequence to remove; `cutadapt.front` is recommended for most amplicon sequence runs, and `cutadapt.adapter` and `cutadapt.anywhere` are not supported in this workflow.
-  * If paired-end, `cutadapt.front_f`/`cutadapt.front_r`: Primer sequences to remove; `cutadapt.front_f`/`cutadapt.front_r` are recommended for most amplicon sequence runs, and the `adapter` and `anywhere` counterparts are not supported in this workflow.
+  * If single-end, `cutadapt.front`: Primer sequence to remove; multiple primers are delimited by a space.
+  * If paired-end, `cutadapt.front_f`/`cutadapt.front_r`: Primer sequences to remove; multiple primers are delimited by a space.
+  * Note that `cutadapt.front` is recommended for most amplicon sequence runs, and `cutadapt.adapter` and `cutadapt.anywhere` are not supported in this workflow. The same goes for their paired counterparts.
   * The workflow does not at the moment support linked primers. Additionally, the workflow currently only takes a collection of single-end or paired-end primers, but not a combination of both.
 
 ### Optional user-input parameters
@@ -65,17 +65,6 @@ Cutadapt process parameters in scope `params.cutadapt`:
 * `quality_cutoff_5end`: default `0`
 * `quality_cutoff_3end`: default `0`
 * `quality_base`: default `33`
-* Parameters for **single-end runs**:
-  * `adapter`: default `null`
-  * `front`: default `null`
-  * `anywhere`: default `null`
-* Parameters for **paired-end runs**:
-  * `adapter_f`: default `null`
-  * `front_f`: default `null`
-  * `anywhere_f`: default `null`
-  * `adapter_r`: default `null`
-  * `front_r`: default `null`
-  * `anywhere_r`: default `null`
 
 DADA2 process parameters in scope `params.dada2`:
 * `trunc_q`: default `2`

@@ -86,15 +86,23 @@ workflow PIPE_16S_IMPORT_INPUT {
 
     // INPUT AND VARIABLES
     ch_fastq_manifest = Channel.fromPath ( "${params.fastq_manifest}",
-                                        checkIfExists: true )
+                                           checkIfExists: true )
+                                    .map { [0, it] }
+
 
     // Determine whether Cutadapt will be run
-    if (params.primer_file) {
-        Channel.fromPath ( "${params.primer_file}", checkIfExists: true )
-            .splitCsv( sep: '\t', skip: 1 )
-            .set { ch_primer_seqs }
+    if (params.cutadapt.front) {
+        is_cutadapt_run = true
+    } else if (params.cutadapt.front_f) {
+        if (params.cutadapt.front_r) {
+            is_cutadapt_run = true
+        } else {
+            is_cutadapt_run = null
+        }
+    } else {
+        is_cutadapt_run = null
     }
-    
+
     // Determine whether reference downloads are necessary
     if (params.otu_ref_file) {
         flag_get_ref    = false
@@ -122,12 +130,17 @@ workflow PIPE_16S_IMPORT_INPUT {
 
     // Start of the  Pipeline
     // Use local FASTQ files
-    SPLIT_FASTQ_MANIFEST ( ch_fastq_manifest )
-    ch_split_ids = SPLIT_FASTQ_MANIFEST.out
-                        .flatten()
-                        .map { [(it.getName() - manifest_suffix), it] }
-                        .view()
-    IMPORT_FASTQ ( ch_split_ids )
+    if (params.fastq_split.enabled == "True") {
+        SPLIT_FASTQ_MANIFEST ( ch_fastq_manifest )
+        manifest_suffix = ~/${params.fastq_split.suffix}/
+        ch_acc_ids = SPLIT_FASTQ_MANIFEST.out
+                            .flatten()
+                            .map { [(it.getName() - manifest_suffix), it] }
+    } else {
+        ch_acc_ids = ch_inp_ids
+    }
+
+    IMPORT_FASTQ ( ch_acc_ids )
     ch_sra_artifact = IMPORT_FASTQ.out
     
     // Quality control: FASTQ type check, trimming, QC
