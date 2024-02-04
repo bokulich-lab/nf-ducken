@@ -137,7 +137,7 @@ workflow PIPE_16S_IMPORT_INPUT {
                             .flatten()
                             .map { [(it.getName() - manifest_suffix), it] }
     } else {
-        ch_acc_ids = ch_inp_ids
+        ch_acc_ids = ch_fastq_manifest
     }
 
     IMPORT_FASTQ ( ch_acc_ids )
@@ -156,7 +156,6 @@ workflow PIPE_16S_IMPORT_INPUT {
         ch_to_multiqc = CUTADAPT_TRIM.out.stats
     } else {
         ch_to_denoise = CHECK_FASTQ_TYPE.out.qza
-                            .map { qza -> ["all", qza] }
         ch_to_multiqc = "${projectDir}/assets/NO_FILE"
     }
     

@@ -25,7 +25,7 @@ process RUN_FASTQC {
     publishDir "${params.outdir}/stats/fastqc/"
 
     input:
-    tuple val(set_id), path(fqs)
+    path fqs
 
     output:
     path "fastqc/*"
