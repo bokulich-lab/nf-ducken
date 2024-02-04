@@ -41,7 +41,7 @@ process RUN_FASTQC {
 
 process CUTADAPT_TRIM {
     label "container_qiime2"
-    publishDir "${params.outdir}/stats/", pattern: "*.log"
+    publishDir "${params.outdir}/stats/trimming_logs/", pattern: "*.log"
 
     input:
     tuple val(set_id), path(demux_qza)

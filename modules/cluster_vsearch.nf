@@ -3,6 +3,7 @@ process CLUSTER_CLOSED_OTU {
     label "process_local"
     label "error_retry"
     tag "${sample_id}"
+    publishDir "${params.outdir}/stats/clustered_tables/", pattern: "*_clustered_table.qza"
 
     afterScript "rm -rf \${PWD}/tmp_cluster"
 
@@ -54,7 +55,7 @@ process FIND_CHIMERAS {
     label "container_qiime2"
     label "process_local"
     tag "${sample_id}"
-    publishDir "${params.outdir}/stats/", pattern: "*_stats.qza"
+    publishDir "${params.outdir}/stats/chimera_checking_stats/", pattern: "*_chimera_checking_summary.qza"
 
     afterScript "rm -rf \${PWD}/tmp_chimera"
 
@@ -64,7 +65,7 @@ process FIND_CHIMERAS {
     output:
     tuple val(sample_id), path("${sample_id}_nonchimeras.qza"), emit: nonchimeras
     path "${sample_id}_chimeras.qza",                           emit: chimeras
-    path "${sample_id}_stats.qza",                              emit: stats
+    path "${sample_id}_chimera_checking_summary.qza",                              emit: stats
 
     when:
     params.vsearch_chimera
@@ -88,7 +89,7 @@ process FIND_CHIMERAS {
         --p-threads ${params.uchime_ref.num_threads} \
         --o-chimeras ${sample_id}_chimeras.qza \
         --o-nonchimeras ${sample_id}_nonchimeras.qza \
-        --o-stats ${sample_id}_stats.qza \
+        --o-stats ${sample_id}_chimera_checking_summary.qza \
         --verbose
     """
 }
@@ -96,7 +97,7 @@ process FIND_CHIMERAS {
 process FILTER_CHIMERAS {
     label "container_qiime2"
     tag "${sample_id}"
-    publishDir "${params.outdir}/stats/", pattern: "*.qzv"
+    publishDir "${params.outdir}/stats/chimera_checking_stats/", pattern: "*.qzv"
 
     afterScript "rm -rf \${PWD}/tmp_filt"
 
@@ -105,7 +106,7 @@ process FILTER_CHIMERAS {
 
     output:
     tuple val(sample_id), path("${sample_id}_table_filt_chimera.qza"), path("${sample_id}_seqs_filt_chimera.qza"), emit: filt_qzas
-    path "${sample_id}_table_filt_chimera.qzv", emit: viz_table
+    path "${sample_id}_chimera_free_table.qzv", emit: viz_table
 
     when:
     params.vsearch_chimera
@@ -129,6 +130,6 @@ process FILTER_CHIMERAS {
 
     qiime feature-table summarize \
         --i-table ${sample_id}_table_filt_chimera.qza \
-        --o-visualization ${sample_id}_table_filt_chimera.qzv
+        --o-visualization ${sample_id}_chimera_free_table.qzv
     """
 }
