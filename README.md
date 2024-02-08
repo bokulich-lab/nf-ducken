@@ -182,6 +182,11 @@ To skip processes through DADA2, if using pre-denoised feature tables and sequen
 * `denoised_table`: Path to QIIME 2 artifact containing a denoised feature table
 * `denoised_seqs`: Path to QIIME 2 artifact containing denoised sequences corresponding with the above feature table
 
+### Bypassing parameter validation
+
+To bypass the automated parameter validation, the user should set `params.validate_parameters` to `False`
+when issuing the execution command.
+
 ## Outputs
 
 * `outDir/taxonomy.qza`: Artifact containing frequencies for features collapsed to a given level (default genus).
