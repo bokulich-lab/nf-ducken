@@ -184,7 +184,7 @@ To skip processes through DADA2, if using pre-denoised feature tables and sequen
 
 ### Bypassing parameter validation
 
-To bypass the automated parameter validation, the user should set `params.validate_parameters` to `False`
+To bypass the automated parameter validation, the user should set `params.validate_parameters` to `"False"`.
 when issuing the execution command.
 
 ## Outputs
