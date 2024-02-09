@@ -191,14 +191,6 @@ def validateParams(params) {
 
 }
 
-// Call the validation method with the actual parameters
-try {
-    validateParams(params)
-} catch (AssertionError e) {
-    println "Parameter validation failed: ${e.message}"
-    System.exit(1)
-}
-
 def validateTsvFile(filePath) {
    assert filePath.toLowerCase().endsWith(".tsv") : "File must be a TSV file, but it has the wrong extension: ${filePath}"  
 }
