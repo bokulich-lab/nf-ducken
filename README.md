@@ -44,8 +44,7 @@ Required if running Cutadapt:
   * The workflow does not at the moment support linked primers. Additionally, the workflow currently only takes a collection of single-end or paired-end primers, but not a combination of both.
 
 ### Bypassing parameter validation:
-* To bypass the automated parameter validation, the user should set `params.validate_parameters` to `"False"`.
-when issuing the execution command.
+* To bypass the automated parameter validation, the user should set `params.validate_parameters` to `false` when issuing the execution command.
 
 
 ### Optional user-input parameters
