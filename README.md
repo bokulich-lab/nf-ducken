@@ -43,6 +43,11 @@ Required if running Cutadapt:
   * If paired-end, one of the following pairs `cutadapt.adapter_f`/`cutadapt.adapter_r`, `cutadapt.front_f`/`cutadapt.front_r`, or `cutadapt.anywhere_f`/`cutadapt.anywhere_r`: Primer sequences to remove; `cutadapt.front_f`/`cutadapt.front_r` are recommended for most amplicon sequence runs.
   * The workflow does not at the moment support linked primers. Additionally, the workflow currently only takes a collection of single-end or paired-end primers, but not a combination of both.
 
+### Bypassing parameter validation:
+* To bypass the automated parameter validation, the user should set `params.validate_parameters` to `"False"`.
+when issuing the execution command.
+
+
 ### Optional user-input parameters
 
 Used for initial FASTQ processing in scope `params.fastq_split`:
@@ -181,11 +186,6 @@ Execution parameters (scope `process`):
 To skip processes through DADA2, if using pre-denoised feature tables and sequences:
 * `denoised_table`: Path to QIIME 2 artifact containing a denoised feature table
 * `denoised_seqs`: Path to QIIME 2 artifact containing denoised sequences corresponding with the above feature table
-
-### Bypassing parameter validation
-
-To bypass the automated parameter validation, the user should set `params.validate_parameters` to `"False"`.
-when issuing the execution command.
 
 ## Outputs
 
