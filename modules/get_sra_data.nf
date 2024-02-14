@@ -38,7 +38,9 @@ process GET_SRA_DATA {
       mkdir $HOME/.ncbi
     fi
 
-    printf '/LIBS/GUID = "%s"\n' `uuidgen` >> $HOME/.ncbi/user-settings.mkfg
+    if [ ! -f "$HOME/.ncbi/user-settings.mkfg"]; then
+      printf '/LIBS/GUID = "%s"\n' `uuidgen` > $HOME/.ncbi/user-settings.mkfg
+    fi
 
     qiime fondue get-sequences \
         --i-accession-ids ${id_qza} \
