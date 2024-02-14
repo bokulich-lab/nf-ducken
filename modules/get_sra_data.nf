@@ -34,6 +34,12 @@ process GET_SRA_DATA {
     """
     echo 'Retrieving data from SRA using q2-fondue...'
 
+    if [ ! -d "$HOME/.ncbi" ]; then
+      mkdir $HOME/.ncbi
+    fi
+
+    printf '/LIBS/GUID = "%s"\n' `uuidgen` >> $HOME/.ncbi/user-settings.mkfg
+
     qiime fondue get-sequences \
         --i-accession-ids ${id_qza} \
         --p-email ${params.email_address} \
