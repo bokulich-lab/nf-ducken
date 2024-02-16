@@ -140,8 +140,14 @@ workflow PIPE_16S_DOWNLOAD_INPUT {
         }
     
     } else {
-        Channel.fromPath ( "${params.input_artifact}", checkIfExists: true )
-        .set { ch_sra_artifact }
+        if (!params.input_artifact) {
+            println("Error: 'input_artifact' parameter is not set.")
+            System.exit(1)
+        } else {
+            Channel
+                .fromPath(params.input_artifact, checkIfExists: true)
+                .set { ch_sra_artifact }
+        }
     }
 
     // Quality control: FASTQ type check, trimming, QC
