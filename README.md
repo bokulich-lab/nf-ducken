@@ -46,6 +46,14 @@ Required if running Cutadapt:
 ### Bypassing parameter validation:
 * To bypass the automated parameter validation, the user should set `params.validate_parameters` to `false` when issuing the execution command.
 
+### Using Pre-generated Input Artifacts:
+* By default, the workflow is designed to generate input artifacts using the import/download processes. This behavior is controlled by the generate_input parameter, set to true by default.
+
+* To use an already created input artifact, the user should set params.generate_input to false and specify the path to the input artifact using the params.input_artifact parameter. For example:
+
+```bash
+--generate_input false --input_artifact "path/to/input_artifact"
+```
 
 ### Optional user-input parameters
 
