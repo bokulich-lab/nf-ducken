@@ -1,8 +1,0 @@
-name: multiqc_env
-channels:
-  - bioconda
-  - conda-forge
-  - r
-  - defaults
-dependencies:
-  - multiqc=1.20
