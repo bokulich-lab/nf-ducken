@@ -179,6 +179,7 @@ def validateParams(params) {
 	///////////////////////////////////////////////
 	// Validation for other top-level parameters //
 	///////////////////////////////////////////////
+	assertParam(params.generate_input, [Boolean], [true, false], "generate_input must be true or false")
 	assertParam(params.taxa_level, [Integer], [{ it >= 1 && it <= 7 }], "taxa_level must be an Integer between 1 and 7 inclusive, representing the range up to the species level")
 	assertParam(params.phred_offset, [Integer], [33, 64], "phred_offset must be either 33 or 64")
 	assertParam(params.vsearch_chimera, [Boolean], [true, false], "vsearch_chimera must be true or false")
