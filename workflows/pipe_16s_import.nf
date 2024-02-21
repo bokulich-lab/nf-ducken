@@ -92,8 +92,6 @@ workflow PIPE_16S_IMPORT_INPUT {
             .stripIndent()
 
     // INPUT AND VARIABLES
-    ch_fastq_manifest = Channel.fromPath ( "${params.fastq_manifest}",
-                                        checkIfExists: true )
 
     // Determine whether Cutadapt will be run
     if (params.primer_file) {
@@ -126,12 +124,28 @@ workflow PIPE_16S_IMPORT_INPUT {
     } else {
         flag_get_classifier        = true
     }
-
-    // Start of the  Pipeline
-    // Use local FASTQ files
-    IMPORT_FASTQ ( ch_fastq_manifest )
-    ch_sra_artifact = IMPORT_FASTQ.out
     
+    // Start of the  Pipeline
+    
+    if (params.generate_input) {
+        ch_fastq_manifest = Channel.fromPath ( "${params.fastq_manifest}",
+                                        checkIfExists: true )
+                                        
+        // Use local FASTQ files
+        IMPORT_FASTQ ( ch_fastq_manifest )
+        ch_sra_artifact = IMPORT_FASTQ.out
+    
+    } else {
+        if (!params.input_artifact) {
+            println("Error: 'input_artifact' parameter is not set.")
+            System.exit(1)
+        } else {
+            Channel
+                .fromPath(params.input_artifact, checkIfExists: true)
+                .set { ch_sra_artifact }
+        }
+    }
+
     // Quality control: FASTQ type check, trimming, QC
     // FASTQ check and QC
     CHECK_FASTQ_TYPE ( ch_sra_artifact )
