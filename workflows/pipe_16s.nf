@@ -49,7 +49,14 @@ include { MULTIQC_STATS                       } from '../modules/summarize_stats
 
 workflow PIPE_16S {
     // Validate input parameters
-    validateParams(params)
+    if (params.validate_parameters){ 
+        try {
+            validateParams(params)
+        } catch (AssertionError e) {
+            println "Parameter validation failed: ${e.message}"
+            System.exit(1)
+        }
+    }
 
     // Log information
     log.info """\
