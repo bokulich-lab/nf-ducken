@@ -45,15 +45,15 @@ include { MULTIQC_STATS                       } from '../modules/summarize_stats
 ========================================================================================
 */
 
-
-
 workflow PIPE_16S {
     // Validate input parameters
-    try {
-        validateParams(params)
-    } catch (AssertionError e) {
-        println "Parameter validation failed: ${e.message}"
-        System.exit(1)
+    if (params.validate_parameters){ 
+        try {
+            validateParams(params)
+        } catch (AssertionError e) {
+            println "Parameter validation failed: ${e.message}"
+            System.exit(1)
+        }
     }
 
     // Log information
@@ -146,14 +146,15 @@ workflow PIPE_16S {
     } else {
         flag_get_classifier        = true
     }
-
+    
     // Start of the Pipeline
-    if (params.fastq_manifest) {
-        // Use local FASTQ files
-        IMPORT_FASTQ ( ch_fastq_manifest )
-        ch_sra_artifact = IMPORT_FASTQ.out
-    } else {
-        if (params.inp_id_file) {       // TODO shift to input validation module
+    if (params.generate_input) {
+        if (params.fastq_manifest) {
+            // Use local FASTQ files
+            IMPORT_FASTQ ( ch_fastq_manifest )
+            ch_sra_artifact = IMPORT_FASTQ.out
+        } else {
+            if (params.inp_id_file) {       // TODO shift to input validation module
                 ch_inp_ids        = Channel.fromPath ( "${params.inp_id_file}", checkIfExists: true )
             } else {
                 exit 1, 'Input file with sample accession numbers does not exist or is not specified!'
@@ -172,6 +173,16 @@ workflow PIPE_16S {
             ch_sra_artifact = GET_SRA_DATA.out.single
         } else if (params.read_type == "paired") {
             ch_sra_artifact = GET_SRA_DATA.out.paired
+        }
+
+    } else {
+        if (!params.input_artifact) {
+            println("Error: 'input_artifact' parameter is not set.")
+            System.exit(1)
+        } else {
+            Channel
+                .fromPath(params.input_artifact, checkIfExists: true)
+                .set { ch_sra_artifact }
         }
     }
 

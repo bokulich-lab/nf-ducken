@@ -47,11 +47,13 @@ include { MULTIQC_STATS                       } from '../modules/summarize_stats
 
 workflow PIPE_16S_DOWNLOAD_INPUT {
     // Validate input parameters
-    try {
-        validateParams(params)
-    } catch (AssertionError e) {
-        println "Parameter validation failed: ${e.message}"
-        System.exit(1)
+    if (params.validate_parameters){ 
+        try {
+            validateParams(params)
+        } catch (AssertionError e) {
+            println "Parameter validation failed: ${e.message}"
+            System.exit(1)
+        }
     }
 
     // Log information
@@ -97,8 +99,6 @@ workflow PIPE_16S_DOWNLOAD_INPUT {
             .splitCsv( sep: '\t', skip: 1 )
             .set { ch_primer_seqs }
     }
-    
-    ch_inp_ids = Channel.fromPath ( "${params.inp_id_file}", checkIfExists: true )
 
     // Determine whether reference downloads are necessary
     if (params.otu_ref_file) {
@@ -126,16 +126,30 @@ workflow PIPE_16S_DOWNLOAD_INPUT {
     }
 
     // Start of the  Pipeline
-    // Download FASTQ files with q2-fondue
-    GENERATE_ID_ARTIFACT ( ch_inp_ids )
-    GET_SRA_DATA         ( GENERATE_ID_ARTIFACT.out )
+    if (params.generate_input) {
+        ch_inp_ids = Channel.fromPath ( "${params.inp_id_file}", checkIfExists: true )
+        
+        // Download FASTQ files with q2-fondue
+        GENERATE_ID_ARTIFACT ( ch_inp_ids )
+        GET_SRA_DATA         ( GENERATE_ID_ARTIFACT.out )
+        
+        if (params.read_type == "single") {
+            ch_sra_artifact = GET_SRA_DATA.out.single
+        } else if (params.read_type == "paired") {
+            ch_sra_artifact = GET_SRA_DATA.out.paired
+        }
     
-    if (params.read_type == "single") {
-        ch_sra_artifact = GET_SRA_DATA.out.single
-    } else if (params.read_type == "paired") {
-        ch_sra_artifact = GET_SRA_DATA.out.paired
+    } else {
+        if (!params.input_artifact) {
+            println("Error: 'input_artifact' parameter is not set.")
+            System.exit(1)
+        } else {
+            Channel
+                .fromPath(params.input_artifact, checkIfExists: true)
+                .set { ch_sra_artifact }
+        }
     }
-   
+
     // Quality control: FASTQ type check, trimming, QC
     // FASTQ check and QC
     CHECK_FASTQ_TYPE ( ch_sra_artifact )
@@ -237,7 +251,6 @@ workflow PIPE_16S_DOWNLOAD_INPUT {
 
     ch_collapsed_tables_to_combine = COLLAPSE_TAXA.out.collect()
     //COMBINE_COLLAPSED_TABLES ( "collapsed", ch_collapsed_tables_to_combine )
-
 }
 
 /*

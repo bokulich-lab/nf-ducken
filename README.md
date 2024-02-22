@@ -43,6 +43,18 @@ Required if running Cutadapt:
   * If paired-end, one of the following pairs `cutadapt.adapter_f`/`cutadapt.adapter_r`, `cutadapt.front_f`/`cutadapt.front_r`, or `cutadapt.anywhere_f`/`cutadapt.anywhere_r`: Primer sequences to remove; `cutadapt.front_f`/`cutadapt.front_r` are recommended for most amplicon sequence runs.
   * The workflow does not at the moment support linked primers. Additionally, the workflow currently only takes a collection of single-end or paired-end primers, but not a combination of both.
 
+### Bypassing parameter validation:
+* To bypass the automated parameter validation, the user should set `params.validate_parameters` to `false` when issuing the execution command.
+
+### Using Pre-Generated Input Artifacts:
+* By default, workflow inputs may be entered as TSV or FASTQ files; the workflow is designed to generate input QIIME 2 artifacts using the import/download processes. This behavior is controlled by the `generate_input` parameter, set to `true` by default.
+
+* To use an already-created input QIIME 2 artifact, the user should set `params.generate_input` to `false` and specify the path to the input artifact using the `params.input_artifact` parameter. For example:
+
+```bash
+--generate_input false --input_artifact "path/to/input_artifact"
+```
+
 ### Optional user-input parameters
 
 Used for initial FASTQ processing in scope `params.fastq_split`:
