@@ -5,6 +5,7 @@ channels:
   - conda-forge
   - defaults
 dependencies:
+  - sra-tools
   - appnope=0.1.3=pyhd8ed1ab_0
   - asttokens=2.4.1=pyhd8ed1ab_0
   - atpublic=3.0.1=pyhd8ed1ab_0
