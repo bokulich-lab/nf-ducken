@@ -38,7 +38,7 @@ process GET_SRA_DATA {
       mkdir $HOME/.ncbi
     fi
 
-    if [ ! -f "$HOME/.ncbi/user-settings.mkfg"]; then
+    if [ ! -f "$HOME/.ncbi/user-settings.mkfg" ]; then
       printf '/LIBS/GUID = "%s"\n' `uuidgen` > $HOME/.ncbi/user-settings.mkfg
     fi
 
