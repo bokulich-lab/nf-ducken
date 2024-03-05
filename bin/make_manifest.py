@@ -28,7 +28,7 @@ def match_fastq_suffix(file_path: str, suffix: str) -> str:
     :param suffix:
     :return:
     """
-    suffix_search = re.search(f"^([\w\.-]+)({suffix})", str(file_path.name))
+    suffix_search = re.search(fr'^([\w\.-]+)({suffix})', str(file_path.name))
     if suffix_search:
         return suffix_search.group(1)
 
