@@ -156,7 +156,7 @@ workflow PIPE_16S_IMPORT_INPUT {
                         .combine ( ch_primer_seqs )
         CUTADAPT_TRIM ( ch_to_trim )
         ch_to_denoise = CUTADAPT_TRIM.out.qza
-        ch_to_multiqc = CUTADAPT_TRIM.out.stats
+        ch_to_multiqc = CUTADAPT_TRIM.out.stats.collect()
     } else {
         ch_to_denoise = CHECK_FASTQ_TYPE.out.qza
                             .map { qza -> ["all", qza] }
