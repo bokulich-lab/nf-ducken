@@ -147,6 +147,12 @@ def arg_parse():
         type=str,
         required=True,
     )
+    parser.add_argument(
+        "--suffix",
+        help="Optional suffix to add to each split manifest.",
+        type=str,
+        required=True,
+    )
 
     # Optional user-input arguments
     parser.add_argument(
@@ -156,12 +162,7 @@ def arg_parse():
         type=str,
         default=Path.cwd(),
     )
-    parser.add_argument(
-        "--suffix",
-        help="Optional suffix to add to each split manifest.",
-        type=str,
-        default="_split.tsv",
-    )
+
     parser.add_argument(
         "--split_method",
         help="Method to split input manifest. Options include 'sample' or an "
@@ -176,14 +177,17 @@ def arg_parse():
 
 def main(args):
     assert Path(args.input_manifest).is_file()
-    assert Path(args.output_dir).is_dir()
     assert args.split_method == "sample" or args.split_method.isdigit()
+    if Path(args.output_dir).resolve() != Path.cwd().resolve():
+        assert not Path(args.output_dir).is_dir(), f"The directory " \
+                                                   f"{args.output_dir} already " \
+                                                   f"exists. Exiting..."
+        Path.mkdir(args.output_dir)
 
     try:
         manifest_df = pd.read_csv(args.input_manifest, sep="\t")
         manifest_df.dropna(inplace=True)
         assert len(manifest_df.columns) == manifest_df.shape[1]
-        assert len(manifest_df.columns) > 1
         assert len(manifest_df.index) > 0
 
     except FileNotFoundError:
