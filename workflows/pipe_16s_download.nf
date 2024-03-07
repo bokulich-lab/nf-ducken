@@ -105,6 +105,7 @@ workflow PIPE_16S_DOWNLOAD_INPUT {
         }
     } else {
         is_cutadapt_run = null
+    }
 
     // Determine whether reference downloads are necessary
     if (params.otu_ref_file) {
