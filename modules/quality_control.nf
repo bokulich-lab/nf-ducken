@@ -1,11 +1,12 @@
 process CHECK_FASTQ_TYPE {
     label "container_qiime2"
+    tag "${set_id}"
 
     input:
-    path fq_qza
+    tuple val(set_id), path(fq_qza)
 
     output:
-    path "${fq_qza}",  emit: qza
+    tuple val(set_id), path("${fq_qza}"),  emit: qza
     path "*.fastq.gz", emit: fqs
 
     script:
@@ -42,13 +43,14 @@ process RUN_FASTQC {
 process CUTADAPT_TRIM {
     label "container_qiime2"
     publishDir "${params.outdir}/stats/trimming_logs/", pattern: "*.log"
+    tag "${set_id}"
 
     input:
-    tuple path(demux_qza), val(primer_id), val(primer_seq_fwd), val(primer_seq_rev)
+    tuple val(set_id), path(demux_qza)
 
     output:
-    tuple val(primer_id), path("trimmed_${primer_id}_seqs.qza"), emit: qza
-    path "*.log",                                                emit: stats
+    tuple val(set_id), path("trimmed_${set_id}_seqs.qza"), emit: qza
+    path "*.log",                                          emit: stats
 
     script:
     // Optional flags
@@ -68,7 +70,7 @@ process CUTADAPT_TRIM {
         qiime cutadapt trim-single \
             --i-demultiplexed-sequences ${demux_qza} \
             --p-cores ${params.cutadapt.num_cores} \
-            --p-front ${primer_seq_fwd} \
+            --p-front ${params.cutadapt.front} \
             --p-error-rate ${params.cutadapt.error_rate} \
             --p-indels ${params.cutadapt.indels} \
             --p-times ${params.cutadapt.times} \
@@ -82,9 +84,8 @@ process CUTADAPT_TRIM {
             --p-quality-cutoff-5end ${params.cutadapt.quality_cutoff_5end} \
             --p-quality-cutoff-3end ${params.cutadapt.quality_cutoff_3end} \
             --p-quality-base ${params.cutadapt.quality_base} \
-            --o-trimmed-sequences trimmed_${primer_id}_seqs.qza \
-            --verbose | tee trimmed_${primer_id}_stats.log
-        """
+            --o-trimmed-sequences trimmed_${set_id}_seqs.qza \
+            --verbose | tee trimmed_${set_id}_stats.log        """
     } else if (params.read_type == "paired") {
         """
         echo 'Running Cutadapt to trim primers from paired-end sequences...'
@@ -92,8 +93,8 @@ process CUTADAPT_TRIM {
         qiime cutadapt trim-paired \
             --i-demultiplexed-sequences ${demux_qza} \
             --p-cores ${params.cutadapt.num_cores} \
-            --p-front-f ${primer_seq_fwd} \
-            --p-front-r ${primer_seq_rev} \
+            --p-front-f ${params.cutadapt.front_f} \
+            --p-front-r ${params.cutadapt.front_r} \
             --p-error-rate ${params.cutadapt.error_rate} \
             --p-indels ${params.cutadapt.indels}\
             --p-times ${params.cutadapt.times} \
@@ -107,8 +108,7 @@ process CUTADAPT_TRIM {
             --p-quality-cutoff-5end ${params.cutadapt.quality_cutoff_5end} \
             --p-quality-cutoff-3end ${params.cutadapt.quality_cutoff_3end} \
             --p-quality-base ${params.cutadapt.quality_base} \
-            --o-trimmed-sequences trimmed_${primer_id}_seqs.qza \
-            --verbose | tee trimmed_${primer_id}_stats.log
-        """
+            --o-trimmed-sequences trimmed_${set_id}_seqs.qza \
+            --verbose | tee trimmed_${set_id}_stats.log        """
     }
 }

@@ -1,11 +1,12 @@
 process GENERATE_ID_ARTIFACT {
     label "container_fondue"
+    tag "${set_id}"
 
     input:
-    path inp_id_file
+    tuple val(set_id), path(inp_id_file)
 
     output:
-    path "accession_id.qza"
+    tuple val(set_id), path("id.qza")
 
     script:
     """
@@ -14,21 +15,22 @@ process GENERATE_ID_ARTIFACT {
 
     qiime tools import \
         --input-path ${inp_id_file} \
-        --output-path accession_id.qza \
+        --output-path id.qza \
         --type 'NCBIAccessionIDs'
     """
 }
 
 process GET_SRA_DATA {
     label "container_fondue"
+    tag "${set_id}"
 
     input:
-    path id_qza
+    tuple val(set_id), path(id_qza)
 
     output:
-    path "sra_download/failed_runs.qza",  emit: failed
-    path "sra_download/paired_reads.qza", emit: paired
-    path "sra_download/single_reads.qza", emit: single
+    tuple val(set_id), path("sra_download/failed_runs.qza"),  emit: failed
+    tuple val(set_id), path("sra_download/paired_reads.qza"), emit: paired
+    tuple val(set_id), path("sra_download/single_reads.qza"), emit: single
 
     script:
     """
@@ -53,12 +55,13 @@ process GET_SRA_DATA {
 process IMPORT_FASTQ {
     label "container_qiime2"
     errorStrategy "ignore"
+    tag "${set_id}"
 
     input:
-    path fq_manifest
+    tuple val(set_id), path(fq_manifest)
 
     output:
-    path "sequences.qza"
+    tuple val(set_id), path("sequences.qza")
 
     script:
     read_type_upper = params.read_type.capitalize()
@@ -76,5 +79,25 @@ process IMPORT_FASTQ {
         --input-path ${fq_manifest} \
         --input-format ${read_type_upper}EndFastqManifestPhred${params.phred_offset}V2 \
         --output-path sequences.qza
+    """
+}
+
+process SPLIT_FASTQ_MANIFEST {
+    label "container_pandas"
+
+    input:
+    tuple val(set_id), path(fq_manifest)
+
+    output:
+    path "*${params.fastq_split.suffix}"
+
+    script:
+    """
+    echo 'Splitting FASTQ manifest to process FASTQ files individually...'
+    python ${workflow.projectDir}/bin/split_manifest.py \
+        --input_manifest ${fq_manifest} \
+        --output_dir . \
+        --suffix ${params.fastq_split.suffix} \
+        --split_method ${params.fastq_split.method}
     """
 }

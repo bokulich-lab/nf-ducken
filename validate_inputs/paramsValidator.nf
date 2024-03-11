@@ -51,6 +51,15 @@ def assertParam(value, typeConstraints, rangeConstraints = null, errorMessage = 
     }
 }
 
+def validatePrimerSequence(String sequence, String name) {
+    if (sequence) { // Checks if sequence is not null or empty
+        def invalidChars = sequence.findAll { !it.matches("[ACGTURYSWKMBDHVN ]") } // Finds invalid characters
+        if (invalidChars) {
+            throw new ParameterValidationException("$name contains invalid characters. Only nucleotide codes ACGTURYSWKMBDHVN and spaces are allowed. Found: ${invalidChars.unique().join(', ')}")
+        }
+    }
+}
+
 // Define a method to validate parameters
 def validateParams(params) {
 
@@ -87,11 +96,6 @@ def validateParams(params) {
 
     }
 
-    if (params.primer_file) {
-        validateTsvFile(params.primer_file)
-        validateTsvContents(params.primer_file, params.read_type == "paired" ? 3 : 2, validIdColumnNames)
-    }
-
 	} catch (AssertionError e) {
     println "TSV file content validation failed: ${e.message}"
     System.exit(1)
@@ -101,6 +105,28 @@ def validateParams(params) {
 	// Validation for cutadapt parameters //
 	////////////////////////////////////////
 	def cutadapt = params.cutadapt
+
+	// Validate Cutadapt primer parameters based on sequencing type
+	if (params.read_type == "single") {
+		// Single-end sequencing validation
+		if (params.cutadapt?.front) {
+			validatePrimerSequence(params.cutadapt.front, "cutadapt.front")
+		}
+		if (params.cutadapt?.front_f || params.cutadapt?.front_r) {
+			throw new ParameterValidationException("For single-end sequencing, only 'cutadapt.front' should be set, not 'cutadapt.front_f' or 'cutadapt.front_r'.")
+		}
+	} else if (params.read_type == "paired") {
+		// Paired-end sequencing validation
+		if (params.cutadapt?.front_f && params.cutadapt?.front_r) {
+			validatePrimerSequence(params.cutadapt.front_f, "cutadapt.front_f")
+			validatePrimerSequence(params.cutadapt.front_r, "cutadapt.front_r")
+		} else if ((!params.cutadapt?.front_f && params.cutadapt?.front_r) || (params.cutadapt?.front_f && !params.cutadapt?.front_r)) {
+			throw new ParameterValidationException("For paired-end sequencing, both 'cutadapt.front_f' and 'cutadapt.front_r' must be set.")
+		}
+		if (params.cutadapt?.front) {
+			throw new ParameterValidationException("For paired-end sequencing, 'cutadapt.front' cannot be set, to use cutadapt please set 'cutadapt.front_f' and 'cutadapt.front_r'.")
+		}
+	}
 
 	assertParam(cutadapt.num_cores, [Integer], null, "cutadapt.num_cores must be an Integer")
 	assertParam(cutadapt.error_rate, [BigDecimal, Integer], [{ it >= 0 && it <= 1 }], "cutadapt.error_rate must be a Float or Integer with a value between 0 and 1")

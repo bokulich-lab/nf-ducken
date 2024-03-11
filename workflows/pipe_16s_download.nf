@@ -24,7 +24,8 @@ include { validateParams } from '../validate_inputs/paramsValidator'
 */
 
 
-include { GENERATE_ID_ARTIFACT; GET_SRA_DATA; } from '../modules/get_sra_data'
+include { GENERATE_ID_ARTIFACT; GET_SRA_DATA;
+          SPLIT_FASTQ_MANIFEST                } from '../modules/get_sra_data'
 include { CHECK_FASTQ_TYPE; RUN_FASTQC;
           CUTADAPT_TRIM                       } from '../modules/quality_control'
 include { DENOISE_DADA2                       } from '../modules/denoise_dada2'
@@ -94,10 +95,16 @@ workflow PIPE_16S_DOWNLOAD_INPUT {
 
     // INPUT AND VARIABLES
     // Determine whether Cutadapt will be run
-    if (params.primer_file) {
-        Channel.fromPath ( "${params.primer_file}", checkIfExists: true )
-            .splitCsv( sep: '\t', skip: 1 )
-            .set { ch_primer_seqs }
+    if (params.cutadapt.front) {
+        is_cutadapt_run = true
+    } else if (params.cutadapt.front_f) {
+        if (params.cutadapt.front_r) {
+            is_cutadapt_run = true
+        } else {
+            is_cutadapt_run = null
+        }
+    } else {
+        is_cutadapt_run = null
     }
 
     // Determine whether reference downloads are necessary
@@ -125,12 +132,22 @@ workflow PIPE_16S_DOWNLOAD_INPUT {
         flag_get_classifier        = true
     }
 
-    // Start of the  Pipeline
+    // Pipeline start
     if (params.generate_input) {
         ch_inp_ids = Channel.fromPath ( "${params.inp_id_file}", checkIfExists: true )
+                        .map { [0, it] }
+        if (params.fastq_split.enabled == "True") {
+            SPLIT_FASTQ_MANIFEST ( ch_inp_ids )
+            manifest_suffix = ~/${params.fastq_split.suffix}/
+            ch_acc_ids = SPLIT_FASTQ_MANIFEST.out
+                                .flatten()
+                                .map { [(it.getName() - manifest_suffix), it] }
+        } else {
+            ch_acc_ids = ch_inp_ids
+        }
         
         // Download FASTQ files with q2-fondue
-        GENERATE_ID_ARTIFACT ( ch_inp_ids )
+        GENERATE_ID_ARTIFACT ( ch_acc_ids )
         GET_SRA_DATA         ( GENERATE_ID_ARTIFACT.out )
         
         if (params.read_type == "single") {
@@ -146,6 +163,7 @@ workflow PIPE_16S_DOWNLOAD_INPUT {
         } else {
             Channel
                 .fromPath(params.input_artifact, checkIfExists: true)
+                .map { [0, it] }
                 .set { ch_sra_artifact }
         }
     }
@@ -155,15 +173,13 @@ workflow PIPE_16S_DOWNLOAD_INPUT {
     CHECK_FASTQ_TYPE ( ch_sra_artifact )
     RUN_FASTQC ( CHECK_FASTQ_TYPE.out.fqs )
 
-    if (params.primer_file) {
+    if (is_cutadapt_run) {
         ch_to_trim = CHECK_FASTQ_TYPE.out.qza
-                        .combine ( ch_primer_seqs )
         CUTADAPT_TRIM ( ch_to_trim )
         ch_to_denoise = CUTADAPT_TRIM.out.qza
-        ch_to_multiqc = CUTADAPT_TRIM.out.stats
+        ch_to_multiqc = CUTADAPT_TRIM.out.stats.collect()
     } else {
         ch_to_denoise = CHECK_FASTQ_TYPE.out.qza
-                            .map { qza -> ["all", qza] }
         ch_to_multiqc = "${projectDir}/assets/NO_FILE"
     }
     
@@ -171,7 +187,7 @@ workflow PIPE_16S_DOWNLOAD_INPUT {
     DENOISE_DADA2 ( ch_to_denoise )
     ch_denoised_qzas = DENOISE_DADA2.out.table_seqs
 
-    // Create multiqc reports
+    // Create MultiQC reports
     MULTIQC_STATS ( RUN_FASTQC.out, ch_to_multiqc )
 
     // Feature generation: Clustering
