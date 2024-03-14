@@ -29,20 +29,20 @@ process RUN_FASTQC {
     path fqs
 
     output:
-    path "fastqc/*"
+    path "*_fastqc.*"
 
     script:
     """
     echo 'Running FastQC on FASTQ files for quality control...'
 
     mkdir fastqc
-    fastqc ${fqs} --outdir=fastqc/
+    fastqc ${fqs}
     """
 }
 
 process CUTADAPT_TRIM {
     label "container_qiime2"
-    publishDir "${params.outdir}/stats/trimming_logs/", pattern: "*.log"
+    publishDir "${params.outdir}/stats/trim/", pattern: "*.log"
     tag "${set_id}"
 
     input:
