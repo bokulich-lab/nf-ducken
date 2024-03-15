@@ -3,7 +3,7 @@ process CLUSTER_CLOSED_OTU {
     label "process_local"
     label "error_retry"
     tag "${sample_id}"
-    publishDir "${params.outdir}/stats/clustered_tables/", pattern: "*_clustered_table.qza"
+    publishDir "${params.outdir}/", pattern: "*_clustered_table.qza"
 
     afterScript "rm -rf \${PWD}/tmp_cluster"
 
@@ -55,7 +55,7 @@ process FIND_CHIMERAS {
     label "container_qiime2"
     label "process_local"
     tag "${sample_id}"
-    publishDir "${params.outdir}/stats/chimera_checking_stats/", pattern: "*_chimera_checking_summary.qza"
+    publishDir "${params.outdir}/stats/chimera_check/", pattern: "*_chimera_checking_summary.qza"
 
     afterScript "rm -rf \${PWD}/tmp_chimera"
 
@@ -97,7 +97,7 @@ process FIND_CHIMERAS {
 process FILTER_CHIMERAS {
     label "container_qiime2"
     tag "${sample_id}"
-    publishDir "${params.outdir}/stats/chimera_checking_stats/", pattern: "*.qzv"
+    publishDir "${params.outdir}/stats/chimera_check/", pattern: "*.qzv"
 
     afterScript "rm -rf \${PWD}/tmp_filt"
 

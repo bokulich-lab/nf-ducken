@@ -5,7 +5,7 @@
 */
 
 // Import validation module
-include { validateParams } from '../validate_inputs/paramsValidator'
+include { validateParams } from '../lib/paramsValidator'
 
 // Check input path parameters to see if they exist
 
