@@ -23,7 +23,6 @@ process CHECK_FASTQ_TYPE {
 
 process RUN_FASTQC {
     label "container_fastqc"
-    publishDir "${params.outdir}/stats/fastqc/"
 
     input:
     path fqs
