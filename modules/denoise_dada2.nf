@@ -11,7 +11,7 @@ process DENOISE_DADA2 {
     tuple val(set_id), path(fastq_qza)
 
     output:
-    tuple val(set_id), path("${set_id}_table.qza"), path("${set_id}_representative_sequences.qza"), emit: table_seqs
+    tuple val(set_id), path("${set_id}_table.qza"), path "${set_id}_representative_sequences.qza"), emit: table_seqs
     path "${set_id}_denoising_stats.qza",    emit: stats
 
     script:
