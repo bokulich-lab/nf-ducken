@@ -46,7 +46,7 @@ Required if running Cutadapt:
 ### Bypassing parameter validation:
 * To bypass the automated parameter validation, the user should set `params.validate_parameters` to `false` when issuing the execution command.
 
-### Using Pre-Generated Input Artifacts:
+### Using pre-generated input artifacts:
 * By default, workflow inputs may be entered as TSV or FASTQ files; the workflow is designed to generate input QIIME 2 artifacts using the import/download processes. This behavior is controlled by the `generate_input` parameter, set to `true` by default.
 
 * To use an already-created input QIIME 2 artifact, the user should set `params.generate_input` to `false` and specify the path to the input artifact using the `params.input_artifact` parameter. For example:
@@ -139,9 +139,10 @@ VSEARCH reference-based chimera identification process parameters in scope `para
 * `num_threads`: default `1`
 
 Additional process parameters:
+* `closed_ref_cluster`: default `true`, allowing the use closed-reference OTU clustered after denoising and optional chimera filtering
 * `taxa_level`: default `5`, collapsing taxonomic classifications to genus; used in `qiime taxa collapse`
 * `phred_offset`: default `33`; used in FASTQ import if using local FASTQs
-* `vsearch_chimera`: default `"False"`
+* `vsearch_chimera`: default `false`
 
 ### Reference input parameters
 Reference files if available locally; otherwise, defaults will be downloaded from the [QIIME 2 data resources page](https://docs.qiime2.org/2022.2/data-resources/):
