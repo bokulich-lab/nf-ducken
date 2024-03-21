@@ -45,8 +45,9 @@ include { MULTIQC_STATS                       } from '../modules/summarize_stats
 */
 
 workflow PIPE_16S_IMPORT_INPUT {
+
     // Validate input parameters
-    if (params.validate_parameters){ 
+    if (params.validate_parameters) {
         try {
             validateParams(params)
         } catch (AssertionError e) {
@@ -73,7 +74,7 @@ workflow PIPE_16S_IMPORT_INPUT {
          .stripIndent()
 
     log.info """\
-            TURDUCKEN - NF          ( params )
+            DUCKEN - NF          ( params )
             ==================================
             read type                : ${params.read_type}
             input ids                : ${params.inp_id_file}
@@ -158,7 +159,7 @@ workflow PIPE_16S_IMPORT_INPUT {
         } else {
             Channel
                 .fromPath(params.input_artifact, checkIfExists: true)
-                .map { [ 0, it] }
+                .map { [ 0, it ] }
                 .set { ch_sra_artifact }
         }
     }
@@ -225,7 +226,7 @@ workflow PIPE_16S_IMPORT_INPUT {
         ch_seqs_to_classify = CLUSTER_CLOSED_OTU.out.seqs
     } else {
         ch_seqs_to_classify = ch_qzas_to_cluster
-                                .map { it -> [it[0], it[2] }
+                                .map { it -> [it[0], it[2]] }
                                 // Just sample ID and sequences
     }
 
@@ -248,7 +249,7 @@ workflow PIPE_16S_IMPORT_INPUT {
     CLASSIFY_TAXONOMY ( ch_to_classify )
 
     // Determine final feature tables/seqs
-    if (closed_ref_cluster) {
+    if (params.closed_ref_cluster) {
         CLUSTER_CLOSED_OTU.out.table.tap { ch_tables_to_collapse }
     } else if (vsearch_chimera) {
         FILTER_CHIMERAS.out.filt_qzas.tap { ch_tables_to_collapse }
