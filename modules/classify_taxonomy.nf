@@ -105,7 +105,7 @@ process CLASSIFY_TAXONOMY {
 process COLLAPSE_TAXA {
     label "container_qiime2"
     tag "${sample_id}"
-    publishDir "${params.outdir}/stats/collapsed_taxa_tables/", pattern: "*_collapsed_${params.taxa_level}_table.qza"
+    publishDir "${params.outdir}/", pattern: "*_collapsed_${params.taxa_level}_table.qza"
     
     input:
     tuple val(sample_id), path(table), path(taxonomy)
