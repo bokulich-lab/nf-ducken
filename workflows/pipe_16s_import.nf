@@ -251,7 +251,7 @@ workflow PIPE_16S_IMPORT_INPUT {
     // Determine final feature tables/seqs
     if (params.closed_ref_cluster) {
         CLUSTER_CLOSED_OTU.out.table.tap { ch_tables_to_collapse }
-    } else if (vsearch_chimera) {
+    } else if (params.vsearch_chimera) {
         FILTER_CHIMERAS.out.filt_qzas.tap { ch_tables_to_collapse }
     } else {
         ch_denoised_qzas.tap { ch_tables_to_collapse }
