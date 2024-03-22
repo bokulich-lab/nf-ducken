@@ -260,6 +260,7 @@ workflow PIPE_16S_DOWNLOAD_INPUT {
         FILTER_CHIMERAS.out.filt_qzas.tap { ch_tables_to_collapse }
     } else {
         ch_denoised_qzas.tap { ch_tables_to_collapse }
+        ch_tables_to_collapse.map { it -> [it[0], it[1]] }
     }
 
     // Split off feature tables and taxa to merge
