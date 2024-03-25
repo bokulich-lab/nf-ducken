@@ -254,8 +254,9 @@ workflow PIPE_16S_IMPORT_INPUT {
     } else if (params.vsearch_chimera) {
         FILTER_CHIMERAS.out.filt_qzas.tap { ch_tables_to_collapse }
     } else {
-        ch_denoised_qzas.tap { ch_tables_to_collapse }
-        ch_tables_to_collapse.map { it -> [it[0], it[1]] }
+        ch_denoised_qzas.tap { ch_denoised_for_collapse }
+        ch_denoised_for_collapse.map { it -> [it[0], it[1]] }
+                             .set { ch_tables_to_collapse }
     }
 
     // Split off feature tables and taxa to merge
@@ -264,19 +265,12 @@ workflow PIPE_16S_IMPORT_INPUT {
                     .map { it[1] }
                     .collect()
 
-    // Split taxonomies off to merge
-    CLASSIFY_TAXONOMY.out.taxonomy_qza.tap { ch_taxa_to_combine }
-    ch_taxa_to_combine = ch_taxa_to_combine
-                            .map { it[1] }
-                            .collect()
-
     // Collapse taxa and merge
     ch_tables_to_collapse
         .join ( CLASSIFY_TAXONOMY.out.taxonomy_qza )
         .set { ch_to_collapse_taxa }
 
     COLLAPSE_TAXA ( ch_to_collapse_taxa )
-
 }
 
 /*
