@@ -64,9 +64,10 @@ def validatePrimerSequence(String sequence, String name) {
 def validateParams(params) {
 
   // Validation for general parameters
-  assertParam(params.outdir, [String], null, "outdir must be a String")
+	assertParam(params.outdir, [String], null, "outdir must be a String")
   assertParam(params.read_type, [String], ["paired", "single"], "read_type must be either 'paired' or 'single'")
-  assertParam(params.pipeline_type, [String], ["import", "download"], "pipeline_type must be either 'import' or 'download'")
+	assertParam(params.pipeline_type, [String], ["import", "download"], "pipeline_type must be either 'import' or 'download'")
+	assertParam(params.closed_ref_cluster, [Boolean], [true, false], "closed_ref_cluster must be true or false")
 
   // Valid ID column names
   List<String> validIdColumnNames = [
