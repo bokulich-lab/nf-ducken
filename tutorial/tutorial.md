@@ -16,6 +16,8 @@ These are illustrated, with corresponding stepwise commands, [in this large flow
 
 This tutorial has two parallel components: The **download** tutorial (Section 2) and the **import** tutorial (Section 3). Feel free to run one or both. If you plan to run `nf-ducken` from FASTQ files you will download from the SRA or ENA, select the **download** tutorial. If you plan to run `nf-ducken` on FASTQ files already on your computer, select the **import** tutorial.
 
+**NOTE:** This tutorial requires an active Internet connection!
+
 ## 1.  Setup
 
 ### 1.1.  Package management
@@ -62,12 +64,14 @@ This tutorial has two parallel components: The **download** tutorial (Section 2)
   * [`download_tutorial_ids.tsv`](https://github.com/bokulich-lab/nf-ducken/tutorial/download_tutorial/download_tutorial_ids.tsv): A tab-separated file (TSV) of SRA IDs for download. It currently contains three IDs for three pairs of FASTQs.
   * [`download_tutorial_params.config`](https://github.com/bokulich-lab/nf-ducken/tutorial/download_tutorial/download_tutorial_params.config): A configuration file to pass in parameters for your `nf-ducken` run. It has already been filled in with required parameters.
 3. Organize your files in your local directory. We suggest a file organization akin to this:
+
 ```text
 Desktop/
 |-- tutorial/    # your current working directory!
     |-- download_tutorial_ids.tsv
     |-- download_tutorial_params.config
 ```
+
 4. Double-check your current working directory by running `pwd` in the terminal. You should be in `~/Desktop/tutorial/` or similar.
 
 ### 2.2.  Modify input ID file
@@ -91,7 +95,33 @@ This input file should be a plain text file i.e. if using MacOS TextEdit, select
 
 ### 2.3.  Execute pipeline
 
+We previously suggested a file structure akin to this:
 
+```text
+Desktop/
+|-- tutorial/    # your current working directory!
+    |-- download_tutorial_ids.tsv
+    |-- download_tutorial_params.config
+```
+
+Please ensure your working directory is `~/Desktop/tutorial/` with the terminal command `pwd`. Please also ensure your Conda environment `nextflow` is active with the terminal command `conda info`.
+
+Execute your workflow with the following command:
+
+```shell
+nextflow run bokulich-lab/nf-ducken -c download_tutorial_params.config -profile conda
+```
+
+You're all set! Come back in a few minutes to an hour (depending on your processing power) to your completed workflow.
+
+Your outputs will consist of:
+
+* A feature table collapsed to a specific taxon (default species): This will contain feature counts for every species per sample.
+* Workflow statistics, including
+  * Clustered feature table, not collapsed to taxon
+  * Denoising statistics from DADA2
+  * Chimera filtering statistics from VSEARCH
+  * MultiQC report containing FASTQ quality, denoising results, and (if conducted) adapter trimming statistics
 
 ## 3.  Import tutorial
 
