@@ -45,8 +45,9 @@ include { MULTIQC_STATS                       } from '../modules/summarize_stats
 */
 
 workflow PIPE_16S_IMPORT_INPUT {
+
     // Validate input parameters
-    if (params.validate_parameters){ 
+    if (params.validate_parameters) {
         try {
             validateParams(params)
         } catch (AssertionError e) {
@@ -73,7 +74,7 @@ workflow PIPE_16S_IMPORT_INPUT {
          .stripIndent()
 
     log.info """\
-            TURDUCKEN - NF          ( params )
+            DUCKEN - NF          ( params )
             ==================================
             read type                : ${params.read_type}
             input ids                : ${params.inp_id_file}
@@ -158,7 +159,7 @@ workflow PIPE_16S_IMPORT_INPUT {
         } else {
             Channel
                 .fromPath(params.input_artifact, checkIfExists: true)
-                .map { [ 0, it] }
+                .map { [ 0, it ] }
                 .set { ch_sra_artifact }
         }
     }
@@ -185,7 +186,7 @@ workflow PIPE_16S_IMPORT_INPUT {
     // Create MultiQC reports
     MULTIQC_STATS ( RUN_FASTQC.out, ch_to_multiqc )
 
-    // Feature generation: Clustering
+    // Optional chimera filtering
     if (flag_get_ref) {
         DOWNLOAD_REF_SEQS ( flag_get_ref )
         ch_otu_ref_qza = DOWNLOAD_REF_SEQS.out
@@ -200,26 +201,34 @@ workflow PIPE_16S_IMPORT_INPUT {
             ch_to_find_chimeras
             )
 
-        ch_denoised_qzas
-            .join ( FIND_CHIMERAS.out.nonchimeras )
+        ch_denoised_qzas.tap { ch_denoised_qzas_to_filter }
+        ch_denoised_qzas_to_filter.join ( FIND_CHIMERAS.out.nonchimeras )
             .set { ch_qzas_to_filter }
 
         FILTER_CHIMERAS (
             ch_qzas_to_filter
         )
 
-        ch_qzas_to_cluster  = FILTER_CHIMERAS.out.filt_qzas
+        FILTER_CHIMERAS.out.filt_qzas.tap { ch_qzas_to_cluster }
 
     } else {
-        ch_denoised_qzas.set { ch_qzas_to_cluster }
+        ch_denoised_qzas.tap { ch_qzas_to_cluster }
     }
 
+    // Optional closed-reference OTU clustering
     ch_qzas_to_cluster.combine ( ch_otu_ref_qza )
         .set { ch_qzas_to_cluster }
 
-    CLUSTER_CLOSED_OTU (
-        ch_qzas_to_cluster
+    if (params.closed_ref_cluster) {
+        CLUSTER_CLOSED_OTU (
+            ch_qzas_to_cluster
         )
+        ch_seqs_to_classify = CLUSTER_CLOSED_OTU.out.seqs
+    } else {
+        ch_seqs_to_classify = ch_qzas_to_cluster
+                                .map { it -> [it[0], it[2]] }
+                                // Just sample ID and sequences
+    }
 
     // Classification
     if (flag_get_classifier) {
@@ -232,33 +241,36 @@ workflow PIPE_16S_IMPORT_INPUT {
         ch_taxa_ref_qza = DOWNLOAD_REF_TAXONOMY.out
     }
 
-    ch_to_classify = CLUSTER_CLOSED_OTU.out.seqs
+    ch_to_classify = ch_seqs_to_classify
                         .combine ( ch_trained_classifier )
                         .combine ( ch_otu_ref_qza )
                         .combine ( ch_taxa_ref_qza )
 
     CLASSIFY_TAXONOMY ( ch_to_classify )
 
-    // Merge feature tables
-    CLUSTER_CLOSED_OTU.out.table.tap { ch_tables_to_combine }
-    ch_tables_to_combine = ch_tables_to_combine
-                            .map { it[1] }
-                            .collect()
+    // Determine final feature tables/seqs
+    if (params.closed_ref_cluster) {
+        CLUSTER_CLOSED_OTU.out.table.tap { ch_tables_to_collapse }
+    } else if (params.vsearch_chimera) {
+        FILTER_CHIMERAS.out.filt_qzas.tap { ch_tables_to_collapse }
+    } else {
+        ch_denoised_qzas.tap { ch_denoised_for_collapse }
+        ch_denoised_for_collapse.map { it -> [it[0], it[1]] }
+                             .set { ch_tables_to_collapse }
+    }
 
-    // Split taxonomies off to merge
-    CLASSIFY_TAXONOMY.out.taxonomy_qza.tap { ch_taxa_to_combine }
-    ch_taxa_to_combine = ch_taxa_to_combine
-                            .map { it[1] }
-                            .collect()
+    // Split off feature tables and taxa to merge
+    ch_tables_to_collapse.tap { ch_tables_to_merge }
+    ch_tables_to_merge = ch_tables_to_merge
+                    .map { it[1] }
+                    .collect()
 
     // Collapse taxa and merge
-    CLUSTER_CLOSED_OTU.out.table
+    ch_tables_to_collapse
         .join ( CLASSIFY_TAXONOMY.out.taxonomy_qza )
-        .set { ch_table_to_collapse }
+        .set { ch_to_collapse_taxa }
 
-    COLLAPSE_TAXA ( ch_table_to_collapse )
-
-    ch_collapsed_tables_to_combine = COLLAPSE_TAXA.out.collect()
+    COLLAPSE_TAXA ( ch_to_collapse_taxa )
 }
 
 /*

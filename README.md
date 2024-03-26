@@ -9,15 +9,11 @@ Workflow to process amplicon meta-analysis data, from either local FASTQs or NCB
 
 **Note for users with newer Apple processors (M1/M2):** Conda environments require emulation using Rosetta, due to the lack of certain packages for the ARM64 architecture otherwise available with Intel processors. Please follow the [installation and setup instructions here](https://support.apple.com/en-us/HT211861) for details.
 
-Conda environments are available for all processes. To customize in run, modify the environment parameters (`params.qiime_conda_env`, `params.fastqc_conda_env`, `params.multiqc_conda_env`, and `params.fondue_conda_env`) in the input configuration file.
-
-Launch a Conda environment-based run using `-profile conda` when running the workflow script.
+Conda environments are available for all processes. Launch a Conda environment-based run using `-profile conda` when running the workflow script.
 
 ### Singularity and Docker
 
-Containers are available for all processes. To customize in run, modify the container parameters (`params.qiime_container`, `params.fastqc_container`, `params.multiqc_container`, and `params.fondue_container`) in the input configuration file.
-
-Launch a container-based run with Singularity or Docker using `-profile docker` or `-profile singularity` when running the workflow script.
+Containers are available for all processes. Launch a container-based run with Singularity or Docker using `-profile docker` or `-profile singularity` when running the workflow script.
 
 ## Inputs
 
@@ -46,7 +42,7 @@ Required if running Cutadapt:
 ### Bypassing parameter validation:
 * To bypass the automated parameter validation, the user should set `params.validate_parameters` to `false` when issuing the execution command.
 
-### Using Pre-Generated Input Artifacts:
+### Using pre-generated input artifacts:
 * By default, workflow inputs may be entered as TSV or FASTQ files; the workflow is designed to generate input QIIME 2 artifacts using the import/download processes. This behavior is controlled by the `generate_input` parameter, set to `true` by default.
 
 * To use an already-created input QIIME 2 artifact, the user should set `params.generate_input` to `false` and specify the path to the input artifact using the `params.input_artifact` parameter. For example:
@@ -71,7 +67,7 @@ Cutadapt process parameters in scope `params.cutadapt`:
 * `match_read_wildcards`: default `"False"`
 * `match_adapter_wildcards`: default `"True"`
 * `minimum_length`: default `1`,
-* `discard_untrimmed`: default `"True"`; we highly recommend keeping this parameter `"True"` as the Cutadapt process also separates reads by primer sequence!
+* `discard_untrimmed`: default `"False"`, to keep pre-trimmed samples
 * `max_error_flag`: default `null`
 * `max_n_flag`: default `null`
 * `quality_cutoff_5end`: default `0`
@@ -139,9 +135,10 @@ VSEARCH reference-based chimera identification process parameters in scope `para
 * `num_threads`: default `1`
 
 Additional process parameters:
+* `closed_ref_cluster`: default `true`, allowing the use closed-reference OTU clustered after denoising and optional chimera filtering
 * `taxa_level`: default `5`, collapsing taxonomic classifications to genus; used in `qiime taxa collapse`
 * `phred_offset`: default `33`; used in FASTQ import if using local FASTQs
-* `vsearch_chimera`: default `"False"`
+* `vsearch_chimera`: default `false`
 
 ### Reference input parameters
 Reference files if available locally; otherwise, defaults will be downloaded from the [QIIME 2 data resources page](https://docs.qiime2.org/2022.2/data-resources/):
