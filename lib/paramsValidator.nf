@@ -1,4 +1,4 @@
-// Validation Script for nextflow.config parameters
+// Validation script for nextflow.config parameters
 
 // Function to validate the contents of a TSV file including column names
 def validateTsvContents(String filePath, int expectedColumns, List<String> validIdColumnNames = null) {
@@ -67,6 +67,7 @@ def validateParams(params) {
   assertParam(params.outdir, [String], null, "outdir must be a String")
   assertParam(params.read_type, [String], ["paired", "single"], "read_type must be either 'paired' or 'single'")
   assertParam(params.pipeline_type, [String], ["import", "download"], "pipeline_type must be either 'import' or 'download'")
+  assertParam(params.closed_ref_cluster, [Boolean], [true, false], "closed_ref_cluster must be true or false")
 
   // Valid ID column names
   List<String> validIdColumnNames = [
