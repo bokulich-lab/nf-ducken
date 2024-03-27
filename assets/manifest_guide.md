@@ -22,7 +22,7 @@ Instructions for downloading Python 3 [can be found here](https://www.python.org
 
 We recommend running `make_manifest.py` based on the following directory structure:
 
-```
+```text
 |-- fastq_processing/
     |-- nf-ducken/    # may also be known as turducken_code/
         |-- assets/
@@ -42,12 +42,12 @@ Your location in the terminal (your working directory) should be `fastq_processi
 
 ## Execution
 
-###1. Confirm you have the necessary packages downloaded.
+### 1. Confirm you have the necessary packages downloaded.
 
 Run:
 
 ```commandline
-$ python nf-ducken/bin/make_manifest.py --help
+python nf-ducken/bin/make_manifest.py --help
 ```
 
 If you get the message `ModuleNotFoundError: No module named 'numpy'` or similar: Please go back to the "Setup" section above and install the necessary packages.
@@ -57,20 +57,20 @@ If you get the message `python: can't open file 'nf-ducken/bin/make_manifest.py'
 You can double-check your location in the terminal with the command:
 
 ```commandline
-$ pwd
+pwd
 ```
 
-###2. Double-check your data are found in `fastq_processing/data/`.
+### 2. Double-check your data are found in `fastq_processing/data/`.
 
 Run:
 
 ```commandline
-$ ls data/
+ls data/
 ```
 
 The output should list all the FASTQ files you want a manifest for. If you get an error or nothing shows up, please double-check your location on the terminal with `pwd` or double-check the location of your FASTQ files.
 
-###3. (Optional) Select an appropriate suffix.
+### 3. (Optional) Select an appropriate suffix.
 
 Each sample name will be decided based on the FASTQ filename suffix. For example:
 
@@ -84,11 +84,11 @@ In the above cases, you would have the flag `--suffix` in your command, followed
 
 In the above cases, you would have the flags `--r1_suffix` and `--r2_suffix` in your command, followed by the suffixes.
 
-###4. Run the manifest generator.
+### 4. Run the manifest generator.
 
 Run for a single-end run:
 
-```commandline
+```shell
 python nf-ducken/bin/make_manifest.py  \
     --input_dir data/  \
     --read_type ${read_type}  \
@@ -98,7 +98,7 @@ python nf-ducken/bin/make_manifest.py  \
 
 or for a paired-end run:
 
-```commandline
+```shell
 python nf-ducken/bin/make_manifest.py  \
     --input_dir data/  \
     --read_type ${read_type}  \
@@ -113,7 +113,7 @@ If you have a single-end run, replace `${suffix}` with the FASTQ suffix you dete
 
 As an example, for a single-end run:
 
-```commandline
+```shell
 python nf-ducken/bin/make_manifest.py  \
     --input_dir data/  \
     --read_type single  \
@@ -123,7 +123,7 @@ python nf-ducken/bin/make_manifest.py  \
 
 or for a paired-end run:
 
-```commandline
+```shell
 python nf-ducken/bin/make_manifest.py  \
     --input_dir data/  \
     --read_type paired  \
@@ -136,7 +136,7 @@ python nf-ducken/bin/make_manifest.py  \
 
 Your output manifest file can be found in `fastq_processing/` with the name you gave it under `--output_fname`. It will look something like this for a single-end run:
 
-```
+```text
 sample-id       absolute-filepath
 sample1   /Users/uname/Documents/fastq_processing/data/sample1_00_L001_R1_001.fastq.gz
 sample2   /Users/uname/Documents/fastq_processing/data/sample2_00_L001_R1_001.fastq.gz
@@ -145,7 +145,7 @@ sample3   /Users/uname/Documents/fastq_processing/data/sample3_00_L001_R1_001.fa
 
 For a paired-end run:
 
-```
+```text
 sample-id       forward-absolute-filepath       reverse-absolute-filepath
 sample1   /Users/uname/Documents/fastq_processing/data/sample1_00_L001_R1_001.fastq.gz   /Users/uname/Documents/fastq_processing/data/sample1_00_L001_R2_001.fastq.gz
 sample2   /Users/uname/Documents/fastq_processing/data/sample2_00_L001_R1_001.fastq.gz   /Users/uname/Documents/fastq_processing/data/sample2_00_L001_R2_001.fastq.gz
@@ -158,7 +158,7 @@ For more details, see the [QIIME 2 Documentation](https://docs.qiime2.org/2024.2
 
 Evoke the help message for the module (on the command line) as follows:
 
-```commandline
+```shell
 python nf-ducken/bin/make_manifest.py --help
 
 usage: make_manifest.py [-h] -i INPUT_DIR --read_type {paired,single} [-o OUTPUT_FNAME] [--suffix SUFFIX] [--r1_suffix R1_SUFFIX]
