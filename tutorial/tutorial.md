@@ -26,14 +26,21 @@ This tutorial has two parallel components: The **download** tutorial (Section 2)
 
 <details>
     <summary><b>MacOS/Linux</b></summary>
-    <b>Do you have a machine with a newer Apple processor (M1/M2/M3)?</b> Conda environments require emulation using Rosetta, due to the lack of certain packages for the ARM64 architecture otherwise available with Intel processors. Please follow the [installation and setup instructions here](https://support.apple.com/en-us/HT211861) for details.
-    1. Download and install [Miniconda3](https://docs.conda.io/projects/miniconda/en/latest/miniconda-install.html).
+    <br>
+    <b>Do you have a machine with a newer Apple processor (M1/M2/M3)?</b> Conda environments require emulation using Rosetta, due to the lack of certain packages for the ARM64 architecture otherwise available with Intel processors. Please follow the <a href="https://support.apple.com/en-us/HT211861">installation and setup instructions here</a> for details.
+    <br>
+    <ol type="1">
+        <li>Download and install <a href="https://docs.conda.io/projects/miniconda/en/latest/miniconda-install.html">Miniconda3]</a>.</li>
+    </ol>
 </details>
 
 <details>
     <summary><b>Windows</b></summary>
-    1. You need a shell-based terminal. We recommend the [Windows Subsystem for Linux](https://learn.microsoft.com/en-us/windows/wsl/install) or a [virtual machine](https://www.virtualbox.org/wiki/Downloads); please install one of these if you have not already.
-    2. Download and install [Miniconda3](https://docs.conda.io/projects/miniconda/en/latest/miniconda-install.html).
+    <br>
+    <ol type="1">
+        <li>You need a shell-based terminal. We recommend the <a href="https://learn.microsoft.com/en-us/windows/wsl/install">Windows Subsystem for Linux</a> or a <a href="https://www.virtualbox.org/wiki/Downloads">virtual machine</a>; please install one of these if you have not already.</li>
+        <li>Download and install <a href="https://docs.conda.io/projects/miniconda/en/latest/miniconda-install.html">Miniconda3]</a>.</li>
+    </ol>
 </details>
 
 ### 1.2.  Environment setup
