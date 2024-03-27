@@ -1,4 +1,4 @@
-# Manifest Instructions
+# Guide: Manifest Generation
 
 Easily generate a QIIME 2-friendly FASTQ manifest file (also known as a mapping file) using the module `make_manifest.py`, found in `nf-ducken/bin/`. This accommodates both single- and paired-end FASTQ inputs.
 
