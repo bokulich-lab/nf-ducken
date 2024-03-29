@@ -123,7 +123,7 @@ Your outputs will consist of:
   * Clustered feature table, not collapsed to taxon
   * Denoising statistics from DADA2
   * Chimera filtering statistics from VSEARCH
-  * MultiQC report containing FASTQ quality, denoising results, and (if conducted) adapter trimming statistics
+  * MultiQC report containing FASTQ quality and (if conducted) adapter/primer trimming statistics
 
 ## 3.  Import Tutorial
 
@@ -205,7 +205,7 @@ Your outputs will consist of:
   * Clustered feature table, not collapsed to taxon
   * Denoising statistics from DADA2
   * Chimera filtering statistics from VSEARCH
-  * MultiQC report containing FASTQ quality, denoising results, and (if conducted) adapter trimming statistics
+  * MultiQC report containing FASTQ quality and (if conducted) adapter/primer trimming statistics
 
 ## Frequently Asked Questions
 
