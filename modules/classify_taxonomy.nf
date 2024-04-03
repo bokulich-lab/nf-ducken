@@ -4,12 +4,16 @@ process CLASSIFY_TAXONOMY {
     label "error_retry"
     tag "${sample_id}"
 
+    publishDir "${params.outdir}/", pattern: "*_taxonomy.qza"
+    publishDir "${params.outdir}/", pattern: "${rep_seqs}"
+
     input:
     tuple val(sample_id), path(rep_seqs), path(classifier), path(ref_seqs), path(ref_taxonomy)
 
     output:
     tuple val(sample_id), path("${sample_id}_taxonomy.qza"), emit: taxonomy_qza
     path "${sample_id}_taxonomy.qzv",                        emit: taxonomy_qzv
+    path "${rep_seqs}",                                      emit: rep_seqs
 
     script:
     if (params.classifier.method == "sklearn") {
@@ -106,12 +110,14 @@ process COLLAPSE_TAXA {
     label "container_qiime2"
     tag "${sample_id}"
     publishDir "${params.outdir}/", pattern: "*_collapsed_${params.taxa_level}_table.qza"
+    publishDir "${params.outdir}/", pattern: "${table}"
     
     input:
     tuple val(sample_id), path(table), path(taxonomy)
 
     output:
     path "${sample_id}_collapsed_${params.taxa_level}_table.qza"
+    path "${table}"
 
     script:
     """
