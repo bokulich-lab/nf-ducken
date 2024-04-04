@@ -33,6 +33,7 @@ include { CLUSTER_CLOSED_OTU;
           DOWNLOAD_REF_SEQS; FIND_CHIMERAS;
           FILTER_CHIMERAS                     } from '../modules/cluster_vsearch'
 include { CLASSIFY_TAXONOMY; COLLAPSE_TAXA;
+          CREATE_BARPLOT;
           DOWNLOAD_CLASSIFIER;
           DOWNLOAD_REF_TAXONOMY;
           COMBINE_TAXONOMIES;
@@ -273,9 +274,11 @@ workflow PIPE_16S_DOWNLOAD_INPUT {
     // Collapse taxa and merge
     ch_tables_to_collapse
         .join ( CLASSIFY_TAXONOMY.out.taxonomy_qza )
+        .tap { ch_to_create_barplot }
         .set { ch_to_collapse_taxa }
 
-    COLLAPSE_TAXA ( ch_to_collapse_taxa )
+    CREATE_BARPLOT ( ch_to_create_barplot )
+    COLLAPSE_TAXA  ( ch_to_collapse_taxa  )
 
 }
 

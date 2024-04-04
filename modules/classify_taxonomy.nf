@@ -109,8 +109,7 @@ process CLASSIFY_TAXONOMY {
 process COLLAPSE_TAXA {
     label "container_qiime2"
     tag "${sample_id}"
-    publishDir "${params.outdir}/", pattern: "*_collapsed_${params.taxa_level}_table.qza"
-    publishDir "${params.outdir}/", pattern: "${table}"
+    publishDir "${params.outdir}/"
     
     input:
     tuple val(sample_id), path(table), path(taxonomy)
@@ -128,6 +127,29 @@ process COLLAPSE_TAXA {
         --i-taxonomy ${taxonomy} \
         --p-level ${params.taxa_level} \
         --o-collapsed-table ${sample_id}_collapsed_${params.taxa_level}_table.qza \
+        --verbose
+    """
+}
+
+process CREATE_BARPLOT {
+    label "container_qiime2"
+    tag "${sample_id}"
+    publishDir "${params.outdir}/"
+
+    input:
+    tuple val(sample_id), path(table), path(taxonomy)
+
+    output:
+    path "${sample_id}_taxa_barplot.qzv"
+
+    script:
+    """
+    echo 'Generating a taxonomic barplot...'
+
+    qiime taxa barplot \
+        --i-table ${table} \
+        --i-taxonomy ${taxonomy} \
+        --o-visualization ${sample_id}_taxa_barplot.qzv \
         --verbose
     """
 }
