@@ -133,3 +133,51 @@ process FILTER_CHIMERAS {
         --o-visualization ${sample_id}_chimera_free_table.qzv
     """
 }
+
+process SUMMARIZE_FEATURE_TABLE {
+    label "container_qiime2"
+    tag "${sample_id}"
+    publishDir "${params.outdir}"
+
+    input:
+    tuple val(sample_id), path(table)
+
+    output:
+    path "${sample_id}_feature_table.qzv"
+
+    script:
+    """
+    echo 'Generating a visual and tabular summary of the final feature table...'
+
+    qiime feature-table summarize \
+        --i-table ${table} \
+        --o-visualization ${sample_id}_feature_table.qzv
+    """
+}
+
+process COMBINE_FEATURE_TABLES {
+    label "container_qiime2"
+    publishDir "${params.outdir}/"
+
+    input:
+    val(inp_type)
+    path(table_list)
+
+    output:
+    path "merged_${inp_type}_table.qza"
+
+    script:
+    """
+    echo 'Combining ${inp_type} feature tables into a single output...'
+
+    full_table_list=""
+    for table in ${table_list}; do
+      full_table_list=\"\${full_table_list} \${table}\"
+    done
+
+    qiime feature-table merge \
+        --i-tables \${full_table_list} \
+        --o-merged-table merged_${inp_type}_table.qza \
+        --verbose
+    """
+}

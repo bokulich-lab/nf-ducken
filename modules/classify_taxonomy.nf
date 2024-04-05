@@ -4,8 +4,7 @@ process CLASSIFY_TAXONOMY {
     label "error_retry"
     tag "${sample_id}"
 
-    publishDir "${params.outdir}/", pattern: "*_taxonomy.qza"
-    publishDir "${params.outdir}/", pattern: "${rep_seqs}"
+    publishDir "${params.outdir}/", pattern: "*.qzv"
 
     input:
     tuple val(sample_id), path(rep_seqs), path(classifier), path(ref_seqs), path(ref_taxonomy)
@@ -154,6 +153,29 @@ process CREATE_BARPLOT {
     """
 }
 
+process TABULATE_SEQS {
+    label "container_qiime2"
+    tag "${sample_id}"
+    publishDir "${params.outdir}/"
+
+    input:
+    tuple val(sample_id), path(taxonomy), path(rep_seqs)
+`
+    output:
+    path "${sample_id}_rep_seqs.qzv"
+
+    script:
+    """
+    echo 'Generating a tabular view of feature identifiers to sequences...'
+
+    qiime feature-table tabulate-seqs \
+        --i-data ${rep_seqs} \
+        --i-taxonomy ${taxonomy} \
+        --o-visualization ${sample_id}_rep_seqs.qzv \
+        --verbose
+    """
+}
+
 process COMBINE_TAXONOMIES {
     label "container_qiime2"
     publishDir "${params.outdir}/"
@@ -182,33 +204,6 @@ process COMBINE_TAXONOMIES {
     qiime metadata tabulate \
         --m-input-file merged_taxonomy.qza \
         --o-visualization merged_taxonomy.qzv
-    """
-}
-
-process COMBINE_FEATURE_TABLES {
-    label "container_qiime2"
-    publishDir "${params.outdir}/"
-
-    input:
-    val(inp_type)
-    path(table_list)
-
-    output:
-    path "merged_${inp_type}_table.qza"
-
-    script:
-    """
-    echo 'Combining ${inp_type} feature tables into a single output...'
-
-    full_table_list=""
-    for table in ${table_list}; do
-      full_table_list=\"\${full_table_list} \${table}\"
-    done
-
-    qiime feature-table merge \
-        --i-tables \${full_table_list} \
-        --o-merged-table merged_${inp_type}_table.qza \
-        --verbose
     """
 }
 
