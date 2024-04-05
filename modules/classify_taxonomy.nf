@@ -160,7 +160,7 @@ process TABULATE_SEQS {
 
     input:
     tuple val(sample_id), path(taxonomy), path(rep_seqs)
-`
+
     output:
     path "${sample_id}_rep_seqs.qzv"
 

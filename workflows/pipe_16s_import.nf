@@ -34,10 +34,7 @@ include { CLUSTER_CLOSED_OTU;
 include { CLASSIFY_TAXONOMY; COLLAPSE_TAXA;
           CREATE_BARPLOT; TABULATE_SEQS;
           DOWNLOAD_CLASSIFIER;
-          DOWNLOAD_REF_TAXONOMY;
-          COMBINE_TAXONOMIES;
-          COMBINE_FEATURE_TABLES;
-          COMBINE_FEATURE_TABLES as COMBINE_COLLAPSED_TABLES } from '../modules/classify_taxonomy'
+          DOWNLOAD_REF_TAXONOMY               } from '../modules/classify_taxonomy'
 include { MULTIQC_STATS                       } from '../modules/summarize_stats'
 
 /*
