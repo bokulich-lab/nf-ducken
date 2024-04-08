@@ -7,10 +7,6 @@
 // Import validation module
 include { validateParams } from '../lib/paramsValidator'
 
-// Check input path parameters to see if they exist
-
-// Check mandatory parameters
-
 /*
 ========================================================================================
     CONFIG FILES
@@ -22,7 +18,6 @@ include { validateParams } from '../lib/paramsValidator'
     IMPORT LOCAL MODULES/SUBWORKFLOWS
 ========================================================================================
 */
-
 
 include { GENERATE_ID_ARTIFACT; GET_SRA_DATA;
           SPLIT_FASTQ_MANIFEST                } from '../modules/get_sra_data'

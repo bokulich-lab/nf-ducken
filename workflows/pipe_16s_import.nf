@@ -7,10 +7,6 @@
 // Import validation module
 include { validateParams } from '../lib/paramsValidator'
 
-// Check input path parameters to see if they exist
-
-// Check mandatory parameters
-
 /*
 ========================================================================================
     CONFIG FILES
@@ -277,6 +273,7 @@ workflow PIPE_16S_IMPORT_INPUT {
     SUMMARIZE_FEATURE_TABLE ( ch_table_to_summarize )
     CREATE_BARPLOT ( ch_to_create_barplot )
     COLLAPSE_TAXA  ( ch_to_collapse_taxa  )
+
 }
 
 /*
