@@ -5,6 +5,7 @@ Generates a manifest for FASTQ files based on file presence.
 
 from pathlib import Path
 import argparse
+import itertools
 import logging
 import numpy as np
 import pandas as pd
@@ -20,14 +21,18 @@ NUM_DICT = {"single": 1, "paired": 2}
 NEWLINE = "\n"
 
 
-def match_fastq_suffix(file_path: str, suffix: str) -> str:
+def match_fastq_suffix(file_path: str, suff_list: list) -> str:
     """
     Retrieves sample ID from FASTQ file path and suffix.
 
     :param file_path:
-    :param suffix:
+    :param suff_list:
     :return:
     """
+    if len(suff_list) == 1:
+        suffix = suff_list[0]
+    else:
+        suffix = "|".join(suff_list)
     suffix_search = re.search(fr'^([\w\.-]+)({suffix})', str(file_path.name))
     if suffix_search:
         return suffix_search.group(1)
@@ -35,27 +40,31 @@ def match_fastq_suffix(file_path: str, suffix: str) -> str:
     return np.NaN
 
 
-def get_sample_ids(inp_dir: str, read_type: str, suffix: str) -> pd.DataFrame:
+def get_sample_ids(inp_dir: str,
+                   read_type: str,
+                   suff_list: list) -> pd.DataFrame:
     """
     Retrieves FASTQ file paths per sample ID.
 
     :param inp_dir:
     :param read_type:
-    :param suffix:
+    :param suff_list:
     :return:
     """
-    fastq_path_list = sorted(Path(inp_dir).resolve().glob(f"*{suffix}"))
+    fastq_path_chain = [Path(inp_dir).resolve().glob(f"*{suf}")
+                        for suf in suff_list]
+    fastq_path_list = sorted(itertools.chain.from_iterable(
+        fastq_path_chain))
 
-    assert (
-            len(list(fastq_path_list)) > 0
-    ), f"No files were found in {inp_dir} matching the suffix {suffix}! " \
-       f"Exiting..."
+    assert (len(list(fastq_path_list)) > 0), \
+        f"No files were found in {inp_dir} matching the suffix(es) " \
+        f"{'/'.join(suff_list)}! Exiting..."
 
     # Get all FASTQs
     fname_df = pd.DataFrame(fastq_path_list, index=None, columns=["file_path"])
 
     fname_df["sample_id"] = fname_df["file_path"].apply(match_fastq_suffix,
-                                                        suffix=suffix)
+                                                        suff_list=suff_list)
     nonmatch_fq = fname_df[fname_df["sample_id"].isnull()]["file_path"].tolist()
     nonmatch_fq = [str(fpath) for fpath in nonmatch_fq]
     if len(nonmatch_fq) > 0:
@@ -71,9 +80,11 @@ def get_sample_ids(inp_dir: str, read_type: str, suffix: str) -> pd.DataFrame:
 
     # Filter out samples with incorrect number of FASTQs
     sample_df["num_fastq"] = sample_df.iloc[:, 0].apply(len)
+
     num_mismatch_fq = sum(sample_df["num_fastq"] != NUM_DICT[read_type])
     num_mismatch_names = sample_df[sample_df["num_fastq"] != NUM_DICT[
         read_type]].reset_index()
+
     if num_mismatch_fq > 0:
         logging.warning(
             f"There is/are {num_mismatch_fq} sample(s) with the "
@@ -94,14 +105,14 @@ def get_sample_ids(inp_dir: str, read_type: str, suffix: str) -> pd.DataFrame:
 
 
 def assign_fastqs_per_sample(
-        sample_fastq_df: pd.DataFrame, read_type: str, suffix_dict: dict
+        sample_fastq_df: pd.DataFrame, read_type: str, suff_list: list
 ) -> pd.DataFrame:
     """
     Convert sample ID-list association to
 
     :param sample_fastq_df:
     :param read_type:
-    :param suffix_dict:
+    :param suff_list:
     :return:
     """
     if read_type == "single":
@@ -111,12 +122,14 @@ def assign_fastqs_per_sample(
 
     elif read_type == "paired":
         head_sam, head_fwd, head_rev = HEADER_DICT[read_type]
-        fwd_suffix, rev_suffix = suffix_dict[read_type]
+        fwd_suffix, rev_suffix = suff_list
 
         fastq_df = pd.DataFrame(None, columns=HEADER_DICT[read_type])
         fastq_df[head_sam] = sample_fastq_df.index
 
-        dir_path = Path(sample_fastq_df["file_path"][0][0]).resolve().parent
+        dir_path = Path(sample_fastq_df["file_path"].iloc[0][0]).resolve(
+
+        ).parent
         fastq_df[head_fwd] = sample_fastq_df.index.map(
             lambda x: dir_path / (x + fwd_suffix)
         )
@@ -155,22 +168,26 @@ def arg_parse():
         help="File name of output manifest.",
         type=str,
         default="fastq_manifest.tsv",
+        required=False
     )
     parser.add_argument(
-        "--suffix", help="Suffix for FASTQ files.", type=str,
-        default="_R[1-2].fastq.gz"
+        "--suffix", help="Suffix for FASTQ files; accommodates regex.",
+        type=str,
+        required=False
     )
     parser.add_argument(
         "--r1_suffix",
-        help="For paired-end samples, suffix for forward reads.",
+        help="For paired-end samples, suffix for forward reads; "
+             "accommodates regex.",
         type=str,
-        default="_R1.fastq.gz",
+        required=False
     )
     parser.add_argument(
         "--r2_suffix",
-        help="For paired-end samples, suffix for reverse reads.",
+        help="For paired-end samples, suffix for reverse reads; "
+             "accommodates regex.",
         type=str,
-        default="_R2.fastq.gz",
+        required=False
     )
 
     args = parser.parse_args()
@@ -186,12 +203,29 @@ def main(args):
     logger = logging.getLogger()
     logger.setLevel("INFO")
 
-    suffix_dict = {"single": [args.suffix],
-                   "paired": [args.r1_suffix, args.r2_suffix]}
+    if args.suffix and args.read_type == "single":
+        suffix_list = [args.suffix]
+    elif (args.r1_suffix and args.r2_suffix) and args.read_type == "paired":
+        suffix_list = [args.r1_suffix, args.r2_suffix]
+    elif not args.suffix and not (args.r1_suffix or args.r2_suffix):
+        logging.warning("No suffix flags provided! FASTQ suffixes are set to "
+                     "defaults based on read type.")
+        if args.read_type == "single":
+            suffix_list = ["_R[1-2].fastq.gz"]
+        else:
+            suffix_list = ["_R1.fastq.gz", "_R2.fastq.gz"]
+    else:
+        logging.warning("The appropriate suffix flag was not included for the "
+                     "read type. FASTQ suffixes are set to defaults based on "
+                     "read type.")
+        if args.read_type == "single":
+            suffix_list = ["_R[1-2].fastq.gz"]
+        else:
+            suffix_list = ["_R1.fastq.gz", "_R2.fastq.gz"]
 
-    sample_df = get_sample_ids(args.input_dir, args.read_type, args.suffix)
+    sample_df = get_sample_ids(args.input_dir, args.read_type, suffix_list)
     sample_fastq_df = assign_fastqs_per_sample(sample_df, args.read_type,
-                                               suffix_dict)
+                                               suffix_list)
     sample_fastq_df.to_csv(args.output_fname, sep="\t", index=False)
 
 
