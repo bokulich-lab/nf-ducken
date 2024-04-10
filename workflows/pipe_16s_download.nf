@@ -7,10 +7,6 @@
 // Import validation module
 include { validateParams } from '../lib/paramsValidator'
 
-// Check input path parameters to see if they exist
-
-// Check mandatory parameters
-
 /*
 ========================================================================================
     CONFIG FILES
@@ -23,7 +19,6 @@ include { validateParams } from '../lib/paramsValidator'
 ========================================================================================
 */
 
-
 include { GENERATE_ID_ARTIFACT; GET_SRA_DATA;
           SPLIT_FASTQ_MANIFEST                } from '../modules/get_sra_data'
 include { CHECK_FASTQ_TYPE; RUN_FASTQC;
@@ -31,13 +26,12 @@ include { CHECK_FASTQ_TYPE; RUN_FASTQC;
 include { DENOISE_DADA2                       } from '../modules/denoise_dada2'
 include { CLUSTER_CLOSED_OTU;
           DOWNLOAD_REF_SEQS; FIND_CHIMERAS;
-          FILTER_CHIMERAS                     } from '../modules/cluster_vsearch'
+          FILTER_CHIMERAS;
+          SUMMARIZE_FEATURE_TABLE             } from '../modules/cluster_vsearch'
 include { CLASSIFY_TAXONOMY; COLLAPSE_TAXA;
+          CREATE_BARPLOT; TABULATE_SEQS;
           DOWNLOAD_CLASSIFIER;
-          DOWNLOAD_REF_TAXONOMY;
-          COMBINE_TAXONOMIES;
-          COMBINE_FEATURE_TABLES;
-          COMBINE_FEATURE_TABLES as COMBINE_COLLAPSED_TABLES } from '../modules/classify_taxonomy'
+          DOWNLOAD_REF_TAXONOMY } from '../modules/classify_taxonomy'
 include { MULTIQC_STATS                       } from '../modules/summarize_stats'
 
 /*
@@ -252,6 +246,15 @@ workflow PIPE_16S_DOWNLOAD_INPUT {
                         .combine ( ch_taxa_ref_qza )
 
     CLASSIFY_TAXONOMY ( ch_to_classify )
+    CLASSIFY_TAXONOMY.out.taxonomy_qza
+        .tap { ch_taxa_to_tabulate }
+        .set { ch_taxa_to_viz }
+
+    ch_taxa_to_tabulate
+        .join ( CLASSIFY_TAXONOMY.out.rep_seqs )
+        .set { ch_to_tabulate_seqs }
+
+    TABULATE_SEQS ( ch_to_tabulate_seqs )
 
     // Determine final feature tables/seqs
     if (params.closed_ref_cluster) {
@@ -264,18 +267,16 @@ workflow PIPE_16S_DOWNLOAD_INPUT {
                              .set { ch_tables_to_collapse }
     }
 
-    // Split off feature tables and taxa to merge
-    ch_tables_to_collapse.tap { ch_tables_to_merge }
-    ch_tables_to_merge = ch_tables_to_merge
-                    .map { it[1] }
-                    .collect()
-
     // Collapse taxa and merge
     ch_tables_to_collapse
-        .join ( CLASSIFY_TAXONOMY.out.taxonomy_qza )
-        .set { ch_to_collapse_taxa }
+        .tap  { ch_table_to_summarize }
+        .join ( ch_taxa_to_viz        )
+        .tap  { ch_to_create_barplot  }
+        .set  { ch_to_collapse_taxa   }
 
-    COLLAPSE_TAXA ( ch_to_collapse_taxa )
+    SUMMARIZE_FEATURE_TABLE ( ch_table_to_summarize )
+    CREATE_BARPLOT ( ch_to_create_barplot )
+    COLLAPSE_TAXA  ( ch_to_collapse_taxa  )
 
 }
 
