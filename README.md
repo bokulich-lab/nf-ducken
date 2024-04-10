@@ -1,4 +1,4 @@
-# nf-16s-pipe
+# nf-ducken 
 Workflow to process amplicon meta-analysis data, from either local FASTQs or NCBI accession IDs to taxonomic classification.
 
 ![Pipeline DAG](assets/images/pipeline_dag.png)
