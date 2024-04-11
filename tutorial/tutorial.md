@@ -12,7 +12,7 @@ No more need to manually launch one analysis step after another. With `nf-ducken
 6. Taxonomy classification: `q2-sample-classifier`
 7. Collapse to taxon of interest: `q2-taxa`
 
-These are illustrated, with corresponding stepwise commands, [in this large flowchart](https://github.com/bokulich-lab/nf-ducken/main/assets/images/coded_workflow.png).
+These are illustrated, with corresponding stepwise commands, [in this large flowchart](https://github.com/bokulich-lab/nf-ducken/blob/main/assets/images/coded_workflow.png).
 
 This tutorial has two parallel components: The **download** tutorial (Section 2) and the **import** tutorial (Section 3). Feel free to run one or both. If you plan to run `nf-ducken` from FASTQ files you will download from the SRA or ENA, select the **download** tutorial. If you plan to run `nf-ducken` on FASTQ files already on your computer, select the **import** tutorial.
 
