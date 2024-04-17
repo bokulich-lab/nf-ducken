@@ -1,25 +1,11 @@
-# nf-ducken 
+# nf-ducken Parameterization
 Workflow to process amplicon meta-analysis data, from either local FASTQs or NCBI accession IDs to taxonomic classification.
 
-## Environment
-
-### Conda
-
-**Note for users with newer Apple processors (M1/M2):** Conda environments require emulation using Rosetta, due to the lack of certain packages for the ARM64 architecture otherwise available with Intel processors. Please follow the [installation and setup instructions here](https://support.apple.com/en-us/HT211861) for details.
-
-Conda environments are available for all processes. Launch a Conda environment-based run using `-profile conda` when running the workflow script.
-
-### Singularity and Docker
-
-Containers are available for all processes. Launch a container-based run with Singularity or Docker using `-profile docker` or `-profile singularity` when running the workflow script.
-
-## Inputs
+## Required process parameters
 
 Unless otherwise noted, these parameters should be under the scope `params` in the `run.config` file.
 
-### Process parameters
-
-Used for initial FASTQ processing.
+The following parameters are Used for initial FASTQ processing.
 * `read_type`: FASTQ type, either `"paired"` or `"single"`
 
 Required if running `q2_fondue`:
@@ -37,10 +23,10 @@ Required if running Cutadapt:
   * Note that `cutadapt.front` is recommended for most amplicon sequence runs, and `cutadapt.adapter` and `cutadapt.anywhere` are not supported in this workflow. The same goes for their paired counterparts.
   * The workflow does not at the moment support linked primers. Additionally, the workflow currently only takes a collection of single-end or paired-end primers, but not a combination of both.
 
-### Bypassing parameter validation:
+## Bypassing parameter validation:
 * To bypass the automated parameter validation, the user should set `params.validate_parameters` to `false` when issuing the execution command.
 
-### Using pre-generated input artifacts:
+## Using pre-generated input artifacts:
 * By default, workflow inputs may be entered as TSV or FASTQ files; the workflow is designed to generate input QIIME 2 artifacts using the import/download processes. This behavior is controlled by the `generate_input` parameter, set to `true` by default.
 
 * To use an already-created input QIIME 2 artifact, the user should set `params.generate_input` to `false` and specify the path to the input artifact using the `params.input_artifact` parameter. For example:
@@ -49,7 +35,7 @@ Required if running Cutadapt:
 --generate_input false --input_artifact "path/to/input_artifact"
 ```
 
-### Optional user-input parameters
+## Optional user-input parameters
 
 Used for initial FASTQ processing in scope `params.fastq_split`:
 * `enabled`: default `null`, determines whether samples will be processed as a batch or individually; either `"True"` or `"False"`
@@ -138,7 +124,7 @@ Additional process parameters:
 * `phred_offset`: default `33`; used in FASTQ import if using local FASTQs
 * `vsearch_chimera`: default `false`
 
-### Reference input parameters
+## Reference input parameters
 Reference files if available locally; otherwise, defaults will be downloaded from the [QIIME 2 data resources page](https://docs.qiime2.org/2022.2/data-resources/):
 * `otu_ref_file`: default `null`, downloading pre-formatted files from the [SILVA 138 SSURef NR99 full-length sequences](https://data.qiime2.org/2022.2/common/silva-138-99-seqs.qza); used in closed-reference OTU clustering with VSEARCH
 * `trained_classifier`: default `null`, downloading [naive Bayes taxonomic classifiers trained on SILVA 138 99% OTUs 
@@ -160,7 +146,7 @@ For containerization:
 * `multiqc_container`: default `"ewels/multiqc:${multiqc_release}"`
 * `multiqc_conda_env`: default `"bioconda::multiqc"`
 
-### Additional configurations
+## Additional configurations
 
 These run configurations fall under non-`param` scopes listed below.
 
@@ -171,35 +157,3 @@ Reporting with Nextflow Tower (scope `tower`):
 Execution parameters (scope `process`):
 * `executor`: default `"local"`, resource manager to run workflow on; options include `"slurm"`, `"sge"`, `"awsbatch"`, and `"google-lifesciences"`
 * `withLabel:container_qiime2.container`: default `${params.qiime_container}`, but can be replaced with location of local container containing QIIME 2 core distribution
-
-### Parameters used when launching workflow from intermediate steps
-
-To skip processes through DADA2, if using pre-denoised feature tables and sequences:
-* `denoised_table`: Path to QIIME 2 artifact containing a denoised feature table
-* `denoised_seqs`: Path to QIIME 2 artifact containing denoised sequences corresponding with the above feature table
-
-## Outputs
-
-* `outDir/taxonomy.qza`: Artifact containing frequencies for features collapsed to a given level (default genus).
-* `outDir/taxonomy.qzv`: Visualization containing frequencies for features collapsed to a given level (default genus).
-* `outDir/feature_table.qza`: Artifact containing table of represented features by sample.
-* `outDir/stats/`: Directory containing QC metrics, including FastQC, clustering statistics, denoising statistics, etc.
-* `outDir/trace/`: Directory containing runtime metrics with an execution report and a pipeline DAG.
-
-## Process
-
-### Steps
-
-1. Data import (`qiime tools import`) or FASTQ download (`q2-fondue`)
-2. Optional adapter trimming: `q2-cutadapt`
-3. Initial quality control and denoising: `q2-dada2`
-4. Optional chimera filtering: `q2-vsearch`
-5. Closed reference OTU clustering: `q2-vsearch` 
-6. Taxonomy classification: `q2-feature-classifier`
-7. Collapse to taxon of interest and merge final outputs
-
-### Execution
-
-```bash
-nextflow run /path/to/workflow/main.nf -c run.config -profile conda
-```
