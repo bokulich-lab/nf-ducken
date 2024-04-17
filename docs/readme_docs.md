@@ -1,6 +1,16 @@
 # nf-ducken Parameterization
 Workflow to process amplicon meta-analysis data, from either local FASTQs or NCBI accession IDs to taxonomic classification.
 
+## Recommended downloads
+
+We *strongly recommend* you provide your own reference files for feature classification. While the pipeline will still work (downloading from hard-coded links), this is vulnerable to issues such as server malfunctions and is not computationally efficient.
+
+We recommend you download the following files from the [QIIME 2 data resource center](https://docs.qiime2.org/2024.2/data-resources/):
+
+* the Naive Bayes taxonomy classifier trained on SILVA 138 99% OTUs (full-length sequences)
+* SILVA 138 SSURef NR99 full-length sequences
+* SILVA 138 SSURef NR99 full-length taxonomy
+
 ## Required process parameters
 
 Unless otherwise noted, these parameters should be under the scope `params` in the `run.config` file.
@@ -23,10 +33,10 @@ Required if running Cutadapt:
   * Note that `cutadapt.front` is recommended for most amplicon sequence runs, and `cutadapt.adapter` and `cutadapt.anywhere` are not supported in this workflow. The same goes for their paired counterparts.
   * The workflow does not at the moment support linked primers. Additionally, the workflow currently only takes a collection of single-end or paired-end primers, but not a combination of both.
 
-## Bypassing parameter validation:
+### Bypassing parameter validation:
 * To bypass the automated parameter validation, the user should set `params.validate_parameters` to `false` when issuing the execution command.
 
-## Using pre-generated input artifacts:
+### Using pre-generated input artifacts:
 * By default, workflow inputs may be entered as TSV or FASTQ files; the workflow is designed to generate input QIIME 2 artifacts using the import/download processes. This behavior is controlled by the `generate_input` parameter, set to `true` by default.
 
 * To use an already-created input QIIME 2 artifact, the user should set `params.generate_input` to `false` and specify the path to the input artifact using the `params.input_artifact` parameter. For example:

@@ -57,6 +57,16 @@ pwd
 
 This tutorial has two parallel components: The **download** tutorial (Section 2) and the **import** tutorial (Section 3). Feel free to run one or both. If you plan to run `nf-ducken` from FASTQ files you will download from the SRA or ENA, select the **download** tutorial. If you plan to run `nf-ducken` on FASTQ files already on your computer, select the **import** tutorial.
 
+### 1.4.  Recommended: Download references
+
+We *strongly recommend* you provide your own reference files for feature classification. While the pipeline will still work (downloading from hard-coded links), this is vulnerable to issues such as server malfunctions and is not computationally efficient.
+
+We recommend you download the following files from the [QIIME 2 data resource center](https://docs.qiime2.org/2024.2/data-resources/):
+
+* the Naive Bayes taxonomy classifier trained on SILVA 138 99% OTUs (full-length sequences)
+* SILVA 138 SSURef NR99 full-length sequences
+* SILVA 138 SSURef NR99 full-length taxonomy
+
 ## 2.  Download Tutorial
 
 ### 2.1.  Directory organization
@@ -72,6 +82,10 @@ Desktop/
 |-- tutorial/    # your current working directory!
     |-- download_tutorial_ids.tsv
     |-- download_tutorial_params.config
+    |-- ref_data/
+        |-- feature_classifier.qza   # if downloaded in 1.4 above
+        |-- ref_taxonomy.qza         # if downloaded in 1.4 above
+        |-- ref_sequences.qza        # if downloaded in 1.4 above
 ```
 
 4. Double-check your current working directory by running `pwd` in the terminal. You should be in `~/Desktop/tutorial/` or similar.
@@ -89,9 +103,12 @@ Each ID must have its own line. The very first line **must** be `sample-id`; eve
 Required parameters:
 * `read_type`: Currently set to `"paired"`. Normally this depends on whether your FASTQs are single- or paired-end; in our case, our data are paired-end.
 * `pipeline_type`: Currently set to `"download"`. In the **import** tutorial you will set this to `"import"`.
-* `outdir`: Currently sThis is the name of the folder where your outputs are saved. Set to a string like `"download_tutorial_results"` for clarity.
+* `outdir`: Currently this is the name of the folder where your outputs are saved. Set to a string like `"download_tutorial_results"` for clarity.
 * `inp_id_file`: Set to the location of your ID file. This is how `nf-ducken` will know how to access the correct file. If it matters to you: Absolute file paths are preferred, but relative file paths work too.
 * `email_address`: Set to your email address. This is required for NCBI server downloads.
+* `otu_ref_file`: Set to the location of your reference sequences, optionally downloaded in 1.4.
+* `taxonomy_ref_file`: Set to the location of your reference taxonomy, optionally downloaded in 1.4.
+* `trained_classifier`: Set to the location of your pretrained feature classifier, optionally downloaded in 1.4. 
 
 This input file should be a plain text file i.e. if using MacOS TextEdit, select “Format” → “Make Plain Text”. All variables go inside the curly braces, and nearly all variable assignments (to the right of the `=` sign) should be surrounded by quotation marks. See the [`nf-ducken` README](https://github.com/bokulich-lab/nf-ducken/blob/main/README.md) for more details and other available parameters.
 
@@ -104,6 +121,10 @@ Desktop/
 |-- tutorial/    # your current working directory!
     |-- download_tutorial_ids.tsv
     |-- download_tutorial_params.config
+    |-- ref_data/
+        |-- feature_classifier.qza   # if downloaded in 1.4 above
+        |-- ref_taxonomy.qza         # if downloaded in 1.4 above
+        |-- ref_sequences.qza        # if downloaded in 1.4 above
 ```
 
 Please ensure your working directory is `~/Desktop/tutorial/` with the terminal command `pwd`. Please also ensure your Conda environment `nextflow` is active with the terminal command `conda info`.
@@ -148,6 +169,10 @@ Desktop/
         |-- SRR11115880_00_L001_R2_001.fastq.gz
         |-- manifest.tsv
     |-- import_tutorial_params.config
+    |-- ref_data/
+        |-- feature_classifier.qza   # if downloaded in 1.4 above
+        |-- ref_taxonomy.qza         # if downloaded in 1.4 above
+        |-- ref_sequences.qza        # if downloaded in 1.4 above
 ```
 
 5. Double-check your current working directory by running `pwd` in the terminal. You should be in `~/Desktop/tutorial/` or similar.
@@ -167,6 +192,9 @@ Required parameters:
 * `pipeline_type`: Currently set to `"import"`. In the **download** tutorial you will set this to `"download"`.
 * `outdir`: Currently sThis is the name of the folder where your outputs are saved. Set to a string like `"import_tutorial_results"` for clarity.
 * `fastq_manifest`: Set to the location of your manifest file. This is how `nf-ducken` will know how to access the correct FASTQs on your local machine. If it matters to you: Absolute file paths are preferred, but relative file paths work too.
+* `otu_ref_file`: Set to the location of your reference sequences, optionally downloaded in 1.4.
+* `taxonomy_ref_file`: Set to the location of your reference taxonomy, optionally downloaded in 1.4.
+* `trained_classifier`: Set to the location of your pretrained feature classifier, optionally downloaded in 1.4. 
 
 This input file should be a plain text file i.e. if using MacOS TextEdit, select “Format” → “Make Plain Text”. All variables go inside the curly braces, and nearly all variable assignments (to the right of the `=` sign) should be surrounded by quotation marks. See the [`nf-ducken` README](https://github.com/bokulich-lab/nf-ducken/blob/main/README.md) for more details and other available parameters.
 
@@ -186,6 +214,10 @@ Desktop/
         |-- SRR11115880_00_L001_R2_001.fastq.gz
         |-- manifest.tsv
     |-- import_tutorial_params.config
+    |-- ref_data/
+        |-- feature_classifier.qza   # if downloaded in 1.4 above
+        |-- ref_taxonomy.qza         # if downloaded in 1.4 above
+        |-- ref_sequences.qza        # if downloaded in 1.4 above 
 ```
 
 Please ensure your working directory is `~/Desktop/tutorial/` with the terminal command `pwd`. Please also ensure your Conda environment `nextflow` is active with the terminal command `conda info`.
