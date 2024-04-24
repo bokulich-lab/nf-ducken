@@ -8,6 +8,7 @@ gist:
 kramdown:
   math_engine: mathjax
   syntax_highlighter: rouge
-theme: jekyll-theme-dinky
+remote_theme: pages-themes/dinky@v0.2.0
 plugins:
-  jekyll-jemoji
+- jekyll-jemoji
+- jekyll-remote-theme 
