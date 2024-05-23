@@ -160,15 +160,14 @@ process COMBINE_FEATURE_TABLES {
     publishDir "${params.outdir}/"
 
     input:
-    val(inp_type)
     path(table_list)
 
     output:
-    path "merged_${inp_type}_table.qza"
+    tuple val("merged"), path("merged_table.qza")
 
     script:
     """
-    echo 'Combining ${inp_type} feature tables into a single output...'
+    echo 'Combining denoised feature tables into a single output...'
 
     full_table_list=""
     for table in ${table_list}; do
@@ -177,7 +176,33 @@ process COMBINE_FEATURE_TABLES {
 
     qiime feature-table merge \
         --i-tables \${full_table_list} \
-        --o-merged-table merged_${inp_type}_table.qza \
+        --o-merged-table merged_table.qza \
+        --verbose
+    """
+}
+
+process COMBINE_REP_SEQS {
+    label "container_qiime2"
+    publishDir "${params.outdir}/"
+
+    input:
+    path(seq_list)
+
+    output:
+    tuple val("merged"), path("merged_seqs.qza")
+
+    script:
+    """
+    echo 'Combining denoised representative sequences into a single output...'
+
+    full_seq_list=""
+    for seq in ${seq_list}; do
+      full_seq_list=\"\${full_seq_list} \${seq}\"
+    done
+
+    qiime feature-table merge-seqs \
+        --i-data \${full_seq_list} \
+        --o-merged-data merged_seqs.qza \
         --verbose
     """
 }
