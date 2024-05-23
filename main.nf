@@ -15,8 +15,8 @@ nextflow.enable.dsl = 2
 ========================================================================================
 */
 
-include { PIPE_16S_IMPORT_INPUT } from './workflows/pipe_16s_import'
-include { PIPE_16S_DOWNLOAD_INPUT } from './workflows/pipe_16s_download'
+include { IMPORT   } from './workflows/import'
+include { DOWNLOAD } from './workflows/download'
 
 /*
 ========================================================================================
@@ -24,21 +24,18 @@ include { PIPE_16S_DOWNLOAD_INPUT } from './workflows/pipe_16s_download'
 ========================================================================================
 */
 
-workflow NF_PIPE_16S {
+workflow NF_DUCKEN {
     
     if (!(params.pipeline_type)) {
         exit 1, 'pipeline_type parameter is required!'
     }
 
     if (params.pipeline_type == 'import') {
-        PIPE_16S_IMPORT_INPUT ()
-
+        IMPORT ()
     } else if (params.pipeline_type == 'download') {
-        PIPE_16S_DOWNLOAD_INPUT ()
-
+        DOWNLOAD ()
     } else {
         exit 1, 'pipeline_type parameter values can only be either \"import\" or \"download\"!'
-        
     }
      
 }
@@ -50,7 +47,7 @@ workflow NF_PIPE_16S {
 */
 
 workflow {
-    NF_PIPE_16S ()
+    NF_DUCKEN ()
 }
 
 workflow.onComplete {

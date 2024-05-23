@@ -12,7 +12,7 @@ process CLASSIFY_TAXONOMY {
     output:
     tuple val(sample_id), path("${sample_id}_taxonomy.qza"), emit: taxonomy_qza
     path "${sample_id}_taxonomy.qzv",                        emit: taxonomy_qzv
-    path "${rep_seqs}",                                      emit: rep_seqs
+    tuple val(sample_id), path("${rep_seqs}"),                emit: rep_seqs
 
     script:
     if (params.classifier.method == "sklearn") {

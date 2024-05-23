@@ -19,8 +19,7 @@ include { validateParams } from '../lib/paramsValidator'
 ========================================================================================
 */
 
-include { GENERATE_ID_ARTIFACT; GET_SRA_DATA;
-          SPLIT_FASTQ_MANIFEST                } from '../modules/get_sra_data'
+include { IMPORT_FASTQ; SPLIT_FASTQ_MANIFEST  } from '../modules/get_sra_data'
 include { CHECK_FASTQ_TYPE; RUN_FASTQC;
           CUTADAPT_TRIM                       } from '../modules/quality_control'
 include { DENOISE_DADA2                       } from '../modules/denoise_dada2'
@@ -33,7 +32,7 @@ include { CLUSTER_CLOSED_OTU;
 include { CLASSIFY_TAXONOMY; COLLAPSE_TAXA;
           CREATE_BARPLOT; TABULATE_SEQS;
           DOWNLOAD_CLASSIFIER;
-          DOWNLOAD_REF_TAXONOMY } from '../modules/classify_taxonomy'
+          DOWNLOAD_REF_TAXONOMY               } from '../modules/classify_taxonomy'
 include { MULTIQC_STATS                       } from '../modules/summarize_stats'
 
 /*
@@ -42,7 +41,7 @@ include { MULTIQC_STATS                       } from '../modules/summarize_stats
 ========================================================================================
 */
 
-workflow PIPE_16S_DOWNLOAD_INPUT {
+workflow IMPORT {
 
     // Validate input parameters
     if (params.validate_parameters) {
@@ -91,6 +90,7 @@ workflow PIPE_16S_DOWNLOAD_INPUT {
             .stripIndent()
 
     // INPUT AND VARIABLES
+
     // Determine whether Cutadapt will be run
     if (params.cutadapt.front) {
         is_cutadapt_run = true
@@ -103,7 +103,7 @@ workflow PIPE_16S_DOWNLOAD_INPUT {
     } else {
         is_cutadapt_run = null
     }
-
+    
     // Determine whether reference downloads are necessary
     if (params.otu_ref_file) {
         flag_get_ref    = false
@@ -128,30 +128,26 @@ workflow PIPE_16S_DOWNLOAD_INPUT {
     } else {
         flag_get_classifier        = true
     }
-
+    
     // Pipeline start
     if (params.generate_input) {
-        ch_inp_ids = Channel.fromPath ( "${params.inp_id_file}", checkIfExists: true )
-                        .map { [0, it] }
+        ch_fastq_manifest = Channel.fromPath ( "${params.fastq_manifest}",
+                                        checkIfExists: true )
+                                        .map { [0, it] }
+                                        
+        // Use local FASTQ files
         if (params.fastq_split.enabled == "True") {
-            SPLIT_FASTQ_MANIFEST ( ch_inp_ids )
+            SPLIT_FASTQ_MANIFEST ( ch_fastq_manifest )
             manifest_suffix = ~/${params.fastq_split.suffix}/
             ch_acc_ids = SPLIT_FASTQ_MANIFEST.out
                                 .flatten()
                                 .map { [(it.getName() - manifest_suffix), it] }
         } else {
-            ch_acc_ids = ch_inp_ids
+            ch_acc_ids = ch_fastq_manifest
         }
-        
-        // Download FASTQ files with q2-fondue
-        GENERATE_ID_ARTIFACT ( ch_acc_ids )
-        GET_SRA_DATA         ( GENERATE_ID_ARTIFACT.out )
-        
-        if (params.read_type == "single") {
-            ch_sra_artifact = GET_SRA_DATA.out.single
-        } else if (params.read_type == "paired") {
-            ch_sra_artifact = GET_SRA_DATA.out.paired
-        }
+
+        IMPORT_FASTQ ( ch_acc_ids )
+        ch_sra_artifact = IMPORT_FASTQ.out
     
     } else {
         if (!params.input_artifact) {
@@ -160,7 +156,7 @@ workflow PIPE_16S_DOWNLOAD_INPUT {
         } else {
             Channel
                 .fromPath(params.input_artifact, checkIfExists: true)
-                .map { [0, it] }
+                .map { [ 0, it ] }
                 .set { ch_sra_artifact }
         }
     }
@@ -170,7 +166,7 @@ workflow PIPE_16S_DOWNLOAD_INPUT {
     CHECK_FASTQ_TYPE ( ch_sra_artifact )
     ch_to_fastqc = CHECK_FASTQ_TYPE.out.fqs.collect()
     RUN_FASTQC ( ch_to_fastqc )
-
+    
     if (is_cutadapt_run) {
         ch_to_trim = CHECK_FASTQ_TYPE.out.qza
         CUTADAPT_TRIM ( ch_to_trim )
@@ -180,7 +176,7 @@ workflow PIPE_16S_DOWNLOAD_INPUT {
         ch_to_denoise = CHECK_FASTQ_TYPE.out.qza
         ch_to_multiqc = "${projectDir}/assets/NO_FILE"
     }
-    
+
     // Feature generation: Denoising for cleanup
     DENOISE_DADA2 ( ch_to_denoise )
     ch_denoised_tables = DENOISE_DADA2.out.table.collect()
@@ -195,7 +191,7 @@ workflow PIPE_16S_DOWNLOAD_INPUT {
     // Create MultiQC reports
     MULTIQC_STATS ( RUN_FASTQC.out, ch_to_multiqc )
 
-    // Feature generation: Clustering
+    // Optional chimera filtering
     if (flag_get_ref) {
         DOWNLOAD_REF_SEQS ( flag_get_ref )
         ch_otu_ref_qza = DOWNLOAD_REF_SEQS.out
