@@ -2,8 +2,6 @@ process CLASSIFY_TAXONOMY {
     label "container_qiime2"
     label "process_high"
     label "error_retry"
-    tag "${sample_id}"
-
     publishDir "${params.outdir}/", pattern: "*.qzv"
 
     input:
@@ -107,7 +105,6 @@ process CLASSIFY_TAXONOMY {
 
 process COLLAPSE_TAXA {
     label "container_qiime2"
-    tag "${sample_id}"
     publishDir "${params.outdir}/"
     
     input:
@@ -132,7 +129,6 @@ process COLLAPSE_TAXA {
 
 process CREATE_BARPLOT {
     label "container_qiime2"
-    tag "${sample_id}"
     publishDir "${params.outdir}/"
 
     input:
@@ -155,7 +151,6 @@ process CREATE_BARPLOT {
 
 process TABULATE_SEQS {
     label "container_qiime2"
-    tag "${sample_id}"
     publishDir "${params.outdir}/"
 
     input:
