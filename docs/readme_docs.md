@@ -48,7 +48,7 @@ Required if running Cutadapt:
 ## Optional user-input parameters
 
 Used for initial FASTQ processing in scope `params.fastq_split`:
-* `enabled`: default `null`, determines whether samples will be processed as a batch or individually; either `"True"` or `"False"`
+* `enabled`: default `true`, determines whether samples will be processed as a batch or individually; either `true` or `false`
 * `method`: default `"sample"`, represents method by which to split input FASTQ file manifest; either `"sample"` or an integer representing the number of split artifacts for processing 
 * `suffix`: default `"_split.tsv"`, suffix for split FASTQ manifest files used as intermediates
   

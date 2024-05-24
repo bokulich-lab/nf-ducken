@@ -133,7 +133,7 @@ workflow DOWNLOAD {
     if (params.generate_input) {
         ch_inp_ids = Channel.fromPath ( "${params.inp_id_file}", checkIfExists: true )
                         .map { [0, it] }
-        if (params.fastq_split.enabled == "True") {
+        if (params.fastq_split.enabled) {
             SPLIT_FASTQ_MANIFEST ( ch_inp_ids )
             manifest_suffix = ~/${params.fastq_split.suffix}/
             ch_acc_ids = SPLIT_FASTQ_MANIFEST.out

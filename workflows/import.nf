@@ -136,7 +136,7 @@ workflow IMPORT {
                                         .map { [0, it] }
                                         
         // Use local FASTQ files
-        if (params.fastq_split.enabled == "True") {
+        if (params.fastq_split.enabled) {
             SPLIT_FASTQ_MANIFEST ( ch_fastq_manifest )
             manifest_suffix = ~/${params.fastq_split.suffix}/
             ch_acc_ids = SPLIT_FASTQ_MANIFEST.out
