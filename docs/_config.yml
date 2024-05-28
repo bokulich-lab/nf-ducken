@@ -4,9 +4,9 @@ title: nf-ducken Documentation
 email: lina.kim@hest.ethz.ch
 description: >- # this means to ignore newlines until "baseurl:" 
  nf-ducken is a scalable platform for microbiome bioinformatics analysis using QIIME 2 and Nextflow.
-baseurl: /nf-ducken/docs 
+baseurl: /docs 
 destination: _site/
-url: "https://bokulich-lab.github.io" # the base hostname & protocol for your site, e.g. http://example.com
+url: "https://bokulich-lab.github.io/nf-ducken" # the base hostname & protocol for your site, e.g. http://example.com
 twitter_username: linathekim
 github_username:  bokulich-lab
 
