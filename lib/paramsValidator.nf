@@ -217,6 +217,13 @@ def validateParams(params) {
 	assertParam(params.fastqc_release, [String], null, "fastqc_release must be a String")
 	assertParam(params.multiqc_container, [String], null, "multiqc_container must be a String")
 
+	/////////////////////////////////////////////////
+	// Validation for pre-denoise split parameters //
+	/////////////////////////////////////////////////
+	def fastq_split = params.fastq_split
+	assertParam(fastq_split.enabled, [Boolean], [true, false], "fastq_split.enabled must be true or false")
+	assertParam(fastq_split.suffix, [String], null, "fastq_split.suffix must be a String")
+	assertParam(fastq_split.method, [Integer, String], [{ it instanceof Integer && it > 0 }, "sample"], "fastq_split.method must be 1) an integer greater than 0, representing the number of split artifacts to create; or 2) the string 'sample', representing individual artifacts per sample pre-denoising.")
 }
 
 def validateTsvFile(filePath) {

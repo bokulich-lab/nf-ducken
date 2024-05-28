@@ -24,6 +24,8 @@ include { CHECK_FASTQ_TYPE; RUN_FASTQC;
           CUTADAPT_TRIM                       } from '../modules/quality_control'
 include { DENOISE_DADA2                       } from '../modules/denoise_dada2'
 include { CLUSTER_CLOSED_OTU;
+          COMBINE_FEATURE_TABLES;
+          COMBINE_REP_SEQS;
           DOWNLOAD_REF_SEQS; FIND_CHIMERAS;
           FILTER_CHIMERAS;
           SUMMARIZE_FEATURE_TABLE             } from '../modules/cluster_vsearch'
@@ -39,7 +41,7 @@ include { MULTIQC_STATS                       } from '../modules/summarize_stats
 ========================================================================================
 */
 
-workflow PIPE_16S_IMPORT_INPUT {
+workflow IMPORT {
 
     // Validate input parameters
     if (params.validate_parameters) {
@@ -134,7 +136,7 @@ workflow PIPE_16S_IMPORT_INPUT {
                                         .map { [0, it] }
                                         
         // Use local FASTQ files
-        if (params.fastq_split.enabled == "True") {
+        if (params.fastq_split.enabled) {
             SPLIT_FASTQ_MANIFEST ( ch_fastq_manifest )
             manifest_suffix = ~/${params.fastq_split.suffix}/
             ch_acc_ids = SPLIT_FASTQ_MANIFEST.out
@@ -162,7 +164,8 @@ workflow PIPE_16S_IMPORT_INPUT {
     // Quality control: FASTQ type check, trimming, QC
     // FASTQ check and QC
     CHECK_FASTQ_TYPE ( ch_sra_artifact )
-    RUN_FASTQC ( CHECK_FASTQ_TYPE.out.fqs )
+    ch_to_fastqc = CHECK_FASTQ_TYPE.out.fqs.collect()
+    RUN_FASTQC ( ch_to_fastqc )
     
     if (is_cutadapt_run) {
         ch_to_trim = CHECK_FASTQ_TYPE.out.qza
@@ -176,7 +179,14 @@ workflow PIPE_16S_IMPORT_INPUT {
 
     // Feature generation: Denoising for cleanup
     DENOISE_DADA2 ( ch_to_denoise )
-    ch_denoised_qzas = DENOISE_DADA2.out.table_seqs
+    ch_denoised_tables = DENOISE_DADA2.out.table.collect()
+    ch_denoised_seqs   = DENOISE_DADA2.out.seqs.collect()
+
+    // Combine feature tables and representative sequences
+    // from individually denoised samples (default option)
+    COMBINE_FEATURE_TABLES ( ch_denoised_tables )
+    COMBINE_REP_SEQS       ( ch_denoised_seqs   )
+    ch_denoised_qzas = COMBINE_FEATURE_TABLES.out.join ( COMBINE_REP_SEQS.out )
 
     // Create MultiQC reports
     MULTIQC_STATS ( RUN_FASTQC.out, ch_to_multiqc )
