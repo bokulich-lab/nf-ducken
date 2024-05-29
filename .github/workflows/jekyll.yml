@@ -67,4 +67,4 @@ jobs:
           publish_dir: docs/_site
       - name: Override page_url
         id: change-page-url
-        run: echo "new_page_url"=${{ steps.deployment.outpus.page_url }}docs/" >> $GITHUB_OUTPUT
+        run: echo "new_page_url=${{ steps.deployment.outpus.page_url }}docs/" >> $GITHUB_OUTPUT
