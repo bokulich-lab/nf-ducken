@@ -37,12 +37,14 @@ jobs:
 
       - name: Install dependencies
         run: |
+          cd docs
           gem install bundler
           bundle install
 
       - name: Build with Jekyll
-        run: bundle exec jekyll build --destination _site
-        working-directory: docs
+        run: |
+          cd docs
+          bundle exec jekyll build --destination _site
         env:
           JEKYLL_ENV: production
           PAGES_REPO_NWO: bokulich-lab/nf-ducken
