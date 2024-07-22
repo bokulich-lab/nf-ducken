@@ -41,8 +41,8 @@ jobs:
           bundle install
 
       - name: Build with Jekyll
-        # Outputs to the 'docs/_site' directory
-        run: bundle exec jekyll build --destination docs/_site
+        run: bundle exec jekyll build --destination _site
+        working-directory: docs
         env:
           JEKYLL_ENV: production
           PAGES_REPO_NWO: bokulich-lab/nf-ducken
