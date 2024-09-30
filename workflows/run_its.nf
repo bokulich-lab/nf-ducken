@@ -21,7 +21,8 @@ include { validateParams } from '../lib/paramsValidator'
 
 include { IMPORT_FASTQ; SPLIT_FASTQ_MANIFEST  } from '../modules/get_sra_data'
 include { CHECK_FASTQ_TYPE; RUN_FASTQC;
-          CUTADAPT_TRIM                       } from '../modules/quality_control'
+          CUTADAPT_TRIM;
+          CUTADAPT_TRIM_COMPLEMENT            } from '../modules/quality_control'
 include { DENOISE_DADA2                       } from '../modules/denoise_dada2'
 include { CLUSTER_CLOSED_OTU;
           COMBINE_FEATURE_TABLES;
@@ -41,7 +42,7 @@ include { MULTIQC_STATS                       } from '../modules/summarize_stats
 ========================================================================================
 */
 
-workflow IMPORT {
+workflow RUN_ITS {
 
     // Validate input parameters
     if (params.validate_parameters) {
@@ -104,50 +105,46 @@ workflow IMPORT {
         is_cutadapt_run = null
     }
 
-    // Determine whether reference downloads are necessary
-    if (params.otu_ref_file) {
-        flag_get_ref    = false
-        ch_otu_ref_qza  = Channel.fromPath ( "${params.otu_ref_file}",
-                                            checkIfExists: true )
-    } else {
-        flag_get_ref    = true
-    }
-
-    if (params.taxonomy_ref_file) {
-        flag_get_ref_taxa = false
-        ch_taxa_ref_qza   = Channel.fromPath ( "${params.taxonomy_ref_file}",
-                                            checkIfExists: true )
-    } else {
-        flag_get_ref_taxa = true
-    }
-
-    if (params.trained_classifier) {
-        flag_get_classifier        = false
-        ch_trained_classifier      = Channel.fromPath ( "${params.trained_classifier}",
-                                                        checkIfExists: true )
-    } else {
-        flag_get_classifier        = true
-    }
 
     // Pipeline start
     if (params.generate_input) {
-        ch_fastq_manifest = Channel.fromPath ( "${params.fastq_manifest}",
-                                        checkIfExists: true )
-                                        .map { [0, it] }
+        if (params.pipeline_type == "import") {
+            inp_sample_file = params.fastq_manifest
+        } else if (params.pipeline_type == "download") {
+            inp_sample_file = params.inp_id_file
+        } else {
+            exit 1, "pipeline_type must be assigned correctly!"
+        }
+        // In lieu of ch_fastq_manifest or ch_inp_ids
+        ch_inp_samples = Channel.fromPath ( "${inp_sample_file}",
+                                            checkIfExists: true )
+                                            .map { [0, it] }
 
         // Use local FASTQ files
         if (params.fastq_split.enabled) {
-            SPLIT_FASTQ_MANIFEST ( ch_fastq_manifest )
+            SPLIT_FASTQ_MANIFEST ( ch_inp_samples )
             manifest_suffix = ~/${params.fastq_split.suffix}/
             ch_acc_ids = SPLIT_FASTQ_MANIFEST.out
                                 .flatten()
                                 .map { [(it.getName() - manifest_suffix), it] }
         } else {
-            ch_acc_ids = ch_fastq_manifest
+            ch_acc_ids = ch_inp_samples
         }
 
-        IMPORT_FASTQ ( ch_acc_ids )
-        ch_sra_artifact = IMPORT_FASTQ.out
+        if (params.pipeline_type == "import") {
+            IMPORT_FASTQ ( ch_acc_ids )
+            ch_sra_artifact = IMPORT_FASTQ.out
+        } else {
+            // Download FASTQ files with q2-fondue
+            GENERATE_ID_ARTIFACT ( ch_acc_ids )
+            GET_SRA_DATA         ( GENERATE_ID_ARTIFACT.out )
+
+            if (params.read_type == "single") {
+                ch_sra_artifact = GET_SRA_DATA.out.single
+            } else if (params.read_type == "paired") {
+                ch_sra_artifact = GET_SRA_DATA.out.paired
+            }
+        }
 
     } else {
         if (!params.input_artifact) {
@@ -168,10 +165,14 @@ workflow IMPORT {
     RUN_FASTQC ( ch_to_fastqc )
 
     if (is_cutadapt_run) {
-        ch_to_trim = CHECK_FASTQ_TYPE.out.qza
-        CUTADAPT_TRIM ( ch_to_trim )
-        ch_to_denoise = CUTADAPT_TRIM.out.qza
-        ch_to_multiqc = CUTADAPT_TRIM.out.stats.collect()
+        ch_to_trim_1 = CHECK_FASTQ_TYPE.out.qza
+        CUTADAPT_TRIM ( ch_to_trim_1 )
+        ch_to_trim_2 = CUTADAPT_TRIM.out.qza
+        ch_to_multiqc_1 = CUTADAPT_TRIM.out.stats
+        CUTADAPT_TRIM_COMPLEMENT ( ch_to_trim_2 )
+        ch_to_denoise = CUTADAPT_TRIM_COMPLEMENT.out.qza
+        ch_to_multiqc_2 = CUTADAPT_TRIM_COMPLEMENT.out.stats
+        ch_to_multiqc = ch_to_multiqc_1.collect( ch_to_multiqc_2 ).collect()
     } else {
         ch_to_denoise = CHECK_FASTQ_TYPE.out.qza
         ch_to_multiqc = "${projectDir}/assets/NO_FILE"
@@ -192,11 +193,6 @@ workflow IMPORT {
     MULTIQC_STATS ( RUN_FASTQC.out, ch_to_multiqc )
 
     // Optional chimera filtering
-    if (flag_get_ref) {
-        DOWNLOAD_REF_SEQS ( flag_get_ref )
-        ch_otu_ref_qza = DOWNLOAD_REF_SEQS.out
-    }
-
     if (params.vsearch_chimera) {
         ch_denoised_qzas.tap { ch_to_find_chimeras }
         ch_to_find_chimeras.combine ( ch_otu_ref_qza )
@@ -213,7 +209,6 @@ workflow IMPORT {
         FILTER_CHIMERAS (
             ch_qzas_to_filter
         )
-
         FILTER_CHIMERAS.out.filt_qzas.tap { ch_qzas_to_cluster }
 
     } else {
@@ -235,15 +230,14 @@ workflow IMPORT {
                                 // Just sample ID and sequences
     }
 
-    // Classification
-
-    ch_trained_classifier = DOWNLOAD_CLASSIFIER.out
-
-    if (flag_get_ref_taxa) {
-        DOWNLOAD_REF_TAXONOMY ( flag_get_ref_taxa )
-        ch_taxa_ref_qza = DOWNLOAD_REF_TAXONOMY.out
-    }
-
+    // Assign references and inputs for classification
+    ch_otu_ref_qza        = Channel.fromPath ( "${params.otu_ref_file}",
+                                              checkIfExists: true )
+    ch_taxa_ref_qza       = Channel.fromPath ( "${params.taxonomy_ref_file}",
+                                            checkIfExists: true )
+    ch_trained_classifier = Channel.fromPath ( "${params.trained_classifier}",
+                                               checkIfExists: true )
+    // Perform taxonomic classification
     ch_to_classify = ch_seqs_to_classify
                         .combine ( ch_trained_classifier )
                         .combine ( ch_otu_ref_qza )

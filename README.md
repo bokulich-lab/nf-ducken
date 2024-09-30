@@ -35,7 +35,7 @@ Containers are available for all processes. Launch a container-based run with Si
 
 ### Steps: ITS analysis
 
-Fungal ITS analysis deviates from the above 16S workflow. These differences integrate standard recommendations for ITS analysis, and include the following:
+Fungal ITS analysis (`params.run_its = true`) deviates from the above 16S workflow. These differences integrate standard recommendations for ITS analysis, and include the following:
 * Adapter trimming is run on not only the forward and reverse reads, but also on the reverse complements of both [to account for potential read-through](https://forum.qiime2.org/t/fungal-its-analysis-tutorial/7351).
   * Note in execution: These reverse complement sequences are trimmed in a subsequent step i.e. Cutadapt is run twice for a single sample. Internal analysis demonstrates inconsistent trimming when trimmed in a single step.
 * Input references and classifier are required:
