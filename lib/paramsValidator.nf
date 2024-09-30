@@ -66,7 +66,7 @@ def validateParams(params) {
   // Validation for general parameters
   assertParam(params.outdir, [String], null, "outdir must be a String")
   assertParam(params.read_type, [String], ["paired", "single"], "read_type must be either 'paired' or 'single'")
-  assertParam(params.pipeline_type, [String], ["import", "download"], "pipeline_type must be either 'import' or 'download'")
+  assertParam(params.pipeline_type, [String], ["import", "download", "its"], "pipeline_type must be either 'import', 'download', or 'its'!")
   assertParam(params.closed_ref_cluster, [Boolean], [true, false], "closed_ref_cluster must be true or false")
 
   // Valid ID column names
@@ -83,7 +83,7 @@ def validateParams(params) {
         exit 1, 'fastq_manifest parameter is required!'
       }
 
-    } else {
+    } else if (params.pipeline_type == 'download') {
       if (params.inp_id_file) {
         validateTsvFile(params.inp_id_file)
         validateTsvContents(params.inp_id_file, 1, validIdColumnNames)
@@ -95,11 +95,22 @@ def validateParams(params) {
         exit 1, 'email_address parameter is required!'
       }
 
+    } else if (params.pipeline_type == "its") {
+        // Input pre-trained classifier
+        if (!(params.otu_ref_file)) {
+            exit 1, "Input reference sequences are required for ITS runs!"
+        }
+        if (!(params.taxonomy_ref_file)) {
+            exit 1, "An input taxonomy file is required for ITS runs!"
+        }
+        if (!(params.trained_classifier)) {
+            exit 1, "An input pre-trained classifier is required for ITS runs!"
+        }
     }
 
 	} catch (AssertionError e) {
-    println "TSV file content validation failed: ${e.message}"
-    System.exit(1)
+        println "TSV file content validation failed: ${e.message}"
+        System.exit(1)
 	}
 
 	////////////////////////////////////////
