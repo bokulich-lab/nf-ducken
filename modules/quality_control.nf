@@ -139,12 +139,12 @@ process CUTADAPT_TRIM_COMPLEMENT {
         """
         echo 'Running Cutadapt to trim reverse complemented primers from single-end sequences...'
 
-        rev_comp=$(echo ${params.cutadapt.front} | tr ACGTUWSMKRYBDHV TGCAAWSKMYRVHDBN | rev)
+        rev_comp=\$(echo ${params.cutadapt.front} | tr ACGTUWSMKRYBDHV TGCAAWSKMYRVHDBN | rev)
 
         qiime cutadapt trim-single \
             --i-demultiplexed-sequences ${demux_qza} \
             --p-cores ${params.cutadapt.num_cores} \
-            --p-adapter ${rev_comp} \
+            --p-adapter \${rev_comp} \
             --p-error-rate ${params.cutadapt.error_rate} \
             --p-indels ${params.cutadapt.indels} \
             --p-times ${params.cutadapt.times} \
@@ -164,14 +164,14 @@ process CUTADAPT_TRIM_COMPLEMENT {
         """
         echo 'Running Cutadapt to trim reverse complemented primers from paired-end sequences...'
 
-        rev_comp_f=$(echo ${params.cutadapt.front_f} | tr ACGTUWSMKRYBDHV TGCAAWSKMYRVHDBN | rev)
-        rev_comp_r=$(echo ${params.cutadapt.front_r} | tr ACGTUWSMKRYBDHV TGCAAWSKMYRVHDBN | rev)
+        rev_comp_f=\$(echo ${params.cutadapt.front_f} | tr ACGTUWSMKRYBDHV TGCAAWSKMYRVHDBN | rev)
+        rev_comp_r=\$(echo ${params.cutadapt.front_r} | tr ACGTUWSMKRYBDHV TGCAAWSKMYRVHDBN | rev)
 
         qiime cutadapt trim-paired \
             --i-demultiplexed-sequences ${demux_qza} \
             --p-cores ${params.cutadapt.num_cores} \
-            --p-adapter-f ${rev_comp_r} \
-            --p-adapter-r ${rev_comp_f} \
+            --p-adapter-f \${rev_comp_r} \
+            --p-adapter-r \${rev_comp_f} \
             --p-error-rate ${params.cutadapt.error_rate} \
             --p-indels ${params.cutadapt.indels}\
             --p-times ${params.cutadapt.times} \

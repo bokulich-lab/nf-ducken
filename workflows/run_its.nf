@@ -91,6 +91,13 @@ workflow RUN_ITS {
             .stripIndent()
 
     // INPUT AND VARIABLES
+    // Assign references and inputs for classification
+    ch_otu_ref_qza        = Channel.fromPath ( "${params.otu_ref_file}",
+                                              checkIfExists: true )
+    ch_taxa_ref_qza       = Channel.fromPath ( "${params.taxonomy_ref_file}",
+                                            checkIfExists: true )
+    ch_trained_classifier = Channel.fromPath ( "${params.trained_classifier}",
+                                               checkIfExists: true )
 
     // Determine whether Cutadapt will be run
     if (params.cutadapt.front) {
@@ -104,7 +111,6 @@ workflow RUN_ITS {
     } else {
         is_cutadapt_run = null
     }
-
 
     // Pipeline start
     if (params.generate_input) {
@@ -172,7 +178,7 @@ workflow RUN_ITS {
         CUTADAPT_TRIM_COMPLEMENT ( ch_to_trim_2 )
         ch_to_denoise = CUTADAPT_TRIM_COMPLEMENT.out.qza
         ch_to_multiqc_2 = CUTADAPT_TRIM_COMPLEMENT.out.stats
-        ch_to_multiqc = ch_to_multiqc_1.collect( ch_to_multiqc_2 ).collect()
+        ch_to_multiqc = ch_to_multiqc_1.combine( ch_to_multiqc_2 ).collect()
     } else {
         ch_to_denoise = CHECK_FASTQ_TYPE.out.qza
         ch_to_multiqc = "${projectDir}/assets/NO_FILE"
@@ -230,13 +236,6 @@ workflow RUN_ITS {
                                 // Just sample ID and sequences
     }
 
-    // Assign references and inputs for classification
-    ch_otu_ref_qza        = Channel.fromPath ( "${params.otu_ref_file}",
-                                              checkIfExists: true )
-    ch_taxa_ref_qza       = Channel.fromPath ( "${params.taxonomy_ref_file}",
-                                            checkIfExists: true )
-    ch_trained_classifier = Channel.fromPath ( "${params.trained_classifier}",
-                                               checkIfExists: true )
     // Perform taxonomic classification
     ch_to_classify = ch_seqs_to_classify
                         .combine ( ch_trained_classifier )
