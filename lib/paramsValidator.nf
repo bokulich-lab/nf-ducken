@@ -53,7 +53,7 @@ def assertParam(value, typeConstraints, rangeConstraints = null, errorMessage = 
 
 def validatePrimerSequence(String sequence, String name) {
     if (sequence) { // Checks if sequence is not null or empty
-        def invalidChars = sequence.findAll { !it.matches("[ACGTURYSWKMBDHVN ]") } // Finds invalid characters
+        def invalidChars = sequence.findAll { !it.matches("[ACGTURYSWKMBDHVN]") } // Finds invalid characters
         if (invalidChars) {
             throw new ParameterValidationException("$name contains invalid characters. Only nucleotide codes ACGTURYSWKMBDHVN and spaces are allowed. Found: ${invalidChars.unique().join(', ')}")
         }
@@ -66,15 +66,16 @@ def validateParams(params) {
   // Validation for general parameters
   assertParam(params.outdir, [String], null, "outdir must be a String")
   assertParam(params.read_type, [String], ["paired", "single"], "read_type must be either 'paired' or 'single'")
-  assertParam(params.pipeline_type, [String], ["import", "download"], "pipeline_type must be either 'import' or 'download'")
+  assertParam(params.pipeline_type, [String], ["import", "download"], "pipeline_type must be 'import' or 'download'")
   assertParam(params.closed_ref_cluster, [Boolean], [true, false], "closed_ref_cluster must be true or false")
+  assertParam(params.run_its, [Boolean], [true, false], "run_its must be true or false")
 
   // Valid ID column names
   List<String> validIdColumnNames = [
     "id", "sampleid", "sample-id", "featureid", "feature-id", "#SampleID", "#OTUID", "sample_name"].collect { it.toLowerCase().replaceAll(" ", "") }
 
   try {
-    // Check if the pipeline types and then specific parameters to them
+    // Check the pipeline types and their specific parameters
     if (params.pipeline_type == 'import') {
       if (params.fastq_manifest) {
         validateTsvFile(params.fastq_manifest)
@@ -82,25 +83,34 @@ def validateParams(params) {
       } else {
         exit 1, 'fastq_manifest parameter is required!'
       }
-
-    } else {
+    } else if (params.pipeline_type == 'download') {
       if (params.inp_id_file) {
         validateTsvFile(params.inp_id_file)
         validateTsvContents(params.inp_id_file, 1, validIdColumnNames)
       } else {
         exit 1, 'inp_id_file parameter is required!'
       }
-
       if (!(params.email_address)) {
         exit 1, 'email_address parameter is required!'
       }
-
     }
-
 	} catch (AssertionError e) {
-    println "TSV file content validation failed: ${e.message}"
-    System.exit(1)
+        println "TSV file content validation failed: ${e.message}"
+        System.exit(1)
 	}
+
+	// Validate ITS input requirements
+	if (params.run_its) {
+        if (!(params.otu_ref_file)) {
+            exit 1, "Input reference sequences are required for ITS runs!"
+        }
+        if (!(params.taxonomy_ref_file)) {
+            exit 1, "An input taxonomy file is required for ITS runs!"
+        }
+        if (!(params.trained_classifier)) {
+            exit 1, "An input pre-trained classifier is required for ITS runs!"
+        }
+    }
 
 	////////////////////////////////////////
 	// Validation for cutadapt parameters //

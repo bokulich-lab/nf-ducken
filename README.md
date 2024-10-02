@@ -23,7 +23,7 @@ Containers are available for all processes. Launch a container-based run with Si
 
 ## Process
 
-### Steps
+### Steps: 16S analysis
 
 1. Data import (`qiime tools import`) or FASTQ download (`q2-fondue`)
 2. Optional adapter trimming: `q2-cutadapt`
@@ -32,6 +32,15 @@ Containers are available for all processes. Launch a container-based run with Si
 5. Closed reference OTU clustering: `q2-vsearch` 
 6. Taxonomy classification: `q2-feature-classifier`
 7. Collapse to taxon of interest and merge final outputs
+
+### Steps: ITS analysis
+
+Fungal ITS analysis (`params.run_its = true`) deviates from the above 16S workflow. These differences integrate standard recommendations for ITS analysis, and include the following:
+* Adapter trimming is run on not only the forward and reverse reads, but also on the reverse complements of both [to account for potential read-through](https://forum.qiime2.org/t/fungal-its-analysis-tutorial/7351).
+  * Note in execution: These reverse complement sequences are trimmed in a subsequent step i.e. Cutadapt is run twice for a single sample. Internal analysis demonstrates inconsistent trimming when trimmed in a single step.
+* Input references and classifier are required:
+  * An input pre-trained classifier is required as a QIIME 2 artifact. This step requires users train their own taxonomic classifier on the UNITE database for fungal ITS sequences, instead of using available classifiers pre-trained on Greengenes or SILVA. A public pre-trained classifier can be downloaded from [GitHub](https://github.com/colinbrislawn/unite-train/releases).
+  * Input reference sequences and taxonomy are required as a QIIME 2 artifact to perform feature classification. These are available [from the UNITE team as QIIME 2-compatible files](https://unite.ut.ee/repository.php).
 
 ### Execution
 

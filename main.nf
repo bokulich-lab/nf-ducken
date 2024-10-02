@@ -17,6 +17,7 @@ nextflow.enable.dsl = 2
 
 include { IMPORT   } from './workflows/import'
 include { DOWNLOAD } from './workflows/download'
+include { RUN_ITS  } from './workflows/run_its'
 
 /*
 ========================================================================================
@@ -30,14 +31,17 @@ workflow NF_DUCKEN {
         exit 1, 'pipeline_type parameter is required!'
     }
 
-    if (params.pipeline_type == 'import') {
-        IMPORT ()
-    } else if (params.pipeline_type == 'download') {
-        DOWNLOAD ()
+    if (params.run_its) {
+        RUN_ITS()
     } else {
-        exit 1, 'pipeline_type parameter values can only be either \"import\" or \"download\"!'
+        if (params.pipeline_type == 'import') {
+            IMPORT ()
+        } else if (params.pipeline_type == 'download') {
+            DOWNLOAD ()
+        } else {
+            exit 1, 'pipeline_type parameter values can only be \"import\" or \"download\"!'
+        }
     }
-     
 }
 
 /*
