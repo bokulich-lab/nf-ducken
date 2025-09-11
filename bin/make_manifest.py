@@ -21,7 +21,9 @@ NUM_DICT = {"single": 1, "paired": 2}
 NEWLINE = "\n"
 
 
-def match_fastq_suffix(file_path: str, suff_list: list) -> str:
+def match_fastq_suffix(file_path: str, 
+                       suff_list: list,
+                       sam_regex: str = None) -> str:
     """
     Retrieves sample ID from FASTQ file path and suffix.
 
@@ -33,7 +35,12 @@ def match_fastq_suffix(file_path: str, suff_list: list) -> str:
         suffix = suff_list[0]
     else:
         suffix = "|".join(suff_list)
-    suffix_search = re.search(fr'^([\w\.-]+)({suffix})', str(file_path.name))
+
+    if sam_regex:        
+        suffix_search = re.search(fr'^({sam_regex})([\w\.-]+)({suffix})', str(file_path.name))
+    else:
+        suffix_search = re.search(fr'^([\w\.-]+)({suffix})', str(file_path.name))
+
     if suffix_search:
         return suffix_search.group(1)
 
@@ -42,7 +49,8 @@ def match_fastq_suffix(file_path: str, suff_list: list) -> str:
 
 def get_sample_ids(inp_dir: str,
                    read_type: str,
-                   suff_list: list) -> pd.DataFrame:
+                   suff_list: list,
+                   sam_regex: str = None) -> pd.DataFrame:
     """
     Retrieves FASTQ file paths per sample ID.
 
@@ -64,7 +72,8 @@ def get_sample_ids(inp_dir: str,
     fname_df = pd.DataFrame(fastq_path_list, index=None, columns=["file_path"])
 
     fname_df["sample_id"] = fname_df["file_path"].apply(match_fastq_suffix,
-                                                        suff_list=suff_list)
+                                                        suff_list=suff_list,
+                                                        sam_regex=sam_regex)
     nonmatch_fq = fname_df[fname_df["sample_id"].isnull()]["file_path"].tolist()
     nonmatch_fq = [str(fpath) for fpath in nonmatch_fq]
     if len(nonmatch_fq) > 0:
@@ -171,7 +180,13 @@ def arg_parse():
         required=False
     )
     parser.add_argument(
-        "--suffix", help="Suffix for FASTQ files; accommodates regex.",
+        "--sample_regex", help="Optional sample regex for FASTQ files; accommodates regex.",
+        type=str,
+        default=None,
+        required=False
+    )    
+    parser.add_argument(
+        "--suffix", help="Optional suffix for FASTQ files; accommodates regex.",
         type=str,
         required=False
     )
@@ -223,7 +238,8 @@ def main(args):
         else:
             suffix_list = ["_R1.fastq.gz", "_R2.fastq.gz"]
 
-    sample_df = get_sample_ids(args.input_dir, args.read_type, suffix_list)
+    sample_df = get_sample_ids(args.input_dir, args.read_type, suffix_list,
+                               args.sample_regex)
     sample_fastq_df = assign_fastqs_per_sample(sample_df, args.read_type,
                                                suffix_list)
     sample_fastq_df.to_csv(args.output_fname, sep="\t", index=False)
