@@ -139,11 +139,16 @@ def assign_fastqs_per_sample(
         dir_path = Path(sample_fastq_df["file_path"].iloc[0][0]).resolve(
 
         ).parent
+
+
         fastq_df[head_fwd] = sample_fastq_df.index.map(
-            lambda x: dir_path / (x + fwd_suffix)
+            lambda x: dir_path.glob(fr'^({x})([\w\.-]+)({fwd_suffix})'
+                                    )[0]
         )
+
         fastq_df[head_rev] = sample_fastq_df.index.map(
-            lambda x: dir_path / (x + rev_suffix)
+            lambda x: dir_path.glob(fr'^({x})([\w\.-]+)({rev_suffix})'
+                                    )[0]
         )
     else:
         raise ValueError
